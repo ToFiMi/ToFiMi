@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prismaBackoffice } from './prisma-backoffice';
 import bcrypt from 'bcrypt';
+import GoogleProvider from 'next-auth/providers/google';
 
 
 export const authOptions: NextAuthOptions = {
@@ -33,6 +34,8 @@ export const authOptions: NextAuthOptions = {
                 };
             },
         }),
+       // CredentialsProvider({ /* your credentials logic */ }),
+
     ],
     callbacks: {
         async session({ session, token }) {
