@@ -1,6 +1,6 @@
 'use client';
 
-import { subscribeToPush } from '../lib/subscribePush';
+import { subscribeToPush } from '@/lib/subscribePush';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
         <h1>Subscribe to Push</h1>
         <button
             onClick={() =>
-                subscribeToPush('BOjNZBW9hQTTZw1ck3LPxMpCWhIQh65fg6Ymd6OSDTaBn5TV4ep6gEsZTpY0gepiwtvQajp_Y497oRntc6Tf6dc')
+                subscribeToPush(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!)
             }
         >
           Subscribe to Push

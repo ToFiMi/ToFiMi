@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../prisma/generated/tenant"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("TENANT_DATABASE_URL")
+}
+
+enum Role {
+  PARTICIPANT
+  LEADER
+  ADMIN
+}
+
+model User {
+  id                 Int          @id @default(autoincrement())
+  email              String       @unique
+  first_name         String
+  last_name          String
+  role               Role         @default(PARTICIPANT)
+  group              Group?       @relation(fields: [groupId], references: [id])
+  groupId            Int?
+  ledGroups          Group[]      @relation("Leader")
+  reflectionsCreated Reflection[]
+  homeworks          Homework[]
+}
+
+model Group {
+  id       Int    @id @default(autoincrement())
+  name     String
+  leader   User   @relation("Leader", fields: [leaderId], references: [id])
+  leaderId Int
+  members  User[]
+}
+
+model Reflection {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique
+  content     String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById Int
+}
+
+model Homework {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  groupId     Int
+  week        Int
+  content     String
+  submittedAt DateTime @default(now())
+}

@@ -1,6 +1,7 @@
 'use client';
 import "./globals.css";
 import { PwaInit } from "@/app/pwa-init";
+import {AntdRegistry} from "@ant-design/nextjs-registry";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -16,7 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body>
         <PwaInit />
-        {children}
+        <AntdRegistry>{children}</AntdRegistry>
+
         </body>
         </html>
     );

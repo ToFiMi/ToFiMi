@@ -2,8 +2,8 @@ import webpush from 'web-push';
 import { NextRequest, NextResponse } from 'next/server';
 import { subscriptions } from '../subscribe/route';
 
-const publicKey = 'BOjNZBW9hQTTZw1ck3LPxMpCWhIQh65fg6Ymd6OSDTaBn5TV4ep6gEsZTpY0gepiwtvQajp_Y497oRntc6Tf6dc';
-const privateKey = 'LZ6gd_4FwADmqAEAsv9lLf--SWnkxn3-Dfqrhi4CYgs';
+const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+const privateKey = process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY!;
 
 webpush.setVapidDetails('mailto:you@example.com', publicKey, privateKey);
 
