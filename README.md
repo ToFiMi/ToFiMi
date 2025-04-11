@@ -21,7 +21,6 @@ This is a Next.js-based multi-tenant application for the **Diocesan Animator Sch
 - Node.js v18+
 - PostgreSQL installed (locally or via Docker)
 - `pnpm`, `npm` or `yarn`
-- PhpStorm (optional but helpful for DB view)
 
 ---
 
@@ -30,15 +29,17 @@ This is a Next.js-based multi-tenant application for the **Diocesan Animator Sch
 ### 1. Clone the project & install dependencies
 
 ```bash
-git clone https://github.com/your-org/das-multitenant-app.git
+git clone git@github.com:ToFiMi/ToFiMi.git
 cd das-multitenant-app
 
 npm install
 ```
-### 2. Generate the keys
+
+### 2. Generate the keys for push notifications
 ```bash
 npx web-push generate-vapid-keys
 ```
+
 ### 3. Create .env file
 ```bash
 NEXTAUTH_URL=http://localhost:3000
