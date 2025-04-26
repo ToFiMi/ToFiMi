@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 import { Form, Input, Button, Typography, Card, message } from 'antd'
 
 const { Title } = Typography
@@ -14,14 +13,18 @@ export default function LoginPage() {
     const onFinish = async (values: { email: string; password: string }) => {
         setLoading(true)
 
-        const res = await signIn('credentials', {
-            email: values.email,
-            password: values.password,
-            redirect: false, // ⬅️ kľúčové
-            callbackUrl: '/dashboard', // ⬅️ voliteľné, ale lepšie pre fallback
+        const res = await fetch('/api/public/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                email: values.email,
+                password: values.password,
+            }),
         })
 
-        if (res?.ok) {
+
+        if (res.ok) {
             message.success('Login successful')
             router.push('/dashboard')
         } else {

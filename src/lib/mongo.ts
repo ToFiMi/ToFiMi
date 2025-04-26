@@ -1,11 +1,16 @@
-// lib/mongo.ts (odporúčané)
-import { MongoClient } from 'mongodb'
+// lib/mongo.ts
+import { MongoClient, Db } from 'mongodb'
 
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017'
-const client = new MongoClient(uri)
-let _db = client.db('app')
+
+let client: MongoClient
+let _db: Db
 
 export async function connectToDatabase() {
-    await client.connect()
+    if (!_db) {
+        client = new MongoClient(uri)
+        await client.connect()
+        _db = client.db('das_app')
+    }
     return _db
 }

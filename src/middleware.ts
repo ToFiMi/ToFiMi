@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
@@ -6,13 +5,13 @@ const PUBLIC_PATHS = ['/login', '/register', '/api/public']
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
-
-    // nevyžaduje auth
-    if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
+    console.log(pathname)
+    if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
         return NextResponse.next()
     }
 
     const token = req.cookies.get('auth_token')?.value
+    console.log("midleware:",token)
     if (!token) {
         return NextResponse.redirect(new URL('/login', req.url))
     }
@@ -24,7 +23,6 @@ export async function middleware(req: NextRequest) {
         const isAdmin = payload.isAdmin === true
         const schoolId = payload.school_id ?? null
 
-        // Pridáme do hlavičiek pre ďalšie použitie v route handlers
         const res = NextResponse.next()
         res.headers.set('x-user-id', payload.user_id as string)
         res.headers.set('x-is-admin', String(isAdmin))
@@ -34,7 +32,7 @@ export async function middleware(req: NextRequest) {
 
         return res
     } catch (err) {
-        console.error('Invalid token:', err)
+        console.error('Invalid token:', JSON.stringify(err, null, 2))
         return NextResponse.redirect(new URL('/login', req.url))
     }
 }

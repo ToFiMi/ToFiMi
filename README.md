@@ -7,12 +7,10 @@ This is a Next.js-based multi-tenant application for the **Diocesan Animator Sch
 ## 🛠️ Tech Stack
 
 - [Next.js](https://nextjs.org/) (App Router)
-- [PostgreSQL](https://www.postgresql.org/) (multi-database: one per school)
-- [Prisma](https://www.prisma.io/) (with multiple schemas)
+- MongoDB
 - [NextAuth.js](https://next-auth.js.org/) (Credentials provider)
 - [Ant Design](https://ant.design/)
-- Docker (optional, for local PostgreSQL)
-- PhpStorm (optional, for DB visualization)
+- Docker (optional, for local MongoDB)
 
 ---
 

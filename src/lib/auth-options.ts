@@ -1,25 +1,55 @@
-import { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcrypt';
-
+import { NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import bcrypt from 'bcrypt'
+import { connectToDatabase } from '@/lib/mongo'
 
 export const authOptions: NextAuthOptions = {
     debug: true,
-    providers: [],
+    providers: [
+        CredentialsProvider({
+            id: "",
+            type: "credentials",
+            name: 'Credentials',
+            credentials: {
+                email: { label: "Email", type: "text", placeholder: "email@example.com" },
+                password: { label: "Password", type: "password" },
+            },
+            async authorize(credentials): Promise<any> {
+                const db = await connectToDatabase()
+                const users = db.collection('users')
+
+                const user = await users.findOne({ email: credentials?.email })
+                if (!user) {
+                    return null
+                }
+
+                const isValid = await bcrypt.compare(credentials!.password, user.passwordHash)
+                if (!isValid) {
+                    return null
+                }
+
+                return {
+                    id: user._id.toString(),
+                    email: user.email,
+                    role: user.isAdmin ? 'ADMIN' : 'USER',
+                }
+            }
+        }),
+    ],
     callbacks: {
         async session({ session, token }) {
             if (token && session.user) {
-                session.user.id = token.id as string;
-                session.user.role = token.role as "ADMIN" | "SUPPORT";
+                session.user.id = token.id as string
+                session.user.role = token.role as "ADMIN" | "LEADER" | "ANIMATOR" | "USER"
             }
-            return session;
+            return session
         },
         async jwt({ token, user }) {
             if (user) {
-                token.id = user.id;
-                token.role = user.role;
+                token.id = user.id
+                token.role = user.role
             }
-            return token;
+            return token
         },
     },
     pages: {
@@ -29,4 +59,4 @@ export const authOptions: NextAuthOptions = {
         strategy: 'jwt',
     },
     secret: process.env.NEXTAUTH_SECRET,
-};
+}
