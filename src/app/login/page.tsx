@@ -13,7 +13,7 @@ export default function LoginPage() {
     const onFinish = async (values: { email: string; password: string }) => {
         setLoading(true)
 
-        const res = await fetch('/api/public/login', {
+        const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

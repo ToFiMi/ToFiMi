@@ -12,20 +12,20 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<null | { email: string; isAdmin: boolean; role?: string }>(null)
 
-    // useEffect(() => {
-    //     const fetchUser = async () => {
-    //         const res = await fetch('/api/auth/me')
-    //         if (res.ok) {
-    //             const data = await res.json()
-    //             setUser(data)
-    //         } else {
-    //             router.push('/login') // ak nie je prihlásený, presmeruj
-    //         }
-    //         setLoading(false)
-    //     }
-    //
-    //     fetchUser()
-    // }, [router])
+    useEffect(() => {
+        const fetchUser = async () => {
+            const res = await fetch('/api/auth/me')
+            if (res.ok) {
+                const data = await res.json()
+                setUser(data)
+            } else {
+                router.push('/login') // ak nie je prihlásený, presmeruj
+            }
+            setLoading(false)
+        }
+
+        fetchUser()
+    }, [router])
 
     const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' })
