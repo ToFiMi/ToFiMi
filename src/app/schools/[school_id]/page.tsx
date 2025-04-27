@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import {useParams, useRouter} from 'next/navigation'
 import { Button, Table, Modal, Form, Input, Select, message } from 'antd'
 
 interface User {
@@ -91,13 +91,18 @@ export default function SchoolDetailPage() {
             key: 'role',
         },
     ]
-
+const router = useRouter()
     return (
         <div className="p-4">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-bold">{school?.name || 'Škola'}</h1>
                 <Button type="primary" onClick={() => setIsModalOpen(true)}>
                     Pridať používateľa
+                </Button>
+                <Button type="primary" onClick={ () => {
+                    router.push(`/schools/${school?._id}/terms`)
+                }}>
+                    Termíny
                 </Button>
             </div>
 
