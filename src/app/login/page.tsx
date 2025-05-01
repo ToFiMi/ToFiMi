@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Form, Input, Button, Typography, Card, message } from 'antd'
 
@@ -12,23 +13,17 @@ export default function LoginPage() {
 
     const onFinish = async (values: { email: string; password: string }) => {
         setLoading(true)
-
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                email: values.email,
-                password: values.password,
-            }),
+        const res = await signIn('credentials', {
+            email: values.email,
+            password: values.password,
+            redirect: false,
         })
 
-
-        if (res.ok) {
-            message.success('Login successful')
-            router.push('/dashboard')
+        if (res?.ok) {
+            message.success('Prihlásenie prebehlo úspešne')
+            router.refresh() // so server re-renders page with session
         } else {
-            message.error('Invalid email or password')
+            message.error('Neplatný email alebo heslo')
         }
 
         setLoading(false)
@@ -37,25 +32,25 @@ export default function LoginPage() {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
             <Card style={{ width: 400 }}>
-                <Title level={2} style={{ textAlign: 'center' }}>Login</Title>
+                <Title level={2} style={{ textAlign: 'center' }}>Prihlásenie</Title>
                 <Form layout="vertical" onFinish={onFinish}>
                     <Form.Item
                         label="Email"
                         name="email"
-                        rules={[{ required: true, message: 'Please input your email!' }]}
+                        rules={[{ required: true, message: 'Zadajte email' }]}
                     >
                         <Input />
                     </Form.Item>
                     <Form.Item
-                        label="Password"
+                        label="Heslo"
                         name="password"
-                        rules={[{ required: true, message: 'Please input your password!' }]}
+                        rules={[{ required: true, message: 'Zadajte heslo' }]}
                     >
                         <Input.Password />
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit" loading={loading} block>
-                            Login
+                            Prihlásiť sa
                         </Button>
                     </Form.Item>
                 </Form>

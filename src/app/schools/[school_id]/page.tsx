@@ -1,153 +1,63 @@
-'use client'
+// File: /src/app/admin/schools/[school_id]/page.tsx
+import {notFound} from 'next/navigation'
+import {connectToDatabase} from '@/lib/mongo'
+import {ObjectId} from 'mongodb'
+import {Suspense} from 'react'
+import SchoolUsers, {User} from "@/app/schools/[school_id]/school-users";
+import SchoolTerms from "@/app/schools/[school_id]/school-terms";
 
-import { useEffect, useState } from 'react'
-import {useParams, useRouter} from 'next/navigation'
-import { Button, Table, Modal, Form, Input, Select, message } from 'antd'
 
-interface User {
-    _id: string
-    role: string
-    user_info: {
-        first_name: string
-        last_name: string
-        email: string
-    }
+interface Props {
+    params: { school_id: string }
 }
 
-interface School {
-    _id: string
-    name: string
-    slug: string
-}
+export default async function SchoolDetailPage({params}: Props) {
+    const db = await connectToDatabase()
+    const school = await db.collection('schools').findOne({_id: new ObjectId(params.school_id)})
 
-export default function SchoolDetailPage() {
-    const { school_id } = useParams<{ school_id: string }>()
-    const [school, setSchool] = useState<School | null>(null)
-    const [users, setUsers] = useState<User[]>([])
-    const [loading, setLoading] = useState(false)
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [form] = Form.useForm()
+    if (!school) return notFound()
 
-    const fetchData = async () => {
-        setLoading(true)
-        try {
-            const res = await fetch(`/api/schools/${school_id}`, { credentials: 'include' })
-            if (res.ok) {
-                const data = await res.json()
-                setSchool(data.school)
-                setUsers(data.users)
-            } else {
-                message.error('Failed to load school')
+    const users = await db.collection('user_school').aggregate([
+        {$match: {school_id: new ObjectId(params.school_id)}},
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'user_id',
+                foreignField: '_id',
+                as: 'user_info'
             }
-        } catch (error) {
-            console.error(error)
-            message.error('Error loading school')
-        }
-        setLoading(false)
-    }
-
-    useEffect(() => {
-        fetchData()
-    }, [school_id])
-
-    const handleAddUser = async () => {
-        try {
-            const values = await form.validateFields()
-            const res = await fetch(`/api/schools/${school_id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(values),
-            })
-            if (res.ok) {
-                message.success('User assigned successfully')
-                setIsModalOpen(false)
-                form.resetFields()
-                fetchData()
-            } else {
-                const err = await res.text()
-                message.error(`Failed to assign user: ${err}`)
+        },
+        {$unwind: '$user_info'},
+        {
+            $project: {
+                _id: 1,
+                role: 1,
+                user_info: {
+                    first_name: '$user_info.first_name',
+                    last_name: '$user_info.last_name',
+                    email: '$user_info.email'
+                }
             }
-        } catch (error) {
-            console.error(error)
         }
-    }
+    ]).toArray() as User[]
 
-    const columns = [
-        {
-            title: 'Meno',
-            dataIndex: ['user_info', 'first_name'],
-            key: 'first_name',
-            render: (_: any, record: User) => `${record.user_info.first_name} ${record.user_info.last_name}`,
-        },
-        {
-            title: 'Email',
-            dataIndex: ['user_info', 'email'],
-            key: 'email',
-        },
-        {
-            title: 'Rola',
-            dataIndex: 'role',
-            key: 'role',
-        },
-    ]
-const router = useRouter()
     return (
         <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">{school?.name || 'Škola'}</h1>
-                <Button type="primary" onClick={() => setIsModalOpen(true)}>
-                    Pridať používateľa
-                </Button>
-                <Button type="primary" onClick={ () => {
-                    router.push(`/schools/${school?._id}/terms`)
-                }}>
-                    Termíny
-                </Button>
+            <h1 className="text-2xl font-bold mb-2">{school.name}</h1>
+            <p><strong>Slug:</strong> {school.slug}</p>
+            <p><strong>ID školy:</strong> {school._id.toString()}</p>
+
+            <div className="mt-6">
+                <Suspense fallback={<p>Načítavam používateľov...</p>}>
+                    <SchoolUsers schoolId={params.school_id} initialUsers={users}/>
+                </Suspense>
             </div>
 
-            <div className="mb-6">
-                <p><strong>Slug:</strong> {school?.slug}</p>
-                <p><strong>ID školy:</strong> {school?._id}</p>
+            <div className="mt-8">
+                <Suspense fallback={<p>Načítavam termíny...</p>}>
+                    <SchoolTerms schoolId={params.school_id}/>
+                </Suspense>
             </div>
-
-            <h2 className="text-xl font-semibold mb-2">Používatelia</h2>
-            <Table
-                dataSource={users}
-                columns={columns}
-                rowKey="_id"
-                loading={loading}
-            />
-
-            <Modal
-                title="Pridať používateľa"
-                open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
-                onOk={handleAddUser}
-                okText="Pridať"
-            >
-                <Form layout="vertical" form={form}>
-                    <Form.Item
-                        name="email"
-                        label="Email používateľa"
-                        rules={[{ required: true, message: 'Zadajte email' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="role"
-                        label="Rola"
-                        rules={[{ required: true, message: 'Vyberte rolu' }]}
-                    >
-                        <Select>
-                            <Select.Option value="admin">Admin</Select.Option>
-                            <Select.Option value="leader">Leader</Select.Option>
-                            <Select.Option value="animator">Animator</Select.Option>
-                            <Select.Option value="student">Student</Select.Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
         </div>
     )
 }

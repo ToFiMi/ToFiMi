@@ -31,7 +31,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 />
             </Sider>
             <Layout>
-                <Header style={{ background: '#fff', padding: 0 }}>
+                <Header style={{ background: '#fff', paddingLeft: 10 }}>
                     <div className="p-4 text-lg font-semibold">Admin Panel</div>
                 </Header>
                 <Content style={{ margin: '24px 16px 0' }}>

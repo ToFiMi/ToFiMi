@@ -1,62 +1,15 @@
-'use client'
+// src/app/page.tsx
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-options'
+import LoginPage from './login/page'
+import DashboardPage from './dashboard/page' // or your actual dashboard component
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
-import { Form, Input, Button, Typography, Card, message } from 'antd'
+export default async function HomePage() {
+    const session = await getServerSession(authOptions)
 
-const { Title } = Typography
-
-export default function LoginPage() {
-    const [loading, setLoading] = useState(false)
-    const router = useRouter()
-
-    const onFinish = async (values: { email: string; password: string }) => {
-        setLoading(true)
-
-        const res = await signIn('credentials', {
-            email: values.email,
-            password: values.password,
-            redirect: false, // ⬅️ kľúčové
-            callbackUrl: '/dashboard', // ⬅️ voliteľné, ale lepšie pre fallback
-        })
-
-        if (res?.ok) {
-            message.success('Login successful')
-            router.push('/dashboard')
-        } else {
-            message.error('Invalid email or password')
-        }
-
-        setLoading(false)
+    if (session?.user) {
+        return <DashboardPage />
     }
 
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-            <Card style={{ width: 400 }}>
-                <Title level={2} style={{ textAlign: 'center' }}>Login</Title>
-                <Form layout="vertical" onFinish={onFinish}>
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[{ required: true, message: 'Please input your email!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        label="Password"
-                        name="password"
-                        rules={[{ required: true, message: 'Please input your password!' }]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" loading={loading} block>
-                            Login
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Card>
-        </div>
-    )
+    return <LoginPage />
 }
