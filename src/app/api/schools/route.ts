@@ -1,48 +1,50 @@
 // /api/schools/route.ts
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import { ObjectId } from 'mongodb'
+import { getAuthContext } from '@/lib/auth-context'
 
 export async function GET(req: NextRequest) {
     const db = await connectToDatabase()
-    const isAdmin = req.headers.get('x-is-admin') === 'true'
-    const schoolId = req.headers.get('x-school-id')
+    const auth = await getAuthContext(req)
 
-    if (isAdmin) {
+    if (!auth) {
+        return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    if (auth.isAdmin) {
         const schools = await db.collection('schools').find({}).toArray()
-        return Response.json(schools)
+        return NextResponse.json(schools)
     }
 
-    if (!schoolId) {
-        return new Response('Access denied', { status: 403 })
+    if (!auth.schoolId) {
+        return new NextResponse('Access denied', { status: 403 })
     }
 
-    const school = await db.collection('schools').findOne({ _id: new ObjectId(schoolId) })
-    return Response.json(school)
+    const school = await db.collection('schools').findOne({ _id: new ObjectId(auth.schoolId) })
+    return NextResponse.json(school)
 }
 
 export async function POST(req: NextRequest) {
     const db = await connectToDatabase()
-    const isAdmin = req.headers.get('x-is-admin') === 'true'
+    const auth = await getAuthContext(req)
 
-    if (!isAdmin) {
-        return new Response('Access denied', { status: 403 })
+    if (!auth || !auth.isAdmin) {
+        return new NextResponse('Access denied', { status: 403 })
     }
 
     const { name, slug } = await req.json()
 
     if (!name || !slug) {
-        return new Response('Missing name or slug', { status: 400 })
+        return new NextResponse('Missing name or slug', { status: 400 })
     }
 
     const existing = await db.collection('schools').findOne({ slug })
-
     if (existing) {
-        return new Response('School with this slug already exists', { status: 400 })
+        return new NextResponse('School with this slug already exists', { status: 400 })
     }
 
     const now = new Date()
-
     const result = await db.collection('schools').insertOne({
         name,
         slug,
@@ -50,5 +52,5 @@ export async function POST(req: NextRequest) {
         modifiedAt: now,
     })
 
-    return Response.json({ success: true, insertedId: result.insertedId })
+    return NextResponse.json({ success: true, insertedId: result.insertedId })
 }

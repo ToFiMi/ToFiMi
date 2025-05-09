@@ -4,7 +4,7 @@ import "./globals.css";
 import { PwaInit } from "@/app/pwa-init";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { AuthLayout } from "@/componets/layouts/auth-layout";
-
+import '@ant-design/v5-patch-for-react-19';
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en">

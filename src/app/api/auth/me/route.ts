@@ -1,22 +1,16 @@
-import { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+import { getToken } from 'next-auth/jwt'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-    const token = req.cookies.get('auth_token')?.value;
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
 
     if (!token) {
-        return Response.json({ message: "Not authenticated" }, { status: 401 });
+        return NextResponse.json({ role: null }, { status: 401 })
     }
 
-    try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
-
-        return Response.json({
-            user_id: payload.user_id,
-            role: payload.role || (payload.isAdmin ? 'ADMIN' : 'USER'),
-        });
-    } catch (error) {
-        return Response.json({ message: "Invalid token" }, { status: 401 });
-    }
+    return NextResponse.json({
+        user_id: token.id,
+        role: token.role ?? "USER",
+        school_id: token.school_id ?? null,
+    })
 }

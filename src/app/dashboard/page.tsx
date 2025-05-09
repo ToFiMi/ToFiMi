@@ -14,13 +14,13 @@ export default function DashboardPage() {
 
     useEffect(() => {
         const fetchUser = async () => {
-            const res = await fetch('/api/auth/me')
-            if (res.ok) {
-                const data = await res.json()
-                setUser(data)
-            } else {
-                router.push('/login') // ak nie je prihlásený, presmeruj
-            }
+            // const res = await fetch('/api/auth/me')
+            // if (res.ok) {
+            //     const data = await res.json()
+            //     setUser(data)
+            // } else {
+            //     router.push('/login') // ak nie je prihlásený, presmeruj
+            // }
             setLoading(false)
         }
 

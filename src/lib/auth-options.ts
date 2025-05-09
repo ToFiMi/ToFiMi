@@ -1,4 +1,4 @@
-import { NextAuthOptions } from 'next-auth'
+import { Awaitable, NextAuthOptions, RequestInternal } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcrypt'
 import { connectToDatabase } from '@/lib/mongo'
@@ -7,40 +7,38 @@ export const authOptions: NextAuthOptions = {
     debug: true,
     providers: [
         CredentialsProvider({
-            id: "",
-            type: "credentials",
+            id: 'credentials',
+            type: 'credentials',
             name: 'Credentials',
             credentials: {
-                email: { label: "Email", type: "text", placeholder: "email@example.com" },
-                password: { label: "Password", type: "password" },
+                email: { label: 'Email', type: 'text' },
+                password: { label: 'Password', type: 'password' },
             },
-            async authorize(credentials): Promise<any> {
-                const db = await connectToDatabase()
-                const users = db.collection('users')
 
-                const user = await users.findOne({ email: credentials?.email })
-                if (!user) {
-                    return null
-                }
+            async authorize(
+                credentials: Record<'email' | 'password', string> | undefined,
+                req: Pick<RequestInternal, 'body' | 'query' | 'headers' | 'method'>
+            ): Promise<any> {
+                const db = await connectToDatabase()
+                const user = await db.collection('users').findOne({ email: credentials?.email })
+                if (!user) return null
 
                 const isValid = await bcrypt.compare(credentials!.password, user.passwordHash)
-                if (!isValid) {
-                    return null
-                }
+                if (!isValid) return null
 
                 return {
                     id: user._id.toString(),
                     email: user.email,
                     role: user.isAdmin ? 'ADMIN' : 'USER',
                 }
-            }
+            },
         }),
     ],
     callbacks: {
         async session({ session, token }) {
             if (token && session.user) {
                 session.user.id = token.id as string
-                session.user.role = token.role as "ADMIN" | "LEADER" | "ANIMATOR" | "USER"
+                session.user.role = token.role as 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR'
             }
             return session
         },
@@ -53,7 +51,7 @@ export const authOptions: NextAuthOptions = {
         },
     },
     pages: {
-        signIn: '/',
+        signIn: '/', // koreňová stránka ako login
     },
     session: {
         strategy: 'jwt',

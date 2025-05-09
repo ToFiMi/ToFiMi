@@ -1,41 +1,36 @@
+// middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { jwtVerify } from 'jose'
+import { getToken } from 'next-auth/jwt'
 
-const PUBLIC_PATHS = ['/login', '/register', '/api/public']
+const PUBLIC_PATHS = ['/', '/api/public', '/favicon.ico']
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
-    console.log(pathname)
+
+    // Cesty, ktoré nevyžadujú autentifikáciu
     if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
         return NextResponse.next()
     }
 
-    const token = req.cookies.get('auth_token')?.value
+    // Získa token z cookies
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
+    // Ak nie je token, redirect na login
     if (!token) {
-        return NextResponse.redirect(new URL('/login', req.url))
+        return NextResponse.redirect(new URL('/', req.url))
     }
 
-    try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET)
-        const { payload } = await jwtVerify(token, secret)
-
-        const isAdmin = payload.isAdmin === true
-        const schoolId = payload.school_id ?? null
-
-        const res = NextResponse.next()
-        res.headers.set('x-user-id', payload.user_id as string)
-        res.headers.set('x-is-admin', String(isAdmin))
-        if (!isAdmin && schoolId) {
-            res.headers.set('x-school-id', schoolId as string)
-        }
-
-        return res
-    } catch (err) {
-        console.error('Invalid token:', JSON.stringify(err, null, 2))
-        return NextResponse.redirect(new URL('/login', req.url))
+    // Pridanie hlavičiek pre ďalšie použitie
+    const res = NextResponse.next()
+    res.headers.set('x-user-id', token.id as string)
+    res.headers.set('x-role', token.role as string)
+    if (token.school_id) {
+        res.headers.set('x-school-id', token.school_id as string)
     }
+
+    return res
 }
 
 export const config = {
-    matcher: ['/((?!_next|favicon.ico).*)'], // apply to all routes except static
+    matcher: ['/((?!_next|_static|favicon.ico).*)'],
 }

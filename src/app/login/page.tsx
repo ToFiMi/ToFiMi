@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { Form, Input, Button, Typography, Card, message } from 'antd'
+import {useState} from 'react'
+import {signIn} from 'next-auth/react'
+import {useRouter} from 'next/navigation'
+import {Button, Card, Form, Input, message, Typography} from 'antd'
 
-const { Title } = Typography
+const {Title} = Typography
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false)
@@ -21,7 +21,7 @@ export default function LoginPage() {
 
         if (res?.ok) {
             message.success('Prihlásenie prebehlo úspešne')
-            router.refresh() // so server re-renders page with session
+            router.push("/");
         } else {
             message.error('Neplatný email alebo heslo')
         }
@@ -31,22 +31,22 @@ export default function LoginPage() {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-            <Card style={{ width: 400 }}>
-                <Title level={2} style={{ textAlign: 'center' }}>Prihlásenie</Title>
+            <Card style={{width: 400}}>
+                <Title level={2} style={{textAlign: 'center'}}>Prihlásenie</Title>
                 <Form layout="vertical" onFinish={onFinish}>
                     <Form.Item
                         label="Email"
                         name="email"
-                        rules={[{ required: true, message: 'Zadajte email' }]}
+                        rules={[{required: true, message: 'Zadajte email'}]}
                     >
-                        <Input />
+                        <Input/>
                     </Form.Item>
                     <Form.Item
                         label="Heslo"
                         name="password"
-                        rules={[{ required: true, message: 'Zadajte heslo' }]}
+                        rules={[{required: true, message: 'Zadajte heslo'}]}
                     >
-                        <Input.Password />
+                        <Input.Password/>
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit" loading={loading} block>
