@@ -1,6 +1,6 @@
 'use client'
-
-import { Layout, Menu } from 'antd'
+import { signOut } from 'next-auth/react'
+import {Button, Layout, Menu} from 'antd'
 import { useRouter } from 'next/navigation'
 import { ReactNode } from 'react'
 
@@ -12,23 +12,36 @@ const items = [
     { key: 'reports', label: 'Prehľady' },
 ]
 
-export function AdminLayout({ children }: { children: ReactNode }) {
+export function AdminLayout({ children, role, userId }: { children: ReactNode, role?:string| unknown, userId?:string| unknown }) {
     const router = useRouter()
 
     const onMenuClick = (e: any) => {
         router.push(`/${e.key}`)
     }
 
+
+
+    const handleLogout = async () => {
+        await fetch('/api/auth/logout', {
+            method: 'GET',
+            credentials: 'include',
+        })
+        window.location.href = '/' // použijeme full reload, aby sa session určite resetla
+    }
+
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider breakpoint="lg" collapsedWidth="0">
-                <div className="p-4 text-white font-bold">Admin</div>
                 <Menu
                     theme="dark"
                     mode="inline"
                     items={items}
                     onClick={onMenuClick}
                 />
+                <Button type="primary" danger onClick={handleLogout}>
+                    Logout
+                </Button>
+
             </Sider>
             <Layout>
                 <Header style={{ background: '#fff', paddingLeft: 10 }}>

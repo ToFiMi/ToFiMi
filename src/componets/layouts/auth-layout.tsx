@@ -1,38 +1,27 @@
-'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { GuestLayout } from "./guest-layout";
-import { AdminLayout } from "./admin-layout";
-import { UserLayout } from "./user-layout";
+import { AdminLayout } from './admin-layout'
+import  UserLayout  from "./user-layout"
+import { GuestLayout } from './guest-layout'
 
-export function AuthLayout({ children }: { children: React.ReactNode }) {
-    const [role, setRole] = useState<string | null>(null);
-    const router = useRouter();
+type Props = {
+    children: React.ReactNode
+    role:  'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR'| null | {},
+    userId: string| null | {}
+}
 
-    useEffect(() => {
-        async function fetchRole() {
-            try {
-                const res = await fetch('/api/auth/me', { credentials: 'include' });
-                if (res.ok) {
-                    const data = await res.json();
-                    setRole(data.role);
-                } else {
-                    setRole(null); // neprihlásený
-                }
-            } catch (err) {
-                setRole(null);
-            }
-        }
-        fetchRole();
-    }, []);
 
-    if (role === null) {
-        // User nie je prihlásený
-        return <GuestLayout>{children}</GuestLayout>;
-    } else if (role === "ADMIN") {
-        return <AdminLayout>{children}</AdminLayout>;
-    } else {
-        return <UserLayout>{children}</UserLayout>;
+
+export default async function AuthLayout({ children, role, userId }: Props) {
+
+
+
+    if (!role || !userId) {
+        return <GuestLayout>{children}</GuestLayout>
     }
+
+    if (role === 'ADMIN') {
+        return <AdminLayout userId={userId} role={role}>{children}</AdminLayout>
+    }
+
+    return <UserLayout userId={userId} role={role}>{children}</UserLayout>
 }

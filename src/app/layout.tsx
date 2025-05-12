@@ -1,11 +1,25 @@
-'use client';
 
 import "./globals.css";
 import { PwaInit } from "@/app/pwa-init";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { AuthLayout } from "@/componets/layouts/auth-layout";
+import  AuthLayout  from "@/componets/layouts/auth-layout";
 import '@ant-design/v5-patch-for-react-19';
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import {cookies} from "next/headers";
+import {getToken} from "next-auth/jwt";
+type JWTPayload = {
+    user_id: string
+    role?: 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR'
+    isAdmin?: boolean
+}
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+
+    const token = await getToken({ req: { cookies: await cookies() } as any, secret: process.env.NEXTAUTH_SECRET  })
+
+    const role = token?.role ?? null
+    const userId = token?.id ?? null
+
+    console.log("role",role)
+
     return (
         <html lang="en">
         <head>
@@ -20,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body>
         <PwaInit />
         <AntdRegistry>
-            <AuthLayout>{children}</AuthLayout>
+            <AuthLayout role={role} userId={userId}>{children}</AuthLayout>
         </AntdRegistry>
         </body>
         </html>

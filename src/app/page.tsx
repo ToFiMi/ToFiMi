@@ -1,15 +1,14 @@
-// src/app/page.tsx
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-options'
 import LoginPage from './login/page'
-import DashboardPage from './dashboard/page' // or your actual dashboard component
+import AdminDashboardPage from './dashboard/page'
+import UsersDashboardPage from './dashboard/users-dashboard'
+
+import {getAuthContextFromCookies} from "@/lib/auth-context-SSR"; // or your actual dashboard component
 
 export default async function HomePage() {
-    const session = await getServerSession(authOptions)
+        const auth = await getAuthContextFromCookies()
+        console.log(auth)
 
-    if (session?.user) {
-        return <DashboardPage />
-    }
-
-    return <LoginPage />
+        if (!auth) return <LoginPage />
+        if(auth.role === "ADMIN") return <AdminDashboardPage />
+        else return <UsersDashboardPage/>
 }

@@ -49,14 +49,14 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
     // 1. Nájdeme usera podľa emailu
     let user = await db.collection('users').findOne({ email })
 
-    // 2. Ak user neexistuje, vytvoríme ho
+
     if (!user) {
         const now = new Date()
         const result = await db.collection('users').insertOne({
             email,
             first_name,
             last_name,
-            passwordHash: '',
+            passwordHash: "",
             isAdmin: false,
             createdAt: now,
             modifiedAt: now,

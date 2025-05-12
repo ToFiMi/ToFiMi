@@ -6,8 +6,6 @@ const PUBLIC_PATHS = ['/', '/api/public', '/favicon.ico']
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
-
-    // Cesty, ktoré nevyžadujú autentifikáciu
     if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
         return NextResponse.next()
     }
@@ -20,7 +18,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/', req.url))
     }
 
-    // Pridanie hlavičiek pre ďalšie použitie
+
     const res = NextResponse.next()
     res.headers.set('x-user-id', token.id as string)
     res.headers.set('x-role', token.role as string)

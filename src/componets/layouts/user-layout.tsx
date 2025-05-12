@@ -1,45 +1,29 @@
-'use client'
+import { Layout } from 'antd';
+import { ReactNode } from 'react';
+import Menu from "@/componets/menu";
 
-import { Layout, Menu } from 'antd'
-import { useRouter } from 'next/navigation'
-import { ReactNode } from 'react'
 
-const { Header, Content, Sider } = Layout
+export default async function UserLayout({
+                                     children,
+                                     role,
+                                     userId,
+                                 }: {
+    children: ReactNode;
+    role: 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR' | null | {};
+    userId: string | null | {};
+}) {
 
-const items = [
-    { key: 'homework', label: 'Domáce úlohy' },
-    { key: 'group', label: 'Moja skupina' },
-    { key: 'profile', label: 'Môj profil' },
-]
 
-export function UserLayout({ children }: { children: ReactNode }) {
-    const router = useRouter()
 
-    const onMenuClick = (e: any) => {
-        router.push(`/user/${e.key}`)
-    }
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Sider breakpoint="lg" collapsedWidth="0">
-                <div className="p-4 text-white font-bold">Používateľ</div>
-                <Menu
-                    theme="dark"
-                    mode="inline"
-                    items={items}
-                    onClick={onMenuClick}
-                />
-            </Sider>
+        <Layout hasSider  style={{ minHeight: '100vh' }}>
+           <Menu role={role}/>
             <Layout>
-                <Header style={{ background: '#fff', padding: 0 }}>
-                    <div className="p-4 text-lg font-semibold">Domáce úlohy a Skupina</div>
-                </Header>
-                <Content style={{ margin: '24px 16px 0' }}>
-                    <div style={{ padding: 24, minHeight: 360 }}>
-                        {children}
-                    </div>
-                </Content>
+                <main style={{ margin: '24px 16px 0' }}>
+                    <div style={{ padding: 24, minHeight: 360 }}>{children}</div>
+                </main>
             </Layout>
         </Layout>
-    )
+    );
 }
