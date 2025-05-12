@@ -22,11 +22,7 @@ export function AdminLayout({ children, role, userId }: { children: ReactNode, r
 
 
     const handleLogout = async () => {
-        await fetch('/api/auth/logout', {
-            method: 'GET',
-            credentials: 'include',
-        })
-        window.location.href = '/' // použijeme full reload, aby sa session určite resetla
+        await signOut({ redirect: true, callbackUrl: '/' })
     }
 
     return (

@@ -2,15 +2,13 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-    const res = NextResponse.redirect(new URL('/', process.env.NEXTAUTH_URL || 'http://localhost:3000'))
+    console.log("logout")
 
-    // Zmaž auth_token cookie
-    res.cookies.set({
-        name: 'auth_token',
-        value: '',
-        path: '/',
-        maxAge: 0,
-    })
+    const response = NextResponse.redirect(new URL('/', process.env.NEXTAUTH_URL || 'http://localhost:3050'))
 
-    return res
+    // ⛔ cookies() NIE JE použiteľné na .delete
+    // ✅ toto funguje
+    response.cookies.delete('auth_token')
+
+    return response
 }

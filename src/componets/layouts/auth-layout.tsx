@@ -5,7 +5,7 @@ import { GuestLayout } from './guest-layout'
 
 type Props = {
     children: React.ReactNode
-    role:  'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR'| null | {},
+    role:  'ADMIN' | 'user' | 'leader' | 'animator'| null | {},
     userId: string| null | {}
 }
 

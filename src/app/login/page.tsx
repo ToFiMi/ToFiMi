@@ -22,6 +22,7 @@ export default function LoginPage() {
         if (res?.ok) {
             message.success('Prihlásenie prebehlo úspešne')
             router.push("/");
+            router.refresh()
         } else {
             message.error('Neplatný email alebo heslo')
         }

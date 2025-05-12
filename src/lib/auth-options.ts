@@ -1,9 +1,9 @@
-import { Awaitable, NextAuthOptions, RequestInternal } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcrypt'
 import { connectToDatabase } from '@/lib/mongo'
 
-export const authOptions: NextAuthOptions = {
+
+export const authOptions = {
     debug: true,
     providers: [
         CredentialsProvider({
@@ -17,41 +17,66 @@ export const authOptions: NextAuthOptions = {
 
             async authorize(
                 credentials: Record<'email' | 'password', string> | undefined,
-                req: Pick<RequestInternal, 'body' | 'query' | 'headers' | 'method'>
             ): Promise<any> {
                 const db = await connectToDatabase()
+
                 const user = await db.collection('users').findOne({ email: credentials?.email })
                 if (!user) return null
 
                 const isValid = await bcrypt.compare(credentials!.password, user.passwordHash)
                 if (!isValid) return null
 
+
+                if (user.isAdmin) {
+                    return {
+                        id: user._id.toString(),
+                        email: user.email,
+                        isAdmin: true,
+                        role: 'ADMIN',
+                        school_id: null,
+                    }
+                }
+
+
+                const firstSchool = await db.collection("user_school").findOne({ user_id: user._id })
+                if (!firstSchool) return null
+
                 return {
                     id: user._id.toString(),
                     email: user.email,
-                    role: user.isAdmin ? 'ADMIN' : 'USER',
+                    isAdmin: false,
+                    role: firstSchool.role,
+                    school_id: firstSchool.school_id
                 }
-            },
+            }
         }),
     ],
     callbacks: {
-        async session({ session, token }) {
-            if (token && session.user) {
-                session.user.id = token.id as string
-                session.user.role = token.role as 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR'
-            }
-            return session
-        },
+
+// @ts-ignore
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id
                 token.role = user.role
+                token.school_id = user.school_id ?? null
+                token.isAdmin = user.isAdmin
             }
             return token
         },
+
+// @ts-ignore
+        async session({ session, token }) {
+            if (session.user && token) {
+                session.user.id = token.id
+                session.user.role = token.role
+                session.user.school_id = token.school_id
+                session.user.isAdmin = token.isAdmin
+            }
+            return session
+        }
     },
     pages: {
-        signIn: '/', // koreňová stránka ako login
+        signIn: '/login',
     },
     session: {
         strategy: 'jwt',

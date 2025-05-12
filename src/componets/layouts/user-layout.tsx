@@ -9,11 +9,9 @@ export default async function UserLayout({
                                      userId,
                                  }: {
     children: ReactNode;
-    role: 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR' | null | {};
+    role: 'ADMIN' | 'user' | 'leader' | 'animator' | null | {};
     userId: string | null | {};
 }) {
-
-
 
 
     return (

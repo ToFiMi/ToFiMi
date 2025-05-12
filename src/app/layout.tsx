@@ -8,7 +8,7 @@ import {cookies} from "next/headers";
 import {getToken} from "next-auth/jwt";
 type JWTPayload = {
     user_id: string
-    role?: 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR'
+    role?: 'ADMIN' | 'user' | 'leader' | 'animator'
     isAdmin?: boolean
 }
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const role = token?.role ?? null
     const userId = token?.id ?? null
 
-    console.log("role",role)
 
     return (
         <html lang="en">

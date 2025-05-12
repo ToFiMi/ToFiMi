@@ -6,7 +6,6 @@ import {getAuthContextFromCookies} from "@/lib/auth-context-SSR"; // or your act
 
 export default async function HomePage() {
         const auth = await getAuthContextFromCookies()
-        console.log(auth)
 
         if (!auth) return <LoginPage />
         if(auth.role === "ADMIN") return <AdminDashboardPage />

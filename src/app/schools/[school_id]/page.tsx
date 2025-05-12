@@ -12,13 +12,14 @@ interface Props {
 }
 
 export default async function SchoolDetailPage({params}: Props) {
+    const param = await  params
     const db = await connectToDatabase()
     const school = await db.collection('schools').findOne({_id: new ObjectId(params.school_id)})
 
     if (!school) return notFound()
 
     const users = await db.collection('user_school').aggregate([
-        {$match: {school_id: new ObjectId(params.school_id)}},
+        {$match: {school_id: new ObjectId(param.school_id)}},
         {
             $lookup: {
                 from: 'users',
@@ -49,13 +50,13 @@ export default async function SchoolDetailPage({params}: Props) {
 
             <div className="mt-6">
                 <Suspense fallback={<p>Načítavam používateľov...</p>}>
-                    <SchoolUsers schoolId={params.school_id} initialUsers={users}/>
+                    <SchoolUsers schoolId={param.school_id} initialUsers={users}/>
                 </Suspense>
             </div>
 
             <div className="mt-8">
                 <Suspense fallback={<p>Načítavam termíny...</p>}>
-                    <SchoolTerms schoolId={params.school_id}/>
+                    <SchoolTerms schoolId={param.school_id}/>
                 </Suspense>
             </div>
         </div>
