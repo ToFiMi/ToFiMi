@@ -1,6 +1,6 @@
 'use client'
 
-import {Button, Card, Form, Input, List, message, Modal, Select, Typography} from 'antd'
+import {Button, Card, Form, Input, List, message, Modal, Select, Table, Typography} from 'antd'
 import { useEffect, useState } from 'react'
 
 type Member = {
@@ -53,21 +53,34 @@ export default function Members({school_id}: {school_id?: string }) {
         }
     }
 
+    const columns = [
+        {
+            title: 'Meno',
+            key: 'name',
+            render: (_: any, record: Member) => `${record.user.first_name} ${record.user.last_name}`,
+        },
+        {
+            title: 'Email',
+            dataIndex: ['user', 'email'],
+            key: 'email',
+        },
+        {
+            title: 'Rola',
+            dataIndex: 'role',
+            key: 'role',
+        },
+    ]
+
+
     return (
-        <><Card title="Členovia školy" loading={loading}>
+        <><Card title="Členovia školy" loading={loading} extra={
             <Button type="primary" onClick={() => setIsModalOpen(true)}>
                 Pridať používateľa
             </Button>
-            <List
-                dataSource={members}
-                renderItem={(member) => (
-                    <List.Item>
-                        <Typography.Text strong>
-                            {member.user.first_name} {member.user.last_name}
-                        </Typography.Text>{' '}
-                        – {member.user.email} ({member.role})
-                    </List.Item>
-                )}/>
+        }>
+
+
+            <Table dataSource={members} columns={columns} rowKey={(rec, i) => String(i)} />
         </Card><Modal
             title="Pridať používateľa"
             open={isModalOpen}

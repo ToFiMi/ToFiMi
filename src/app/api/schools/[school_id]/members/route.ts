@@ -90,7 +90,7 @@ export async function POST(
             htmlContent:`<p>Ahoj ${first_name},</p>
       <p>bol(a) si pridaný(á) do systému ako člen školy <strong>${school?.name}</strong>.</p>
       <p>Ak ešte nemáš účet, vytvor si ho pomocou tohto e-mailu a nastav si heslo.</p>
-      <p><a href="${process.env.APP_URL}/login">Prihlásiť sa</a></p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/login">Prihlásiť sa</a></p>
       <p>Ak o tom nič nevieš, tento e-mail môžeš ignorovať.</p>
       <br>
       <p>💌 Tvoj tím</p>
