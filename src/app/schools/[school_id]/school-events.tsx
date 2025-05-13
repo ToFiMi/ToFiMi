@@ -3,29 +3,23 @@
 import {useEffect, useState} from 'react'
 import {Button, DatePicker, Form, Input, InputNumber, message, Modal, Table} from 'antd'
 import dayjs from 'dayjs'
+import {Event} from "../../../../models/events";
 
-interface Term {
-    _id: string
-    title: string
-    description?: string
-    startDate: string
-    endDate: string
-    grade: number
-}
 
-export default function SchoolTerms({schoolId}: { schoolId: string }) {
-    const [terms, setTerms] = useState<Term[]>([])
+
+export default function SchoolEvents({schoolId}: { schoolId: string }) {
+    const [events, setEvents] = useState<Event[]>([])
     const [loading, setLoading] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [form] = Form.useForm()
 
-    const fetchTerms = async () => {
+    const fetchEvents = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/schools/${schoolId}/terms`, {credentials: 'include'})
+            const res = await fetch(`/api/schools/${schoolId}/events`, {credentials: 'include'})
             if (res.ok) {
                 const data = await res.json()
-                setTerms(data)
+                setEvents(data)
             } else {
                 message.error('Nepodarilo sa načítať termíny')
             }
@@ -37,13 +31,13 @@ export default function SchoolTerms({schoolId}: { schoolId: string }) {
     }
 
     useEffect(() => {
-        fetchTerms()
+        fetchEvents()
     }, [schoolId])
 
-    const handleAddTerm = async () => {
+    const handleAddEvent = async () => {
         try {
             const values = await form.validateFields()
-            const res = await fetch(`/api/schools/${schoolId}/terms`, {
+            const res = await fetch(`/api/schools/${schoolId}/events`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
@@ -59,7 +53,7 @@ export default function SchoolTerms({schoolId}: { schoolId: string }) {
                 message.success('Termín bol pridaný')
                 setIsModalOpen(false)
                 form.resetFields()
-                fetchTerms()
+                fetchEvents()
             } else {
                 const err = await res.text()
                 message.error(`Chyba: ${err}`)
@@ -91,7 +85,7 @@ export default function SchoolTerms({schoolId}: { schoolId: string }) {
                 </Button>
             </div>
 
-            <Table dataSource={terms} columns={columns} rowKey="_id" loading={loading}/>
+            <Table dataSource={events} columns={columns} rowKey="_id" loading={loading}/>
 
             <Modal
                 title="Pridať nový termín"
@@ -101,7 +95,7 @@ export default function SchoolTerms({schoolId}: { schoolId: string }) {
 
                 okText="Vytvoriť"
             >
-                <Form layout="vertical" form={form} onFinish={handleAddTerm}>
+                <Form layout="vertical" form={form} onFinish={handleAddEvent}>
                     <Form.Item
                         name="title"
                         label="Názov termínu"

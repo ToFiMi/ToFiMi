@@ -3,10 +3,23 @@ import QrModal from '@/app/registration/qr-modal'
 import {getToken} from 'next-auth/jwt'
 import {cookies} from 'next/headers'
 import {Layout, Space} from "antd";
+import {connectToDatabase} from "@/lib/mongo";
+import {ObjectId} from "mongodb";
 
 export default async function RegistrationPage() {
     const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
     const schoolId = token?.school_id
+    const db = await connectToDatabase()
+
+    const now = new Date()
+
+    const registration_token = await db.collection('registration-tokens').findOne(
+        {
+            school_id: new ObjectId(schoolId as string),
+            expiresAt: { $gte: now },
+        },
+        { sort: { createdAt: -1 } }
+    )
 
     return (
         <Layout>
@@ -17,7 +30,7 @@ export default async function RegistrationPage() {
 
                 <main>
                     <section>
-                        <QrModal school_id={schoolId as string}/>
+                        <QrModal existing_token={registration_token?.token || ""} />
                     </section>
                     <br/>
                     <section>

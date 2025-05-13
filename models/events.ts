@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-export interface Term {
+export interface Event  {
     _id: ObjectId | string
     school_id: ObjectId | string
     title: string // napr. "Víkend 1", "Letná 10-dňovka"
