@@ -18,7 +18,7 @@ export default async function RegistrationPage() {
             school_id: new ObjectId(schoolId as string),
             expiresAt: { $gte: now },
         },
-        { sort: { createdAt: -1 } }
+        { sort: { created: -1 } }
     )
 
     return (

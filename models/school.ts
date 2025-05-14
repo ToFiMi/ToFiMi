@@ -4,8 +4,8 @@ export interface School {
     _id: ObjectId
     name: string
     slug: string
-    createdAt: Date
-    modifiedAt: Date
+    created: Date
+    updated: Date
     settings?: {
         themeColor?: string
         features?: string[]

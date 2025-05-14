@@ -48,8 +48,8 @@ export async function POST(req: NextRequest) {
     const result = await db.collection('schools').insertOne({
         name,
         slug,
-        createdAt: now,
-        modifiedAt: now,
+        created: now,
+        updated: now,
     })
 
     return NextResponse.json({ success: true, insertedId: result.insertedId })

@@ -14,7 +14,7 @@ export default function QrModal({ existing_token }: { existing_token?: string })
             return
         }
         try {
-            const res = await fetch("/api/registration/token", {
+            const res = await fetch("/api/create_account/token", {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

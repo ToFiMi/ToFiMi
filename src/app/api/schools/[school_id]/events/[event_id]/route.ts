@@ -30,7 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
                 grade,
-                modifiedAt: new Date(),
+                updated: new Date(),
             }
         }
     )

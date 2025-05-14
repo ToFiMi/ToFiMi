@@ -6,7 +6,7 @@ export interface User {
     last_name: string
     email: string
     passwordHash: string
-    createdAt: Date
-    modifiedAt: Date
+    created: Date
+    updated: Date
     isAdmin: boolean
 }

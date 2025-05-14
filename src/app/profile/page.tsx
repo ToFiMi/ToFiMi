@@ -1,7 +1,12 @@
-import { connectToDatabase } from "@/lib/mongo";
-import { getToken } from "next-auth/jwt";
-import { cookies } from "next/headers";
-import { ObjectId } from "mongodb";
+import { connectToDatabase } from '@/lib/mongo'
+import { getToken } from 'next-auth/jwt'
+import { cookies } from 'next/headers'
+import { ObjectId } from 'mongodb'
+import { Card, Typography, Divider } from 'antd'
+import TagsInput from './tags-input'
+import UserCard from "@/app/profile/profile-card";
+
+const { Title, Text } = Typography
 
 export default async function ProfilePage() {
     const db = await connectToDatabase()
@@ -49,9 +54,11 @@ export default async function ProfilePage() {
         }
     ]).toArray()
 
+    const user = me[0]
+
     return (
-        <main>
-            <pre>{JSON.stringify(me, null, 2)}</pre>
+        <main className="max-w-3xl mx-auto py-10 px-6">
+            <UserCard user={user}/>
         </main>
     )
 }

@@ -58,8 +58,8 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
             last_name,
             passwordHash: "",
             isAdmin: false,
-            createdAt: now,
-            modifiedAt: now,
+            created: now,
+            updated: now,
         })
 
         user = {

@@ -8,7 +8,7 @@ interface School {
     _id: string
     name: string
     slug: string
-    createdAt: string
+    created: string
 }
 
 export default function SchoolsPage() {
@@ -76,8 +76,8 @@ export default function SchoolsPage() {
         },
         {
             title: 'Vytvorená',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
+            dataIndex: 'created',
+            key: 'created',
             render: (text: string) => new Date(text).toLocaleDateString(),
         },
     ]

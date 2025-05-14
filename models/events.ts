@@ -8,6 +8,11 @@ export interface Event  {
     grade: number
     startDate: Date
     endDate: Date
-    createdAt: Date
-    modifiedAt: Date
+    created: Date
+    updated: Date
+    meals: MealDefinition[]
+}
+export interface MealDefinition {
+    date: Date
+    times: string[]
 }

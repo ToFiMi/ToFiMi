@@ -32,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
     }
 
     const schoolId = params.school_id
-    const { title, description, startDate, endDate, grade } = await req.json()
+    const { title, description, startDate, endDate, grade, meals } = await req.json()
 
     if (!title || !startDate || !endDate || grade == null) {
         return new Response('Missing required fields', { status: 400 })
@@ -47,8 +47,9 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         grade,
-        createdAt: now,
-        modifiedAt: now,
+        meals: meals || [],
+        created: now,
+        updated: now,
     })
 
     return Response.json({ success: true, insertedId: result.insertedId })

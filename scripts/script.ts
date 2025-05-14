@@ -29,8 +29,8 @@ async function createAdmin() {
             email: email,
             passwordHash: passwordHash,
             isAdmin: true,
-            createdAt: new Date(),
-            modifiedAt: new Date(),
+            created: new Date(),
+            updated: new Date(),
         })
 
         console.log(`✅ Admin user created: ${email} / ${password}`)

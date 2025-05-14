@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     await db.collection('registration-tokens').insertOne({
         token,
         school_id: new ObjectId(school_id),
-        createdAt: new Date(),
+        created: new Date(),
         expiresAt,
     })
 
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
             school_id: new ObjectId(school_id),
             expiresAt: { $gte: now },
         },
-        { sort: { createdAt: -1 } }
+        { sort: { created: -1 } }
     )
 
     if (!activeToken) {

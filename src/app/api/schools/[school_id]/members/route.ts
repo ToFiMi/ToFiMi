@@ -74,8 +74,8 @@ export async function POST(
             first_name,
             last_name,
             isAdmin: false,
-            createdAt: new Date(),
-            modifiedAt: new Date(),
+            created: new Date(),
+            updated: new Date(),
         })
 
         user = { _id: result.insertedId, email }
@@ -113,7 +113,7 @@ export async function POST(
         user_id: user._id,
         school_id: new ObjectId(schoolId),
         role,
-        createdAt: new Date(),
+        created: new Date(),
     })
 
     return NextResponse.json({ success: true })
