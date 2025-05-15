@@ -71,7 +71,7 @@ export default function Members({school_id}: {school_id?: string }) {
         },
     ]
 
-
+// todo: update aj delete users
     return (
         <><Card title="Členovia školy" loading={loading} extra={
             <Button type="primary" onClick={() => setIsModalOpen(true)}>
@@ -100,7 +100,6 @@ export default function Members({school_id}: {school_id?: string }) {
                 </Form.Item>
                 <Form.Item name="role" label="Rola" rules={[{required: true}]}>
                     <Select>
-                        <Select.Option value="admin">Admin</Select.Option>
                         <Select.Option value="leader">Leader</Select.Option>
                         <Select.Option value="animator">Animator</Select.Option>
                         <Select.Option value="student">Študent</Select.Option>

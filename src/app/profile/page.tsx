@@ -55,7 +55,7 @@ export default async function ProfilePage() {
     ]).toArray()
 
     const user = me[0]
-
+// todo: ešte musime spraviť zmenu hesla
     return (
         <main className="max-w-3xl mx-auto py-10 px-6">
             <UserCard user={user}/>

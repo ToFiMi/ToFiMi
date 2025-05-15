@@ -6,9 +6,10 @@ declare module "next-auth" {
         user: {
             id: string
             user_id: string|null
-            role: 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR'
+            role: 'admin' | 'user' | 'leader' | 'animator'
             school_id?: string | null
             isAdmin?: boolean
+            school_choices: any[]
         } & DefaultSession["user"]
     }
 
@@ -19,6 +20,7 @@ declare module "next-auth" {
         school_id?: string | null
         isAdmin?: boolean
         email: string
+        school_choices: any[]
     }
 }
 

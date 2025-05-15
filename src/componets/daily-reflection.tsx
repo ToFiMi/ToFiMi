@@ -4,6 +4,10 @@ import {Event} from "../../models/events";
 
 export const DailyReflection = ({last_event}: { last_event :Event }) =>{
 
+
+    //todo: tu nám treba poriešiť zobrazovanie zamysleni na deň
+    //todo: ešte aj overiť či odovzadl ulohu ak nie tak zobraziť link na homeworks/event_id
+    //todo ešte dať preklik na všetky citáty doteraz
     return(
 
         <>

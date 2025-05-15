@@ -4,8 +4,6 @@ import { Event } from "../../../models/events"
 import {Card, Typography, Space, Divider, Tag, Statistic, Flex, List, Button} from "antd"
 import dayjs from "dayjs";
 import {useState} from "react";
-import { Tree } from 'antd';
-import ListItem from "antd/es/upload/UploadList/ListItem";
 require("dayjs/locale/sk");
 
 

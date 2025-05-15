@@ -58,12 +58,14 @@ export const RegistrationCard = ({ next_event }: { next_event: Event | null }) =
 
         setLoading(false)
     }
-
+// todo: ešte treba spraviť možnosť ak je už zaregistrovany tak upraviť registráciu a možno nejake veci čo si doniesť ...inač hotovo
 
     return (
         <>
             <Card title={next_event?.title} variant="borderless">
-                <Button onClick={() => setOpen(true)}>Registrovať</Button>
+                {!next_event?"Neni vikend":<Button onClick={() => setOpen(true)}>Registrovať</Button>
+                }
+
             </Card>
 
             <Modal

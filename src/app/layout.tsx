@@ -18,7 +18,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const role = token?.role ?? null
     const userId = token?.id ?? null
 
-
     return (
         <html lang="en">
         <head>
