@@ -7,6 +7,7 @@ import { ReactNode } from 'react'
 const { Header, Content, Sider } = Layout
 
 const items = [
+    {key:'', label: "Domov"},
     { key: 'schools', label: 'Správa škôl' },
     { key: 'participants', label: 'Účastníci' },
     { key: 'reports', label: 'Prehľady' },

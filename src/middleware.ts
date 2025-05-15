@@ -24,6 +24,7 @@ export async function middleware(req: NextRequest) {
     res.headers.set('x-role', token.role as string)
     if (token.school_id) {
         res.headers.set('x-school-id', token.school_id as string)
+        res.headers.set('x-user-school-id', token.user_id as string)
     }
 
     return res

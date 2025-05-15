@@ -13,6 +13,7 @@ export async function getAuthContextFromCookies() {
 
     return {
         userId: token.id as string,
+        userSchoolId: token.user_id,
         role: token.role as 'ADMIN' | 'user' | 'leader' | 'animator',
         isAdmin: token.role === 'ADMIN',
         schoolId: token.school_id as string | null,

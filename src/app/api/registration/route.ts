@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb'
 export async function POST(req: NextRequest) {
     try {
         const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-        if (!token || !token.id || !token.school_id) {
+        if (!token || !token.id || !token.school_id || !token.user_id) {
             return new NextResponse('Neautorizovaný prístup', { status: 401 })
         }
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
             : []
 
         const filter = {
-            user_id: new ObjectId(token.id),
+            user_id: new ObjectId(token.user_id),
             event_id: new ObjectId(event_id),
         }
 
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
                 meals: going ? parsedMeals : [],
             },
             $setOnInsert: {
-                user_id: new ObjectId(token.id),
+                user_id: new ObjectId(token.user_id),
                 event_id: new ObjectId(event_id),
                 school_id: new ObjectId(token.school_id),
                 created: now,

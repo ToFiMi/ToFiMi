@@ -43,6 +43,7 @@ export const authOptions = {
 
                 return {
                     id: user._id.toString(),
+                    user_id: firstSchool._id,
                     email: user.email,
                     isAdmin: false,
                     role: firstSchool.role,
@@ -57,6 +58,7 @@ export const authOptions = {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id
+                token.user_id = user.user_id
                 token.role = user.role
                 token.school_id = user.school_id ?? null
                 token.isAdmin = user.isAdmin
@@ -68,6 +70,7 @@ export const authOptions = {
         async session({ session, token }) {
             if (session.user && token) {
                 session.user.id = token.id
+                session.user.user_id = token.user_id
                 session.user.role = token.role
                 session.user.school_id = token.school_id
                 session.user.isAdmin = token.isAdmin

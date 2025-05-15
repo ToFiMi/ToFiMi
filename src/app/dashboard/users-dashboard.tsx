@@ -10,6 +10,8 @@ import {signOut} from "next-auth/react";
 export default async function UsersDashboardPage() {
     const db = await connectToDatabase()
     const now = new Date()
+
+    // todo: handle this schoold id event
     const last_event = await db.collection('events')
         .find({ endDate: { $lt: now } })
         .sort({ endDate: -1 })
