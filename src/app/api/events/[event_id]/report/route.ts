@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import { ObjectId } from 'mongodb'
 
-export async function GET(req: NextRequest, { params }: { params: { event_id: string } }) {
+export async function GET(req: Request, context: { params: { event_id: string } }) {
+    const event_id = ( await context.params).event_id
     const db = await connectToDatabase()
-    const { event_id } = await params
+
 
     try {
         let event
