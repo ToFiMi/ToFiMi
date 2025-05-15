@@ -35,9 +35,17 @@ export function AdminLayout({ children, role, userId }: { children: ReactNode, r
                     items={items}
                     onClick={onMenuClick}
                 />
-                <Button type="primary" danger onClick={handleLogout}>
-                    Logout
-                </Button>
+                <div style={{ padding: '16px' }}>
+                    <Button
+                        type="primary"
+                        danger
+                        block
+                        onClick={handleLogout}
+                        style={{ borderRadius: 8 }}
+                    >
+                        Odhlásiť sa
+                    </Button>
+                </div>
 
             </Sider>
             <Layout>
