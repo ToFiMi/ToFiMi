@@ -62,7 +62,7 @@ npx prisma generate --schema=prisma/das.schema.prisma
 ```
 ### 6. Create initial admin user
 ```bash
-npx tsx scripts/script.ts
+npx tsx scripts/script.js
 ```
 ### 7. Start the development server
 ```bash
