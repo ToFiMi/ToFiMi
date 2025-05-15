@@ -1,9 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import {NextRequest, NextResponse} from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import { ObjectId } from 'mongodb'
 
-export async function GET(req: Request, context: { params: { event_id: string } }) {
-    const event_id = ( await context.params).event_id
+
+//@ts-ignore
+export async function GET(req: NextRequest, { params }: { params: { event_id: string } }
+) {
+    const event_id = params.event_id
     const db = await connectToDatabase()
 
 
@@ -21,7 +24,7 @@ export async function GET(req: Request, context: { params: { event_id: string } 
             if (!next_event.length) return new NextResponse('No upcoming event', { status: 404 })
             event = next_event[0]
         } else {
-            event = await db.collection('events').findOne({ _id: new ObjectId(event_id) })
+            event = await db.collection('events').findOne({ _id: new ObjectId(event_id as string) })
             if (!event) return new NextResponse('Event not found', { status: 404 })
         }
 
