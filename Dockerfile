@@ -17,7 +17,7 @@ ENV PORT=3000
 # 1) server + node_modules
 COPY --from=builder /app/.next/standalone ./
 # 2) statické súbory
-COPY --from=builder /app/.next/static ./static
+COPY --from=builder /app/.next/static ./.next/static
 # 3) public
 COPY --from=builder /app/public ./public
 
