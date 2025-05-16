@@ -30,16 +30,24 @@ export default function Members({school_id}: {school_id?: string }) {
 
         fetchMembers()
     }, [])
+    const [inviteToken, setInviteToken] = useState<string | null>(null)
+
     const handleAddUser = async () => {
         try {
             const values = await form.validateFields()
-            const res = await fetch(`/api/schools/${school_id}/members`, {
+
+            // Pridaj používateľa a získaš token
+            const res = await fetch(`/api/create_account/invite`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(values),
             })
+
             if (res.ok) {
+                const data = await res.json()
+                setInviteToken(`${process.env.NEXT_PUBLIC_APP_URL}/create_account/${data.token}`)
+
                 message.success('Používateľ pridaný')
                 setIsModalOpen(false)
                 form.resetFields()
@@ -106,6 +114,22 @@ export default function Members({school_id}: {school_id?: string }) {
                     </Select>
                 </Form.Item>
             </Form>
-        </Modal></>
+        </Modal>
+            <Modal
+                title="Pozvánka pre používateľa"
+                open={!!inviteToken}
+                onCancel={() => setInviteToken(null)}
+                footer={null}
+                centered
+            >
+                {inviteToken && (
+                    <>
+                        <Typography.Text>Pošli tento link pozvanému animátorovi/vedúcemu:</Typography.Text>
+                        <Typography.Paragraph copyable={{ text: inviteToken }}>
+                            {inviteToken}
+                        </Typography.Paragraph>
+                    </>
+                )}
+            </Modal></>
     )
 }

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 import { useRouter } from 'next/navigation'
-import { Button, Card, Form, Input, message, Typography } from 'antd'
+import {Button, Card, Form, Input, Layout, message, Typography} from 'antd'
+import {Content} from "antd/es/layout/layout";
+import { useParams } from 'next/navigation'
 
 const { Title } = Typography
 
@@ -14,10 +16,27 @@ type User = {
     last_name: string
 }
 
-export default function CreateAccountPage({ params }: { params: { token: string } }) {
-    const token = params.token
+export default function CreateAccountPage() {
+    const {token} = useParams< {  token: string }>()
+
+    const [form] = Form.useForm()
+
     const [loading, setLoading] = useState(false)
     const router = useRouter()
+    useEffect(() => {
+        const fetchTokenData = async () => {
+            const res = await fetch(`/api/create_account/${token}`) // GET
+            if (res.ok) {
+                const data = await res.json()
+                form.setFieldsValue({
+                    email: data.email,
+                    first_name: data.first_name,
+                    last_name: data.last_name
+                })
+            }
+        }
+        fetchTokenData()
+    }, [token])
 
     const onFinish = async (values: User) => {
         if (values.password !== values.check_password) {
@@ -47,10 +66,20 @@ export default function CreateAccountPage({ params }: { params: { token: string 
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-            <Card style={{ width: 400 }}>
+        <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
+            <Content
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '24px',
+                }}
+            >
+                <Card
+                    style={{ width: '100%', maxWidth: 420, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                >
                 <Title level={2} style={{ textAlign: 'center' }}>Vytvoriť účet</Title>
-                <Form layout="vertical" onFinish={onFinish}>
+                <Form layout="vertical" onFinish={onFinish} form={form} >
                     <Form.Item
                         label="Meno"
                         name="first_name"
@@ -95,6 +124,8 @@ export default function CreateAccountPage({ params }: { params: { token: string 
                     </Form.Item>
                 </Form>
             </Card>
-        </div>
+                </Content>
+        </Layout>
+
     )
 }

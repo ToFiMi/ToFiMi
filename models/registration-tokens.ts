@@ -1,9 +1,12 @@
 import { ObjectId } from 'mongodb'
 
 export interface RegistrationTokens {
-    _id: ObjectId,
     token: string,
     school_id: ObjectId,
-    expires: Date,
+    email?: string,
+    first_name?: string,
+    last_name?: string,
+    role?: 'animator' | 'leader',
+    expiresAt: Date,
     created: Date
 }

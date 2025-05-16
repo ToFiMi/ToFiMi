@@ -48,7 +48,6 @@ export default function LoginPage() {
             >
                 <Card
                     style={{ width: '100%', maxWidth: 420, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    bordered={false}
                 >
                     <div style={{ textAlign: 'center', marginBottom: 24 }}>
                         <Title level={2} style={{ marginBottom: 0 }}>

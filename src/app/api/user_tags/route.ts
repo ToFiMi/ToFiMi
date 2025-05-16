@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { NextRequest, NextResponse } from 'next/server'
 import {getToken} from "next-auth/jwt";
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest) {
     const db = await connectToDatabase()
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
 

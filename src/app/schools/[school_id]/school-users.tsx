@@ -1,7 +1,7 @@
 'use client'
-
+import { debounce } from 'lodash'
 import { useState } from 'react'
-import { Table, Modal, Form, Input, Select, Button, message } from 'antd'
+import { Table, Modal, Form, Input, Select, Button, message, Typography, Space } from 'antd'
 
 export interface User {
     _id: string
@@ -18,6 +18,8 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
     const [loading, setLoading] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [form] = Form.useForm()
+    const [emailOptions, setEmailOptions] = useState<any[]>([])
+    const [inviteUrl, setInviteUrl] = useState<string | null>(null)
 
     const fetchUsers = async () => {
         setLoading(true)
@@ -36,17 +38,23 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
     const handleAddUser = async () => {
         try {
             const values = await form.validateFields()
-            const res = await fetch(`/api/schools/${schoolId}`, {
+            const res = await fetch(`/api/create_account/invite`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify(values),
+                body: JSON.stringify({ ...values, school_id: schoolId }),
             })
+
             if (res.ok) {
-                message.success('Používateľ pridaný')
-                setIsModalOpen(false)
+                const data = await res.json()
+                if(data.token) {
+                    setInviteUrl(`${process.env.NEXT_PUBLIC_APP_URL}/create_account/${data.token}`)
+                    message.success('Pozvánka bola vygenerovaná')
+                }
+                else message.success(data.message)
+
                 form.resetFields()
-                fetchUsers()
+                await fetchUsers()
             } else {
                 const err = await res.text()
                 message.error(`Chyba: ${err}`)
@@ -73,40 +81,87 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
             key: 'role',
         },
     ]
+    const handleSearch = debounce(async (value: string) => {
+        if (!value || value.length < 2) {
+            setEmailOptions([])
+            return
+        }
+
+        const res = await fetch(`/api/users?autocomplete=1&query=${encodeURIComponent(value)}`, {
+            credentials: 'include',
+        })
+
+        if (res.ok) {
+            const data = await res.json()
+            setEmailOptions(data)
+        }
+    }, 300)
 
     return (
-        <div>
+        <>
             <div className="flex justify-between items-center mb-2">
-                <h2 className="text-xl font-semibold">Používatelia</h2>
+                <Typography.Title level={4}>Používatelia</Typography.Title>
                 <Button type="primary" onClick={() => setIsModalOpen(true)}>
                     Pridať používateľa
                 </Button>
             </div>
 
             <Table dataSource={users} columns={columns} rowKey="_id" loading={loading} />
+
             <Modal
-                title="Pridať používateľa"
+                title="Pozvať používateľa"
                 open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
+                onCancel={() => {
+                    setIsModalOpen(false)
+                    setInviteUrl(null)
+                }}
                 onOk={() => form.submit()}
-                okText="Pridať"
+                okText="Vytvoriť pozvánku"
             >
-            <Form layout="vertical" form={form} onFinish={handleAddUser}>
-                <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="role" label="Rola" rules={[{ required: true }]}>
-                    <Select>
-                        <Select.Option value="admin">Admin</Select.Option>
-                        <Select.Option value="leader">Leader</Select.Option>
-                        <Select.Option value="animator">Animator</Select.Option>
-                        <Select.Option value="student">Študent</Select.Option>
-                    </Select>
-                </Form.Item>
-            </Form>
+                <Form layout="vertical" form={form} onFinish={handleAddUser}>
+                    <Form.Item name="email" label="Email" rules={[{ required: true }]}>
+                        <Select
+                            showSearch
+                            placeholder="Zadajte alebo vyberte email"
+                            onSearch={handleSearch}
+                            onSelect={(value, option) => {
+                                form.setFieldsValue({
+                                    first_name: option.first_name,
+                                    last_name: option.last_name,
+                                })
+                            }}
+                            filterOption={false}
+                            notFoundContent={null}
+                            options={emailOptions.map((opt: any) => ({
+                                label: opt.email,
+                                value: opt.email,
+                                first_name: opt.first_name,
+                                last_name: opt.last_name,
+                            }))}
+                        />
+                    </Form.Item>
+                    <Form.Item name="first_name" label="Meno" rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="last_name" label="Priezvisko" rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="role" label="Rola" rules={[{ required: true }]}>
+                        <Select>
+                            <Select.Option value="leader">Leader</Select.Option>
+                            <Select.Option value="animator">Animator</Select.Option>
+                            <Select.Option value="student">Študent</Select.Option>
+                        </Select>
+                    </Form.Item>
+                </Form>
+
+                {inviteUrl && (
+                    <Space direction="vertical" style={{ marginTop: 16 }}>
+                        <Typography.Text strong>Registračný link:</Typography.Text>
+                        <Typography.Text copyable>{inviteUrl}</Typography.Text>
+                    </Space>
+                )}
             </Modal>
-
-
-        </div>
+        </>
     )
 }

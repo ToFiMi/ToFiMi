@@ -41,8 +41,28 @@ export async function POST(req: NextRequest) {
     await db.collection('user_school').insertOne({
         user_id: userResult.insertedId,
         school_id: new ObjectId(school_id),
-        role: 'user',
+        role: ott.role || 'user',
     })
 
     return new NextResponse('Účet bol vytvorený', { status: 201 })
+}
+// GET /api/create_account?token=xyz
+export async function GET(req: NextRequest) {
+    const tokenParam = req.nextUrl.searchParams.get('token')
+    if (!tokenParam) return new NextResponse('Missing token', { status: 400 })
+
+    const db = await connectToDatabase()
+    const ott = await db.collection('registration-tokens').findOne({ token: tokenParam })
+
+    if (!ott || new Date(ott.expiresAt) < new Date()) {
+        return new NextResponse('Token je neplatný alebo expirovaný', { status: 403 })
+    }
+
+    return NextResponse.json({
+        email: ott.email,
+        first_name: ott.first_name,
+        last_name: ott.last_name,
+        role: ott.role,
+        school_id: ott.school_id.toString(),
+    })
 }
