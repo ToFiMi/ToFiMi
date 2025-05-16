@@ -120,11 +120,11 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
             }
             style={{ maxWidth: 900, margin: '2rem auto' }}
         >
-            {nextEvent ? (
+            {event ? (
             <Flex vertical gap="middle">
-                <Text><strong>Dátum:</strong> {dayjs(nextEvent?.startDate).locale("sk").format('DD.MM.YYYY dddd')} – {dayjs(nextEvent?.endDate).locale("sk").format('DD.MM.YYYY dddd')}</Text>
-                <Text><strong>Ročník:</strong> {nextEvent?.grade}. ročník</Text>
-                <Text><strong>Popis:</strong> {nextEvent?.description || "—"}</Text>
+                <Text><strong>Dátum:</strong> {dayjs(event?.startDate).locale("sk").format('DD.MM.YYYY dddd')} – {dayjs(event?.endDate).locale("sk").format('DD.MM.YYYY dddd')}</Text>
+                <Text><strong>Ročník:</strong> {event?.grade}. ročník</Text>
+                <Text><strong>Popis:</strong> {event?.description || "—"}</Text>
 
                 <Divider />
 
