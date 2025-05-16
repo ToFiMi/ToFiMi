@@ -10,9 +10,9 @@ require("dayjs/locale/sk");
 const { Title, Text } = Typography
 
 export type AdminEventCardProps = {
-    next_event: Event
-    current_event: Event
-    previous_event: Event
+    next_event: Event | null
+    previous_event: Event | null
+    current_event:Event
     next_registrations: {
         user: {
             first_name: string
@@ -120,10 +120,11 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
             }
             style={{ maxWidth: 900, margin: '2rem auto' }}
         >
+            {nextEvent ? (
             <Flex vertical gap="middle">
-                <Text><strong>Dátum:</strong> {dayjs(next_event.startDate).locale("sk").format('DD.MM.YYYY dddd')} – {dayjs(next_event.endDate).locale("sk").format('DD.MM.YYYY dddd')}</Text>
-                <Text><strong>Ročník:</strong> {next_event.grade}. ročník</Text>
-                <Text><strong>Popis:</strong> {next_event.description || "—"}</Text>
+                <Text><strong>Dátum:</strong> {dayjs(nextEvent?.startDate).locale("sk").format('DD.MM.YYYY dddd')} – {dayjs(nextEvent?.endDate).locale("sk").format('DD.MM.YYYY dddd')}</Text>
+                <Text><strong>Ročník:</strong> {nextEvent?.grade}. ročník</Text>
+                <Text><strong>Popis:</strong> {nextEvent?.description || "—"}</Text>
 
                 <Divider />
 
@@ -163,6 +164,10 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
                     <Text type="secondary">Žiadne alergie</Text>
                 )}
             </Flex>
+            ) : (
+                <Text strong>No next event</Text>
+            )}
+
         </Card>
     )
 }
