@@ -27,7 +27,7 @@ This is a Next.js-based multi-tenant application for the **Diocesan Animator Sch
 ### 1. Clone the project & install dependencies
 
 ```bash
-git clone git@github.com:ToFiMi/ToFiMi.git
+git clone git@github.com:tofimi/tofimi.git
 cd das-multitenant-app
 
 npm install

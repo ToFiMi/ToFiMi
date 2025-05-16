@@ -11,6 +11,8 @@ services:
   app:
     image: ghcr.io/tofimi/tofimi:latest
     env_file: .env
+    environment:
+      - MONGODB_URI=mongodb://admin:${MONGO_ROOT_PWD}@mongodb:27017/das_app?authSource=admin
     ports: [ "3000:3000" ]
     depends_on: [ mongodb ]
 
