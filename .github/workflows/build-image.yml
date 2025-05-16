@@ -1,0 +1,53 @@
+name: Build & Push Docker image
+
+on:
+  push:
+    branches: [ main ]        # alebo release/*, podľa potreby
+  workflow_dispatch:          # manuálne spustenie z UI
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read          # checkout
+      packages: write         # push do GHCR
+
+    steps:
+      # 1) Kód
+      - uses: actions/checkout@v4
+
+      # 2) Buildx prostredie
+      - uses: docker/setup-buildx-action@v3
+
+      # 3) Prihlásenie do GHCR
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4) Build + push
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+      # 5) (voliteľne) nasadiť na VM cez SSH
+      - name: Deploy on Oracle VM
+        if: success() && github.ref == 'refs/heads/main'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.OCI_VM_IP }}
+          username: ubuntu
+          key: ${{ secrets.OCI_VM_SSH_KEY }}
+          script: |
+            cd ~/das-app/ToFiMi
+            export COMMIT_SHA=${{ github.sha }}
+            docker compose pull app
+            docker compose up -d app
