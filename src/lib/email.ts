@@ -1,23 +1,27 @@
+// lib/email.ts
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resend: Resend | null = null
 
-export async function sendEmail({
-                                    to,
-                                    schoolName,
-                                    htmlContent
+function getResend () {
+    if (!resend) {
+        const key = process.env.RESEND_API_KEY
+        if (!key) throw new Error('RESEND_API_KEY missing')
+        resend = new Resend(key)
+    }
+    return resend
+}
 
-                                      }: {
+export async function sendEmail(opts: {
     to: string
-    schoolName: string
-    htmlContent:string
+    schoolName?: string
+    htmlContent: string
 }) {
-    const result = await resend.emails.send({
-        from: process.env.EMAIL_FROM ?? 'info@das-vazec.sk',
-        to,
-        subject: `Pozvánka do školy ${schoolName}`,
-        html: htmlContent
+    const r = getResend()
+    await r.emails.send({
+        from: 'noreply@das-app.sk',
+        to: opts.to,
+        subject: `Pozvánka do školy ${opts.schoolName ?? ''}`,
+        html: opts.htmlContent,
     })
-
-    return result
 }
