@@ -26,7 +26,7 @@ export default function CreateAccountPage({ params }: { params: { token: string 
         }
 
         setLoading(true)
-        const res = await fetch('/api/crete_account', {
+        const res = await fetch('/api/create_account', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
