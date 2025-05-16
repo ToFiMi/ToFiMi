@@ -40,14 +40,14 @@ jobs:
 
       # 5) (voliteľne) nasadiť na VM cez SSH
       - name: Deploy on Oracle VM
-        if: success() && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.OCI_VM_IP }}
+          host: 89.168.19.129
           username: ubuntu
           key: ${{ secrets.OCI_VM_SSH_KEY }}
           script: |
             cd ~/das-app/ToFiMi
-            export COMMIT_SHA=${{ github.sha }}
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
             docker compose pull app
             docker compose up -d app
