@@ -9,7 +9,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PWD}
 
   app:
-    image: ghcr.io/ToFiMi/ToFiMi:latest
+    image: ghcr.io/tofimi/tofimi:latest
     env_file: .env
     ports: [ "3000:3000" ]
     depends_on: [ mongodb ]
