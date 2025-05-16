@@ -1,6 +1,6 @@
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcrypt'
-import { connectToDatabase } from '@/lib/mongo'
+import {connectToDatabase} from '@/lib/mongo'
 import {ObjectId} from "mongodb";
 
 
@@ -12,9 +12,9 @@ export const authOptions = {
             type: 'credentials',
             name: 'Credentials',
             credentials: {
-                email: { label: 'Email', type: 'text' },
-                password: { label: 'Password', type: 'password' },
-                user_school_id: { label: 'User School ID', type: 'text', optional: true },
+                email: {label: 'Email', type: 'text'},
+                password: {label: 'Password', type: 'password'},
+                user_school_id: {label: 'User School ID', type: 'text', optional: true},
             },
 
             async authorize(
@@ -22,7 +22,7 @@ export const authOptions = {
             ): Promise<any> {
                 const db = await connectToDatabase()
 
-                const user = await db.collection('users').findOne({ email: credentials?.email })
+                const user = await db.collection('users').findOne({email: credentials?.email})
                 if (!user) return null
 
                 if (!credentials?.user_school_id) {
@@ -43,7 +43,7 @@ export const authOptions = {
                             as: 'school'
                         }
                     },
-                    { $unwind: '$school' },
+                    {$unwind: '$school'},
                     {
                         $project: {
                             id: '$_id', // ID z kolekcie user_school
@@ -112,7 +112,7 @@ export const authOptions = {
     callbacks: {
 
 // @ts-ignore
-        async jwt({ token, user }) {
+        async jwt({token, user}) {
             if (user) {
                 token.id = user.id
                 token.email = user.email
@@ -126,7 +126,7 @@ export const authOptions = {
         },
 
 // @ts-ignore
-        async session({ session, token }) {
+        async session({session, token}) {
             session.user = {
                 id: token.id,
                 email: token.email,
@@ -144,8 +144,11 @@ export const authOptions = {
     },
     session: {
         strategy: 'jwt',
-    },
+    }, useSecureCookies: false,
+    trustHost: true,
+
     secret: process.env.NEXTAUTH_SECRET,
+
 }
 
 
