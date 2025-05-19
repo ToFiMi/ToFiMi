@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongo';
-import webpush from 'web-push';
+import webpush, {PushSubscription} from 'web-push';
 import {getToken} from "next-auth/jwt";
 
 function ensureVapid(email:string) {
@@ -9,7 +9,7 @@ function ensureVapid(email:string) {
     if (!publicKey || !privateKey) {
         throw new Error('VAPID keys missing in .env')
     }
-    webpush.setVapidDetails(email, publicKey, privateKey)
+    webpush.setVapidDetails(`mailto:${email || 'admin@example.com'}`, publicKey, privateKey)
 }
 
 export async function POST(req: NextRequest) {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     ensureVapid(token.email)
 
     const db = await connectToDatabase()
-    const subs = await db.collection('push_subscriptions').find({}).toArray()
+    const subs = await db.collection<PushSubscription>('push_subscriptions').find({}).toArray()
 
     const payload = JSON.stringify({
         title: 'Nová správa z DAS!',

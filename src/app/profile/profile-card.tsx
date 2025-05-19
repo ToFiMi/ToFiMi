@@ -11,8 +11,8 @@ export default function UserCard({ user }: { user: any }) {
     const [checking, setChecking] = useState(true)
 
     useEffect(() => {
-        // Skontroluj, či má používateľ push notifikácie
-        navigator.serviceWorker.ready
+
+        navigator.serviceWorker?.ready
             .then(reg => reg.pushManager.getSubscription())
             .then(sub => {
                 setHasPush(!!sub)
