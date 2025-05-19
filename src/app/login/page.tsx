@@ -59,7 +59,7 @@ export default function LoginPage() {
                         <Form.Item
                             label="Email"
                             name="email"
-                            rules={[{ required: true, message: 'Zadajte email' }]}
+                            rules={[{ type:"email", required: true, message: 'Zadajte email' }]}
                         >
                             <Input placeholder="napr. meno@domena.sk" />
                         </Form.Item>

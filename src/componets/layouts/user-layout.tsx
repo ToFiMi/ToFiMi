@@ -14,14 +14,6 @@ export default async function UserLayout({
 }) {
 
 
-    return (
-        <Layout hasSider  style={{ minHeight: '100vh' }}>
-           <Menu role={role}/>
-            <Layout>
-                <main style={{ margin: '24px 16px 0' }}>
-                    <div style={{ padding: 24, minHeight: 360 }}>{children}</div>
-                </main>
-            </Layout>
-        </Layout>
-    );
+    return <Menu role={role}>{children}</Menu>
 }
+
