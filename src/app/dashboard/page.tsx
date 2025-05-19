@@ -9,8 +9,9 @@ export default async function AdminDashboardPage() {
     const headersList = await headers()
     const referer = headersList.get("referer")
 
+    console.log("referer: ", `${referer}api/events/next/report`)
 
-    const res = await fetch(`${referer}/api/events/next/report`, {
+    const res = await fetch(`${referer}api/events/next/report`, {
         headers: {
             Cookie: `auth_token=${token}`
         },
