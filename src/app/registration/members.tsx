@@ -2,6 +2,7 @@
 
 import {Button, Card, Form, Input, List, message, Modal, Select, Table, Typography} from 'antd'
 import { useEffect, useState } from 'react'
+import {useParams} from "next/navigation";
 
 type Member = {
     role: string
@@ -17,6 +18,8 @@ export default function Members({school_id}: {school_id?: string }) {
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [form] = Form.useForm()
+
+
     async function fetchMembers() {
         const res = await fetch(`/api/schools/${school_id}/members`, {
             credentials: 'include',
@@ -46,7 +49,7 @@ export default function Members({school_id}: {school_id?: string }) {
 
             if (res.ok) {
                 const data = await res.json()
-                setInviteToken(`${process.env.NEXT_PUBLIC_APP_URL}/create_account/${data.token}`)
+                setInviteToken(`${window.location.href}/create_account/${data.token}`)
 
                 message.success('Používateľ pridaný')
                 setIsModalOpen(false)

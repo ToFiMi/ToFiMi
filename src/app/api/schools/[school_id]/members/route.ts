@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/lib/mongo'
 import { ObjectId } from 'mongodb'
 import {getToken} from "next-auth/jwt";
 import {sendEmail} from "@/lib/email";
+import {headers} from "next/headers";
 
 export async function GET(
     req: NextRequest,
@@ -48,6 +49,8 @@ export async function POST(
     const param = await params
     const schoolId =param.school_id
     const db = await connectToDatabase()
+    const headersList = await headers()
+    const referer = headersList.get("referer")
 
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
 
@@ -90,7 +93,7 @@ export async function POST(
             htmlContent:`<p>Ahoj ${first_name},</p>
       <p>bol(a) si pridaný(á) do systému ako člen školy <strong>${school?.name}</strong>.</p>
       <p>Ak ešte nemáš účet, vytvor si ho pomocou tohto e-mailu a nastav si heslo.</p>
-      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/login">Prihlásiť sa</a></p>
+      <p><a href="${referer}/login">Prihlásiť sa</a></p>
       <p>Ak o tom nič nevieš, tento e-mail môžeš ignorovať.</p>
       <br>
       <p>💌 Tvoj tím</p>

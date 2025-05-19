@@ -1,14 +1,16 @@
 import { cookies } from 'next/headers'
 import {Layout} from "antd";
 import {AdminEventCard} from "@/app/dashboard/admin-event-card";
+import { headers } from "next/headers";
 
 export default async function AdminDashboardPage() {
     const cookieStore =await cookies()
     const token = cookieStore.get('auth_token')?.value
+    const headersList = await headers()
+    const referer = headersList.get("referer")
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    const res = await fetch(`${baseUrl}/api/events/next/report`, {
+    const res = await fetch(`${referer}/api/events/next/report`, {
         headers: {
             Cookie: `auth_token=${token}`
         },

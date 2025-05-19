@@ -32,7 +32,7 @@ export default function SelectSchoolPage() {
         setLoading(true)
         const res = await signIn('credentials', {
             email: session.user.email,
-            user_school_id: selected.value, // _id z user_school
+            user_school_id: selected.value,
             password: 'temporary',
             redirect: true,
             callbackUrl: '/',
