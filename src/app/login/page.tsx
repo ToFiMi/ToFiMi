@@ -59,9 +59,13 @@ export default function LoginPage() {
                         <Form.Item
                             label="Email"
                             name="email"
-                            rules={[{ type:"email", required: true, message: 'Zadajte email' }]}
+                            rules={[{ type: "email", required: true, message: 'Zadajte platný email' }]}
                         >
-                            <Input placeholder="napr. meno@domena.sk" />
+                            <Input
+                                type="email"
+                                autoComplete="email"
+                                placeholder="napr. meno@email.sk"
+                            />
                         </Form.Item>
 
                         <Form.Item
@@ -69,7 +73,10 @@ export default function LoginPage() {
                             name="password"
                             rules={[{ required: true, message: 'Zadajte heslo' }]}
                         >
-                            <Input.Password placeholder="••••••••" />
+                            <Input.Password
+                                autoComplete="current-password"
+                                placeholder="••••••••"
+                            />
                         </Form.Item>
 
                         <Form.Item>

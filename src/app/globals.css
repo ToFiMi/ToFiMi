@@ -2,3 +2,14 @@
 *{
     margin: 0;
 }
+
+.ant-input-textarea textarea {
+    font-size: 16px !important;
+}
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-group > input,
+.ant-input-textarea textarea,
+.ant-select-selector {
+    font-size: 16px !important;
+}

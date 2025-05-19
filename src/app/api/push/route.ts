@@ -1,46 +1,44 @@
-// app/api/push/route.ts
-import webpush from 'web-push'
-import { NextRequest, NextResponse } from 'next/server'
-import { subscriptions } from '../subscribe/route'
+import { NextRequest, NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/mongo';
+import webpush from 'web-push';
+import {getToken} from "next-auth/jwt";
 
-// ───────────────────────────────────────────────────────────
-// 1️⃣  Lazy init – vykoná sa len pri prvom volaní POST
-// ───────────────────────────────────────────────────────────
-let vapidReady = false
-
-function ensureVapid () {
-    if (!vapidReady) {
-        const publicKey  = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-        const privateKey = process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY
-
-        if (!publicKey || !privateKey) {
-            throw new Error('VAPID keys are missing in env')
-        }
-
-        webpush.setVapidDetails('mailto:you@example.com', publicKey, privateKey)
-        vapidReady = true
+function ensureVapid(email:string) {
+    const publicKey  = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    const privateKey = process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY
+    if (!publicKey || !privateKey) {
+        throw new Error('VAPID keys missing in .env')
     }
+    webpush.setVapidDetails(email, publicKey, privateKey)
 }
 
-// ───────────────────────────────────────────────────────────
-// 2️⃣  Route handler
-// ───────────────────────────────────────────────────────────
-export async function POST (req: NextRequest) {
-    ensureVapid()                       // ← inicializuje sa prvý-krát
+export async function POST(req: NextRequest) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
+    if (!token) return null
+
+
+    ensureVapid(token.email)
+
+    const db = await connectToDatabase()
+    const subs = await db.collection('push_subscriptions').find({}).toArray()
 
     const payload = JSON.stringify({
-        title: 'Hello from Next.js!',
-        body:  'This is a push message 🎉',
+        title: 'Nová správa z DAS!',
+        body: 'Odoslané z admin portálu 🎉',
     })
 
-    for (const sub of subscriptions) {
+    const results = []
+
+    for (const sub of subs) {
         try {
             await webpush.sendNotification(sub, payload)
+            results.push({ endpoint: sub.endpoint, success: true })
         } catch (err) {
-            console.error('Push failed:', err)
+            results.push({ endpoint: sub.endpoint, error: err.message })
+            console.warn('Push error:', err.message)
         }
     }
 
-    return NextResponse.json({ sent: true })
+    return NextResponse.json({ results })
 }
-// todo: poriešiť aj notifikácie zo servra napr z admin portalu

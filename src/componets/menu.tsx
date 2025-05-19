@@ -1,67 +1,86 @@
 'use client'
 
-import { Button, Layout, Menu } from 'antd'
-import {
-    LogoutOutlined,
-    MenuUnfoldOutlined,
-    MenuFoldOutlined,
-} from '@ant-design/icons'
+import {Button, Grid, Layout, Menu} from 'antd'
+import {LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined,} from '@ant-design/icons'
 import Link from 'next/link'
-import { signOut } from 'next-auth/react'
-import { useState } from 'react'
+import {signOut} from 'next-auth/react'
+import {useLayoutEffect, useState} from 'react'
 
-const { Sider, Header } = Layout
+const {Sider, Header} = Layout
 
 type Props = {
     role: 'ADMIN' | 'user' | 'leader' | 'animator' | null | {}
     children: React.ReactNode
 }
+const {useBreakpoint} = Grid;
+export default function AppMenu({role, children}: Props) {
+    const mq = '(max-width: 768px)'
 
-export default function AppMenu({ role, children }: Props) {
-    const [collapsed, setCollapsed] = useState(false)
+    // 2) inicializujeme collapsed ešte pred renderom
+    const [collapsed, setCollapsed] = useState(() => {
+        // na SSR: schovám ho, aby nič nesvietilo
+        if (typeof window === 'undefined') return true
+        return window.matchMedia(mq).matches
+    })
+
+    // 3) synchronizujeme a nastavujeme listener pred prvým paintom
+    useLayoutEffect(() => {
+        const mql = window.matchMedia(mq)
+        const handler = (e: MediaQueryListEvent) => setCollapsed(e.matches)
+
+        // zaručene do stavu ešte pred paintom
+        setCollapsed(mql.matches)
+
+        mql.addEventListener('change', handler)
+        return () => {
+            mql.removeEventListener('change', handler)
+        }
+    }, [])
 
     const handleLogout = () => {
-        signOut({ redirect: true, callbackUrl: '/' })
+        signOut({redirect: true, callbackUrl: '/'})
     }
 
+
     const getMenuItems = () => {
-        if(role === "ADMIN") return [
+        if (role === "ADMIN") return [
 
-                {key:'/', label: "Domov"},
-                { key: '/schools', label: 'Správa škôl' },
-                { key: '/participants', label: 'Účastníci' },
-                { key: '/reports', label: 'Prehľady' },
+            {key: '/', label: "Domov"},
+            {key: '/schools', label: 'Správa škôl'},
+            {key: '/participants', label: 'Účastníci'},
+            {key: '/reports', label: 'Prehľady'},
+            {key: "/notifications", label: 'Notifikácie'}
 
-            ]
+        ]
 
         if (role === 'leader') return [
-            {key:'/', label: "Domov"},
-            { key: '/homeworks', label: 'Domáce úlohy' },
-            { key: '/groups', label: 'Skupinky' },
-            { key: '/profile', label: 'Môj profil' },
-            { key: '/registration', label: 'Registrácia' },
-            { key: '/daily-reflections', label: 'Zamyslenia' },
+            {key: '/', label: "Domov"},
+            {key: '/homeworks', label: 'Domáce úlohy'},
+            {key: '/groups', label: 'Skupinky'},
+            {key: '/profile', label: 'Môj profil'},
+            {key: '/registration', label: 'Registrácia'},
+            {key: '/daily-reflections', label: 'Zamyslenia'},
         ]
         if (role === 'animator') return [
-            {key:'/', label: "Domov"},
-            { key: '/homeworks', label: 'Domáce úlohy' },
-            { key: '/events', label: 'Termíny' },
-            { key: '/profile', label: 'Profil' },
-            { key: '/daily-reflections', label: 'Zamyslenia' },
+            {key: '/', label: "Domov"},
+            {key: '/homeworks', label: 'Domáce úlohy'},
+            {key: '/events', label: 'Termíny'},
+            {key: '/profile', label: 'Profil'},
+            {key: '/daily-reflections', label: 'Zamyslenia'},
         ]
         return [
-            {key:'/', label: "Domov"},
-            { key: '/my-homeworks', label: 'Domáce úlohy' },
-            { key: '/events', label: 'Termíny' },
-            { key: '/profile', label: 'Profil' },
-            { key: '/daily-reflections', label: 'Zamyslenia' },
+            {key: '/', label: "Domov"},
+            {key: '/my-homeworks', label: 'Domáce úlohy'},
+            {key: '/events', label: 'Termíny'},
+            {key: '/profile', label: 'Profil'},
+            {key: '/daily-reflections', label: 'Zamyslenia'},
         ]
     }
 
     const items = getMenuItems()
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout style={{minHeight: '100vh'}}>
             <Sider
                 collapsible
                 trigger={null}
@@ -97,14 +116,14 @@ export default function AppMenu({ role, children }: Props) {
                     {collapsed ? '🎓' : 'DAŠ Admin'}
                     <Button
                         type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                         onClick={() => setCollapsed(!collapsed)}
-                        style={{ color: 'white' }}
+                        style={{color: 'white'}}
                     />
                 </div>
 
                 {/* Menu */}
-                <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div style={{flex: 1, overflowY: 'auto'}}>
                     <Menu
                         theme="dark"
                         mode="inline"
@@ -117,14 +136,14 @@ export default function AppMenu({ role, children }: Props) {
                 </div>
 
                 {/* Logout */}
-                <div style={{ padding: 16 }}>
+                <div style={{padding: 16}}>
                     <Button
                         type="primary"
                         danger
-                        icon={<LogoutOutlined />}
+                        icon={<LogoutOutlined/>}
                         block={!collapsed}
                         onClick={handleLogout}
-                        style={{ borderRadius: 6 }}
+                        style={{borderRadius: 6}}
                     >
                         {!collapsed && 'Odhlásiť sa'}
                     </Button>
@@ -132,7 +151,7 @@ export default function AppMenu({ role, children }: Props) {
             </Sider>
 
 
-            <Layout style={{ marginLeft: collapsed ? 0 : 220, transition: 'margin-left 0.2s' }}>
+            <Layout style={{marginLeft: collapsed ? 0 : 220, transition: 'margin-left 0.2s'}}>
                 <Header
                     style={{
                         background: '#fff',
@@ -145,7 +164,7 @@ export default function AppMenu({ role, children }: Props) {
                 >
                     {collapsed && (
                         <Button
-                            icon={<MenuUnfoldOutlined />}
+                            icon={<MenuUnfoldOutlined/>}
                             type="text"
                             onClick={() => setCollapsed(false)}
                         />
@@ -153,7 +172,7 @@ export default function AppMenu({ role, children }: Props) {
                 </Header>
 
                 {/* Page content */}
-                <Layout.Content style={{ margin: '24px 16px', overflow: 'auto' }}>
+                <Layout.Content style={{margin: '24px 16px', overflow: 'auto'}}>
                     {children}
                 </Layout.Content>
             </Layout>
