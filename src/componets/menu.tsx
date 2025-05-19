@@ -49,7 +49,8 @@ export default function AppMenu({role, children}: Props) {
             {key: '/schools', label: 'Správa škôl'},
             {key: '/participants', label: 'Účastníci'},
             {key: '/reports', label: 'Prehľady'},
-            {key: "/notifications", label: 'Notifikácie'}
+            {key: "/notifications", label: 'Notifikácie'},
+            {key: '/profile', label: 'Profil'},
 
         ]
 
@@ -57,23 +58,23 @@ export default function AppMenu({role, children}: Props) {
             {key: '/', label: "Domov"},
             {key: '/homeworks', label: 'Domáce úlohy'},
             {key: '/groups', label: 'Skupinky'},
-            {key: '/profile', label: 'Môj profil'},
             {key: '/registration', label: 'Registrácia'},
             {key: '/daily-reflections', label: 'Zamyslenia'},
+            {key: '/profile', label: 'Profil'},
         ]
         if (role === 'animator') return [
             {key: '/', label: "Domov"},
             {key: '/homeworks', label: 'Domáce úlohy'},
             {key: '/events', label: 'Termíny'},
-            {key: '/profile', label: 'Profil'},
             {key: '/daily-reflections', label: 'Zamyslenia'},
+            {key: '/profile', label: 'Profil'},
         ]
         return [
             {key: '/', label: "Domov"},
             {key: '/my-homeworks', label: 'Domáce úlohy'},
             {key: '/events', label: 'Termíny'},
-            {key: '/profile', label: 'Profil'},
             {key: '/daily-reflections', label: 'Zamyslenia'},
+            {key: '/profile', label: 'Profil'},
         ]
     }
 
