@@ -5,6 +5,8 @@ import {LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined,} from '@ant-design
 import Link from 'next/link'
 import {signOut} from 'next-auth/react'
 import {useLayoutEffect, useState} from 'react'
+import {useRouter} from "next/navigation";
+
 
 const {Sider, Header} = Layout
 
@@ -15,6 +17,7 @@ type Props = {
 const {useBreakpoint} = Grid;
 export default function AppMenu({role, children}: Props) {
     const mq = '(max-width: 768px)'
+    const router = useRouter()
 
     // 2) inicializujeme collapsed ešte pred renderom
     const [collapsed, setCollapsed] = useState(() => {
@@ -38,7 +41,11 @@ export default function AppMenu({role, children}: Props) {
     }, [])
 
     const handleLogout = () => {
-        signOut({redirect: true, callbackUrl: '/'})
+        signOut({redirect: false}).then(()=> {
+            router.push('/')
+            router.refresh()
+            }
+        )
     }
 
 
