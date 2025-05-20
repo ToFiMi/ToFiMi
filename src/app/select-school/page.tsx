@@ -34,8 +34,7 @@ export default function SelectSchoolPage() {
             email: session.user.email,
             user_school_id: selected.value,
             password: 'temporary',
-            redirect: true,
-            callbackUrl: '/',
+            redirect: false
         })
 
         if (res?.ok) {
