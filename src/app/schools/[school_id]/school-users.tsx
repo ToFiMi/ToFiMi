@@ -35,6 +35,20 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
         setLoading(false)
     }
 
+    const updateUser = async () =>{
+        await fetch('/api/users', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                first_name: 'Filip',
+                last_name: 'Vnenčák',
+                email: 'filip@zooza.sk'
+            })
+        })
+    }
+
     const handleAddUser = async () => {
         try {
             const values = await form.validateFields()

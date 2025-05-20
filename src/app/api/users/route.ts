@@ -47,3 +47,44 @@ export async function GET(req: NextRequest) {
 
     return new NextResponse('Unauthorized', { status: 401 })
 }
+
+export async function PUT(req: NextRequest) {
+    const token = await getToken({
+        req,
+        secret: process.env.NEXTAUTH_SECRET,
+    })
+
+    if (!token || !token.id) {
+        return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    const userId = token.id
+    const body = await req.json()
+    const { first_name, last_name, email } = body
+
+    // Možno si doplniť ďalšiu validáciu podľa potreby
+    if (!first_name || !last_name || !email) {
+        return new NextResponse('Chýbajú povinné údaje', { status: 400 })
+    }
+
+    const db = await connectToDatabase()
+
+    const result = await db.collection('users').updateOne(
+        { _id: new ObjectId(userId) },
+        {
+            $set: {
+                first_name,
+                last_name,
+                email,
+                updated: new Date(),
+            },
+        }
+    )
+
+    if (result.modifiedCount === 0) {
+        return new NextResponse('Nepodarilo sa aktualizovať údaje', { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, updated: true })
+}
+

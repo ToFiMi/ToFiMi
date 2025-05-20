@@ -1,33 +1,19 @@
 import { cookies } from 'next/headers'
 import {Layout} from "antd";
-import {AdminEventCard} from "@/app/dashboard/admin-event-card";
-import { headers } from "next/headers";
+import {AdminEventCard, AdminReportRegistrations} from "@/app/dashboard/admin-event-card";
+import {NextRequest} from "next/server";
+import {getReport} from "@/app/api/events/[event_id]/report/route";
+import {Event} from "../../../models/events"
+import {connectToDatabase} from "@/lib/mongo";
 
-export default async function AdminDashboardPage() {
-    const cookieStore =await cookies()
-    const token = cookieStore.get('auth_token')?.value
-    const headersList = await headers()
-    const referer = headersList.get("referer")
+export default async function AdminDashboardPage(req: NextRequest) {
 
-    console.log("referer: ", `${referer}api/events/next/report`)
-
-    const res = await fetch(`${referer}api/events/next/report`, {
-        headers: {
-            Cookie: `auth_token=${token}`
-        },
-        cache: 'no-store' // SSR fresh data
-    })
-
-    if (!res.ok) {
-        throw new Error('Nepodarilo sa načítať dáta z report API.')
-    }
-
-    const { event, registrations, next_event, previous_event } = await res.json()
+    const { event, registrations, next_event, previous_event } =  await getReport('next')
 
 
     return (
         <Layout className="min-h-screen">
-            <AdminEventCard current_event={event} next_event={next_event} previous_event={previous_event} next_registrations={registrations} />
+            <AdminEventCard current_event={event} next_event={next_event as Event } previous_event={previous_event as Event} next_registrations={registrations as AdminReportRegistrations } />
         </Layout>
     )
 }

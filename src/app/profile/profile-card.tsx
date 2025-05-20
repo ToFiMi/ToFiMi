@@ -1,14 +1,17 @@
 'use client'
-import { Card, Typography, Divider, Button, message } from 'antd'
-import { useEffect, useState } from 'react'
+import {Button, Card, Divider, message, Typography} from 'antd'
+import {useEffect, useState} from 'react'
 import TagsInput from './tags-input'
-import { subscribeToPush } from '@/lib/subscribePush'
+import {subscribeToPush} from '@/lib/subscribePush'
+import ChangePasswordModal from "@/app/profile/change-password-modal";
 
-const { Title, Text } = Typography
+const {Title, Text} = Typography
 
-export default function UserCard({ user }: { user: any }) {
+export default function UserCard({user}: { user: any }) {
     const [hasPush, setHasPush] = useState(false)
     const [checking, setChecking] = useState(true)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
 
     useEffect(() => {
 
@@ -40,25 +43,39 @@ export default function UserCard({ user }: { user: any }) {
         }
     }
 
+
     return (
         <Card>
-            <Title level={3}>Môj profil</Title>
-            <Text strong>Meno:</Text> <Text>{user.first_name} {user.last_name}</Text><br/>
-            <Text strong>Email:</Text> <Text>{user.email}</Text><br/>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Title level={3} style={{ margin: 0 }}>Môj profil</Title>
+                <Button type="primary" onClick={() => setIsModalOpen(true)} >
+                    Zmeniť heslo
+                </Button>
+            </div>
 
-            <Text strong>Notifikácie:</Text>{' '}
-            {checking ? 'Načítavam...' : hasPush ? (
-                <Text type="success">Zapnuté</Text>
-            ) : (
-                <>
-                    <Text type="secondary">Vypnuté</Text>{' '}
-                    <Button type="link" onClick={handleEnablePush}>Zapnúť</Button>
-                </>
-            )}
+            <div style={{ marginTop: 12 }}>
+                <Text strong>Meno:</Text> <Text>{user.first_name} {user.last_name}</Text><br />
+                <Text strong>Email:</Text> <Text>{user.email}</Text><br />
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+                <Text strong>Notifikácie:</Text>{' '}
+                {checking ? 'Načítavam...' : hasPush ? (
+                    <Text type="success">Zapnuté</Text>
+                ) : (
+                    <>
+                        <Text type="secondary">Vypnuté</Text>{' '}
+                        <Button type="link" onClick={handleEnablePush} style={{ padding: 0 }}>Zapnúť</Button>
+                    </>
+                )}
+            </div>
 
             <Divider />
             <Title level={4}>Alergie a intolerancie</Title>
             <TagsInput userId={user._id.toString()} />
+            <Divider />
+
+            <ChangePasswordModal setIsModalOpen={setIsModalOpen} isModalOpen={isModalOpen} />
         </Card>
     )
 }

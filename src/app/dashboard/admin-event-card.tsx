@@ -4,6 +4,7 @@ import { Event } from "../../../models/events"
 import {Card, Typography, Space, Divider, Tag, Statistic, Flex, List, Button} from "antd"
 import dayjs from "dayjs";
 import {useState} from "react";
+import {useMobile} from "@/hooks/useMobile";
 require("dayjs/locale/sk");
 
 
@@ -13,16 +14,17 @@ export type AdminEventCardProps = {
     next_event: Event | null
     previous_event: Event | null
     current_event:Event
-    next_registrations: {
-        user: {
-            first_name: string
-            last_name: string
-            email: string
-        }
-        meals: { date: string, time: string }[]
-        allergies: string[]
-    }[]
+    next_registrations: AdminReportRegistrations
 }
+export type AdminReportRegistrations = {
+    user: {
+        first_name: string
+        last_name: string
+        email: string
+    }
+    meals: { date: string, time: string }[]
+    allergies: string[]
+}[]
 
 export const AdminEventCard = ({ next_event, next_registrations ,current_event, previous_event }: AdminEventCardProps) => {
 
@@ -34,7 +36,7 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
 
     const dayToDateMap: Record<string, string> = {}
 
-
+    const isMobile = useMobile()
     event.meals.forEach(meal => {
         const date = dayjs(meal.date).format('YYYY-MM-DD')
         const dayName = dayjs(meal.date).format('dddd').toLowerCase() // napr. 'friday'
@@ -72,14 +74,6 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
         name,
         count,
     }))
-    const treeData = Object.entries(mealCounts).map(([date, times], dateIndex) => ({
-        title: `${dayjs(date).locale('sk').format('dddd')} (${date})`,
-        key: `day-${dateIndex}`,
-        children: Object.entries(times).map(([time, count], timeIndex) => ({
-            title: `${time} – ${count} porcií`,
-            key: `day-${dateIndex}-time-${timeIndex}`,
-        })),
-    }))
 
     return (
         <Card
@@ -97,7 +91,7 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
                             setRegistrations(data.registrations)
                         }}
                     >
-                        ← {previousEvent?.title}
+                        ← { isMobile?"":previousEvent?.title}
                     </Button>
 
                     <Title level={3} style={{ margin: 0 }}>{event.title}</Title>
@@ -114,7 +108,7 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
                             setRegistrations(data.registrations)
                         }}
                     >
-                        {nextEvent?.title} →
+                        { isMobile?"": nextEvent?.title} →
                     </Button>
                 </Flex>
             }
