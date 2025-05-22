@@ -54,8 +54,8 @@ export default function UserCard({user}: { user: any }) {
             </div>
 
             <div style={{ marginTop: 12 }}>
-                <Text strong>Meno:</Text> <Text>{user.first_name} {user.last_name}</Text><br />
-                <Text strong>Email:</Text> <Text>{user.email}</Text><br />
+                <Text strong>Meno:</Text> <Text>{user?.first_name} {user?.last_name}</Text><br />
+                <Text strong>Email:</Text> <Text>{user?.email}</Text><br />
             </div>
 
             <div style={{ marginTop: 12 }}>
