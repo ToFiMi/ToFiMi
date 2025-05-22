@@ -14,7 +14,7 @@ import {
     Checkbox, Divider
 } from 'antd'
 import dayjs, {Dayjs} from 'dayjs'
-import { Event } from '../../../../models/events'
+import { Event } from '@/models/events'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 
 dayjs.extend(isSameOrBefore)

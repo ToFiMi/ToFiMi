@@ -1,6 +1,6 @@
 "use client"
 
-import { Event } from "../../../models/events"
+import { Event } from "@/models/events"
 import {Card, Typography, Space, Divider, Tag, Statistic, Flex, List, Button} from "antd"
 import dayjs from "dayjs";
 import {useState} from "react";

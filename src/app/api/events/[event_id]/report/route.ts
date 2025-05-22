@@ -1,8 +1,8 @@
 import {NextRequest, NextResponse} from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import {Db, ObjectId} from 'mongodb'
-import {Event} from "../../../../../../models/events"
-import {Registration} from "../../../../../../models/registrations";
+import {Event} from "@/models/events"
+import {Registration} from "@/models/registrations";
 
 
 //@ts-ignore

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button, Card, Checkbox, Divider, Form, Modal, message } from 'antd'
-import { Event } from '../../models/events'
+import { Event } from '@/models/events'
 import { useState } from 'react'
 import dayjs from 'dayjs'
 

@@ -1,7 +1,7 @@
 import {Button, Layout, Space} from 'antd'
 import {DailyReflection} from "@/componets/daily-reflection";
 import {connectToDatabase} from "@/lib/mongo";
-import {Event} from "../../../models/events";
+import {Event} from "@/models/events";
 import {RegistrationCard} from "@/componets/registration-card";
 import {getToken} from "next-auth/jwt";
 import {cookies} from "next/headers";

@@ -1,6 +1,6 @@
 "use client"
 import {Button, Card} from "antd";
-import {Event} from "../../models/events";
+import {Event} from "@/models/events";
 
 export const DailyReflection = ({last_event}: { last_event :Event }) =>{
 
