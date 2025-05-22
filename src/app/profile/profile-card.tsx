@@ -72,7 +72,7 @@ export default function UserCard({user}: { user: any }) {
 
             <Divider />
             <Title level={4}>Alergie a intolerancie</Title>
-            <TagsInput userId={user._id.toString()} />
+            <TagsInput userId={user?._id.toString()} />
             <Divider />
 
             <ChangePasswordModal setIsModalOpen={setIsModalOpen} isModalOpen={isModalOpen} />
