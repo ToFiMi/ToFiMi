@@ -17,7 +17,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const db = await connectToDatabase()
-    const user = await db.collection('users').findOne({ _id: new ObjectId(token.id) })
+    const user = await db.collection('users').findOne({ _id: new ObjectId(token.id) },{ projection: { passwordHash: 0 } })
 
     if (!user || !user.passwordHash) {
         return new NextResponse('Použivateľ sa nenašiel', { status: 404 })

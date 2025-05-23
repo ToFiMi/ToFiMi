@@ -65,7 +65,7 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
             if (res.ok) {
                 const data = await res.json()
                 if(data.token) {
-                    setInviteUrl(`${window.location.href}/create_account/${data.token}`)
+                    setInviteUrl(`${window.location.protocol}//${window.location.host}/create_account/${data.token}`)
                     message.success('Pozvánka bola vygenerovaná')
                 }
                 else message.success(data.message)

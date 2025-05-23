@@ -1,5 +1,5 @@
+"use server"
 import {Layout} from "antd";
-import {NextRequest} from "next/server";
 import {getReport} from "@/app/api/events/[event_id]/report/route";
 import {AdminEventCard} from "@/app/dashboard/admin-event-card";
 import {Event} from "@/models/events"
@@ -9,7 +9,7 @@ export default async function AdminDashboardPage() {
     try {
         report = await getReport('next')
     } catch (err) {
-        console.error('❌ Chyba pri načítaní reportu:', err)
+        console.error('Chyba pri načítaní reportu:', err)
     }
 
     if (!report) {

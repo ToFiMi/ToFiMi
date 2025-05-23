@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'mongodb'
+import {User} from "@/lib/class/User";
 
 export async function POST(req: NextRequest) {
     const body = await req.json()
@@ -21,14 +22,15 @@ export async function POST(req: NextRequest) {
 
     const school_id = ott.school_id
 
-    const existing = await db.collection('users').findOne({ email })
+    const u = await User.init(req)
+    const existing = await u.getUserByEmail(email)
+
     if (existing) {
         return new NextResponse('Používateľ už existuje', { status: 409 })
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
-
-    const userResult = await db.collection('users').insertOne({
+    const userResult =  await u.createUser({
         email,
         passwordHash,
         first_name,

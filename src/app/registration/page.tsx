@@ -1,5 +1,5 @@
-import Members from '@/app/registration/members'
-import QrModal from '@/app/registration/qr-modal'
+import Members from '@/app/users/members'
+import QrModal from '@/app/users/qr-modal'
 import {getToken} from 'next-auth/jwt'
 import {cookies} from 'next/headers'
 import {Layout, Space} from "antd";

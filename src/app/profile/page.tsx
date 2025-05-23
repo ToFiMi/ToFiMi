@@ -18,7 +18,7 @@ export default async function ProfilePage() {
 
     if (token?.isAdmin) {
         // Admin – len základné údaje bez škôl
-        const basic = await db.collection('users').findOne({ _id: new ObjectId(userId as string) })
+        const basic = await db.collection('users').findOne({ _id: new ObjectId(userId as string) },{ projection: { passwordHash: 0 } })
         if (!basic) return <p>Používateľ neexistuje</p>
 
         user = {

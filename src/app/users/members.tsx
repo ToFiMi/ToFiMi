@@ -2,7 +2,6 @@
 
 import {Button, Card, Form, Input, List, message, Modal, Select, Table, Typography} from 'antd'
 import { useEffect, useState } from 'react'
-import {useParams} from "next/navigation";
 
 type Member = {
     role: string
@@ -38,8 +37,6 @@ export default function Members({school_id}: {school_id?: string }) {
     const handleAddUser = async () => {
         try {
             const values = await form.validateFields()
-
-            // Pridaj používateľa a získaš token
             const res = await fetch(`/api/create_account/invite`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -49,8 +46,7 @@ export default function Members({school_id}: {school_id?: string }) {
 
             if (res.ok) {
                 const data = await res.json()
-                setInviteToken(`${window.location.href}/create_account/${data.token}`)
-
+                setInviteToken(`${window.location.protocol}//${window.location.host}/create_account/${data.token}`)
                 message.success('Používateľ pridaný')
                 setIsModalOpen(false)
                 form.resetFields()

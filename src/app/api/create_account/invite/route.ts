@@ -4,27 +4,29 @@ import {connectToDatabase} from "@/lib/mongo";
 import {ObjectId} from "mongodb";
 import {getToken} from "next-auth/jwt";
 import {cookies} from "next/headers";
+import {User} from "@/lib/class/User";
 
 export async function POST(req: NextRequest) {
     const { email, first_name, last_name, role, school_id } = await req.json()
     const db = await connectToDatabase()
 
-    // Autentifikácia
     const userToken = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
     const school_id_token = userToken?.school_id
     const effectiveSchoolId = school_id || school_id_token
 
     if (!effectiveSchoolId) {
         return new NextResponse('Unauthorized', { status: 401 })
     }
+    const u = await User.init(req)
+    const user = await u.getUserByEmail(email)
 
-    const user = await db.collection('users').findOne({ email })
 
     if (user) {
         const existsInSchool = await db.collection('user_school').findOne({
             user_id: user._id,
             school_id: new ObjectId(effectiveSchoolId)
-        })
+        },{ projection: { passwordHash: 0 } })
 
         if (existsInSchool) {
             return new NextResponse('Používateľ už je členom školy', { status: 409 })
