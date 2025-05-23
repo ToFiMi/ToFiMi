@@ -8,14 +8,14 @@ interface TagOption {
     value: string
 }
 
-export default function TagsInput({ userId }: { userId: string }) {
+export default function TagsInput({ tag_type = "allergy" }: { tag_type: string }) {
     const [options, setOptions] = useState<TagOption[]>([])
     const [selectedTags, setSelectedTags] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
 
     const fetchTags = async () => {
         try {
-            const res = await fetch('/api/tags?type=allergy')
+            const res = await fetch(`/api/tags?type=${tag_type}`)
             const data = await res.json()
             setOptions(data.map((tag: any) => ({ label: tag.name, value: tag._id })))
         } catch (err) {
@@ -62,7 +62,7 @@ export default function TagsInput({ userId }: { userId: string }) {
             const res = await fetch('/api/tags', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: tagName, type: 'allergy' })
+                body: JSON.stringify({ name: tagName, type: tag_type })
             })
             const newTag = await res.json()
             const newOption = { label: newTag.name, value: newTag._id }

@@ -35,7 +35,7 @@ export async function getReport(event_id: string) {
             .limit(1)
             .toArray()
 
-        if (!next_event.length) throw new Error('No upcoming event')
+         if (!next_event.length) return null
         event = next_event[0]
     } else {
         event = await db.collection('events').findOne({ _id: new ObjectId(event_id) })

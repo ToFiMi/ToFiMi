@@ -2,6 +2,7 @@
 import { debounce } from 'lodash'
 import { useState } from 'react'
 import { Table, Modal, Form, Input, Select, Button, message, Typography, Space } from 'antd'
+import {User as UserModel} from "@/models/user"
 
 export interface User {
     _id: string
@@ -18,7 +19,9 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
     const [loading, setLoading] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [form] = Form.useForm()
-    const [emailOptions, setEmailOptions] = useState<any[]>([])
+    const [emailOptions, setEmailOptions] = useState<UserModel[]>([])
+    const [searchTerm, setSearchTerm] = useState('')
+    const [showDropdown, setShowDropdown] = useState(false)
     const [inviteUrl, setInviteUrl] = useState<string | null>(null)
 
     const fetchUsers = async () => {
@@ -95,21 +98,40 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
             key: 'role',
         },
     ]
-    const handleSearch = debounce(async (value: string) => {
-        if (!value || value.length < 2) {
-            setEmailOptions([])
-            return
+    const handleSearch = async (value: string) => {
+        setSearchTerm(value)
+        if (value.length > 3 && value.includes('@')) {
+            setLoading(true)
+            try {
+                const res = await fetch(`/api/users?autocomplete=1&query=${encodeURIComponent(value)}`, {
+                    credentials: 'include',
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    setEmailOptions(data)
+                    setShowDropdown(true)
+                } else {
+                    setEmailOptions([])
+                }
+            } catch (e) {
+                message.error('Chyba pri načítaní používateľov')
+            } finally {
+                setLoading(false)
+            }
+        } else {
+            setShowDropdown(false)
         }
+    }
 
-        const res = await fetch(`/api/users?autocomplete=1&query=${encodeURIComponent(value)}`, {
-            credentials: 'include',
+    const handleSelect = (email: string, option: UserModel) => {
+        form.setFieldsValue({
+            email,
+            first_name: option.first_name || '',
+            last_name: option.last_name || '',
         })
-
-        if (res.ok) {
-            const data = await res.json()
-            setEmailOptions(data)
-        }
-    }, 300)
+        setSearchTerm(email)
+        setShowDropdown(false)
+    }
 
     return (
         <>
@@ -133,26 +155,58 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
                 okText="Vytvoriť pozvánku"
             >
                 <Form layout="vertical" form={form} onFinish={handleAddUser}>
-                    <Form.Item name="email" label="Email" rules={[{ required: true }]}>
-                        <Select
-                            showSearch
-                            placeholder="Zadajte alebo vyberte email"
-                            onSearch={handleSearch}
-                            onSelect={(value, option) => {
-                                form.setFieldsValue({
-                                    first_name: option.first_name,
-                                    last_name: option.last_name,
-                                })
-                            }}
-                            filterOption={false}
-                            notFoundContent={null}
-                            options={emailOptions.map((opt: any) => ({
-                                label: opt.email,
-                                value: opt.email,
-                                first_name: opt.first_name,
-                                last_name: opt.last_name,
-                            }))}
-                        />
+                    <Form.Item
+                        name="email"
+                        label="Email"
+                        rules={[
+                            { required: true, message: 'Zadajte email' },
+                            { type: 'email', message: 'Neplatný formát emailu' },
+                        ]}
+                    >
+                        <>
+                            <Input
+                                autoComplete="off"
+                                value={searchTerm}
+                                type={"email"}
+                                onChange={(e) => {
+                                    const value = e.target.value
+                                    setSearchTerm(value)
+                                    form.setFieldsValue({ email: value })
+                                    handleSearch(value)
+                                }}
+                                placeholder="Zadajte email"
+                            />
+                            {showDropdown && emailOptions.length > 0 && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        backgroundColor: '#fff',
+                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                        zIndex: 1000,
+                                        width: '100%',
+                                        maxHeight: 200,
+                                        overflowY: 'auto',
+                                        borderRadius: 4,
+                                        marginTop: 4,
+                                        padding: 4,
+                                    }}
+                                >
+                                    {emailOptions.map((opt) => (
+                                        <div
+                                            key={ Number(opt._id)}
+                                            style={{
+                                                padding: '8px 12px',
+                                                cursor: 'pointer',
+                                                borderRadius: 4,
+                                            }}
+                                            onMouseDown={() => handleSelect(opt.email, opt)}
+                                        >
+                                            <p>{opt.first_name + " "  + opt.last_name + " (" + opt.email+ ")"  }</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     </Form.Item>
                     <Form.Item name="first_name" label="Meno" rules={[{ required: true }]}>
                         <Input />

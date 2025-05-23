@@ -4,7 +4,7 @@ import {getReport} from "@/app/api/events/[event_id]/report/route";
 import {AdminEventCard} from "@/app/dashboard/admin-event-card";
 import {Event} from "@/models/events"
 
-export default async function AdminDashboardPage(req: NextRequest) {
+export default async function AdminDashboardPage() {
     let report = null
     try {
         report = await getReport('next')
