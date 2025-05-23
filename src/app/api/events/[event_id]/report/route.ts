@@ -1,6 +1,6 @@
-import {NextRequest, NextResponse} from 'next/server'
+import {NextRequest} from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
-import {Db, ObjectId} from 'mongodb'
+import { ObjectId} from 'mongodb'
 import {Event} from "@/models/events"
 import {Registration} from "@/models/registrations";
 
