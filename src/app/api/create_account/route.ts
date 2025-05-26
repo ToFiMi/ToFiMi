@@ -20,35 +20,35 @@ export async function POST(req: NextRequest) {
         return new NextResponse('Token je neplatný alebo expirovaný', { status: 403 })
     }
 
-    const school_id = ott.school_id
+    const school_id = ott?.school_id
 
-    const u = await User.init(req)
-    const existing = await u.getUserByEmail(email)
+
+    const existing = await db.collection('users').findOne({ email })
 
     if (existing) {
         return new NextResponse('Používateľ už existuje', { status: 409 })
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
-    const userResult =  await u.createUser({
+    const userResult = await db.collection('users').insertOne({
         email,
         passwordHash,
         first_name,
         last_name,
-        isAdmin: false,
+        isAdmin:  ott.role === "admin",
         created: new Date(),
         updated: new Date(),
     })
-
-    await db.collection('user_school').insertOne({
-        user_id: userResult.insertedId,
-        school_id: new ObjectId(school_id),
-        role: ott.role || 'user',
-    })
+    if(ott.role !== "admin") {
+        await db.collection('user_school').insertOne({
+            user_id: userResult.insertedId,
+            school_id: new ObjectId(school_id),
+            role: ott.role || 'user',
+        })
+    }
 
     return new NextResponse('Účet bol vytvorený', { status: 201 })
 }
-// GET /api/create_account?token=xyz
 export async function GET(req: NextRequest) {
     const tokenParam = req.nextUrl.searchParams.get('token')
     if (!tokenParam) return new NextResponse('Missing token', { status: 400 })

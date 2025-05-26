@@ -3,7 +3,7 @@ self.addEventListener('push', function (event) {
     event.waitUntil(
        self.registration.showNotification(data.title || 'Default Title', {
            body: data.body || 'Default message body',
-           icon: '/vercel.svg',
+           icon: '/premeny-logo.png',
        })
     );
 });

@@ -15,14 +15,15 @@ export async function POST(req: NextRequest) {
     const school_id_token = userToken?.school_id
     const effectiveSchoolId = school_id || school_id_token
 
-    if (!effectiveSchoolId) {
+    if (!effectiveSchoolId && !userToken.isAdmin) {
+        console.log(userToken.isAdmin)
         return new NextResponse('Unauthorized', { status: 401 })
     }
     const u = await User.init(req)
     const user = await u.getUserByEmail(email)
 
 
-    if (user) {
+    if (user && role !== "admin") {
         const existsInSchool = await db.collection('user_school').findOne({
             user_id: user._id,
             school_id: new ObjectId(effectiveSchoolId)
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     await db.collection('registration-tokens').insertOne({
         token,
-        school_id: new ObjectId(effectiveSchoolId),
+        school_id: role!=="admin"? new ObjectId(effectiveSchoolId): "",
         email,
         first_name,
         last_name,

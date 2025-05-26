@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
+import {School} from "@/models/school";
 
 type Member = {
     _id?: string
@@ -19,17 +20,20 @@ type Member = {
 export default function UsersPageClient({
                                             school_id,
                                             isAdmin = false,
-                                            initialUsers
+                                            initialUsers,
+                                            schools = []
                                         }: {
     school_id?: string
     isAdmin?: boolean
     initialUsers?: Member[]
+    schools?: School[]
 }) {
     const [members, setMembers] = useState<Member[]>(initialUsers || [])
     const [loading, setLoading] = useState(!initialUsers)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [inviteToken, setInviteToken] = useState<string | null>(null)
     const [form] = Form.useForm()
+    const role = Form.useWatch('role', form)
 
     const fetchMembers = async () => {
         if (!school_id) return
@@ -49,11 +53,15 @@ export default function UsersPageClient({
     const handleAddUser = async () => {
         try {
             const values = await form.validateFields()
+            const payload = {
+                ...values,
+                ...(role !== 'admin' && school_id ? { school_id } : {}),
+            }
             const res = await fetch(`/api/create_account/invite`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify(school_id ? { ...values, school_id } : values)
+                body: JSON.stringify(payload)
             })
 
             if (res.ok) {
@@ -91,7 +99,8 @@ export default function UsersPageClient({
             filters: [
                 { text: 'Vedúci', value: 'leader' },
                 { text: 'Animátor', value: 'animator' },
-                { text: 'Študent', value: 'student' }
+                { text: 'Študent', value: 'student' },
+                isAdmin && {text: 'Administrador', value: 'administrador'}
             ],
             onFilter: (value: string, record: Member) => record.role === value,
             render: (role: string) => <Tag color="blue">{role}</Tag>
@@ -139,13 +148,32 @@ export default function UsersPageClient({
                     <Form.Item name="last_name" label="Priezvisko" rules={[{ required: true }]}>
                         <Input />
                     </Form.Item>
+
+
+
                     <Form.Item name="role" label="Rola" rules={[{ required: true }]}>
-                        <Select>
+                        <Select placeholder="Vyber rolu">
                             <Select.Option value="leader">Leader</Select.Option>
                             <Select.Option value="animator">Animator</Select.Option>
                             <Select.Option value="student">Študent</Select.Option>
+                            {isAdmin && <Select.Option value="admin">Administrátor</Select.Option>}
                         </Select>
                     </Form.Item>
+                    {isAdmin && role !== 'admin' && (
+                        <Form.Item
+                            name="school_id"
+                            label="Škola"
+                            rules={[{ required: true, message: 'Zvoľ školu' }]}
+                        >
+                            <Select placeholder="Vyber školu">
+                                {schools.map((school) => (
+                                    <Select.Option key={school._id.toString()} value={school._id}>
+                                        {school.name}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                    )}
                 </Form>
             </Modal>
 

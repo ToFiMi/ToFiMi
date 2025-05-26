@@ -66,7 +66,6 @@ export default function AppMenu({role, children}: Props) {
             {key: '/homeworks', label: 'Domáce úlohy'},
             {key: '/groups', label: 'Skupinky'},
             {key: '/users', label: 'Účastníci'},
-            {key: '/registration', label: 'Registrácia'},
             {key: '/daily-reflections', label: 'Zamyslenia'},
             {key: '/profile', label: 'Profil'},
         ]
@@ -124,7 +123,7 @@ export default function AppMenu({role, children}: Props) {
                         borderBottom: '1px solid rgba(255,255,255,0.1)',
                     }}
                 >
-                    {collapsed ? '🎓' : 'DAŠ Admin'}
+                    {collapsed ? '🎓' : 'DAŠ'}
                     <Button
                         type="text"
                         icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}

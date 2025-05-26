@@ -1,16 +1,11 @@
 'use client'
 import { Button, Card, Modal, QRCode, Typography, Space } from 'antd'
 import { useState } from 'react'
-import {usePathname} from "next/navigation";
-
 const { Text } = Typography
 
 export default function QrModal({ existing_token }: { existing_token?: string }) {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [token, setToken] = useState(existing_token)
-    const location = usePathname()
-
-    console.log(location)
 
     const handleGenerate = async () => {
         if(token){
@@ -32,8 +27,10 @@ export default function QrModal({ existing_token }: { existing_token?: string })
             console.error("Token creation failed", error)
         }
     }
-
-    const qrUrl = `${window.location.href}/create_account/${token}`
+if(!window){
+    return null
+}
+    const qrUrl = `${window.location.protocol}//${window.location.host}/create_account/${token}`
 
     return (
         <>
