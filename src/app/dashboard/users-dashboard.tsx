@@ -22,7 +22,7 @@ export default async function UsersDashboardPage() {
         .limit(1)
         .project({ _id: 0, school_id: 0 })
         .toArray()
-    const next_event = await db.collection("events")
+    const next_event = await db.collection<Event>("events")
         .find({ startDate: { $gte: now },school_id: new ObjectId(school_id as string) })
         .sort({ startDate: 1 })
         .limit(1)
@@ -36,14 +36,16 @@ export default async function UsersDashboardPage() {
         school_id: event?.school_id?.toString?.(),
     }
 
-    console.log("las", last_event)
+
+
+
     return (
         <Layout className="min-h-screen">
             <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
 
             <DailyReflection last_event={last_event[0] as Event || null}/>
 
-            <RegistrationCard next_event={ next?._id? next: null}/>
+            <RegistrationCard next_event={ next?._id? next: null} userRole={token?.role}/>
 
 
             </Space>
