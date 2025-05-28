@@ -10,7 +10,6 @@ import {
     message,
     Modal,
     Table,
-    Space,
     Checkbox, Divider
 } from 'antd'
 import dayjs, {Dayjs} from 'dayjs'
@@ -24,25 +23,27 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
     const [loading, setLoading] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [mealDays, setMealDays] = useState<string[]>([])
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null)
     const [form] = Form.useForm()
-    const startDate: Dayjs | null = Form.useWatch('startDate', form)
-    const endDate: Dayjs | null = Form.useWatch('endDate', form)
+    const dateRange: Dayjs[] | null = Form.useWatch('dateRange', form);
+
 
 
     useEffect(() => {
-        if (startDate && endDate && endDate.isAfter(startDate)) {
-            const days: string[] = []
-            let current = startDate.startOf('day')
-            const last = endDate.startOf('day')
+        if (dateRange && dateRange.length === 2 && dateRange[1].isAfter(dateRange[0])) {
+            const [start, end] = dateRange;
+            const days: string[] = [];
+            let current = start.startOf('day');
+            const last = end.startOf('day');
             while (current.isSameOrBefore(last)) {
-                days.push(current.format('YYYY-MM-DD'))
-                current = current.add(1, 'day')
+                days.push(current.format('YYYY-MM-DD'));
+                current = current.add(1, 'day');
             }
-            setMealDays(days)
+            setMealDays(days);
         } else {
-            setMealDays([])
+            setMealDays([]);
         }
-    }, [startDate, endDate])
+    }, [dateRange]);
 
 
 
@@ -72,6 +73,8 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
             date,
             times: mealList,
         }))
+        const [startDate, endDate] = values.dateRange;
+
 
         const res = await fetch(`/api/schools/${schoolId}/events`, {
             method: 'POST',
@@ -80,8 +83,8 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
             body: JSON.stringify({
                 title: values.title,
                 description: values.description,
-                startDate: values.startDate.toISOString(),
-                endDate: values.endDate.toISOString(),
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
                 grade: values.grade,
                 meals
             })
@@ -116,6 +119,34 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
         },
         { title: 'Ročník', dataIndex: 'grade', key: 'grade', render: (g: number) => `${g}. ročník` },
     ]
+    const handleUpdateEvent = async (eventId: string, values: any) => {
+        const meals = Object.entries(values.meals || {}).map(([date, mealList]) => ({
+            date,
+            times: mealList,
+        }))
+        const [startDate, endDate] = values.dateRange;
+
+        const res = await fetch(`/api/schools/${schoolId}/events/${eventId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                title: values.title,
+                description: values.description,
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                grade: values.grade,
+                meals,
+            }),
+        })
+
+        if (res.ok) {
+            message.success('Termín bol upravený')
+        } else {
+            const err = await res.text()
+            message.error(`Chyba: ${err}`)
+        }
+    }
 
     return (
         <div className="mt-8">
@@ -124,22 +155,51 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                 <Button type="primary" onClick={() => setIsModalOpen(true)}>Pridať termín</Button>
             </div>
 
-            <Table dataSource={events} columns={columns} rowKey="_id" loading={loading} />
-
+            <Table
+                dataSource={events}
+                columns={columns}
+                rowKey="_id"
+                loading={loading}
+                rowHoverable
+                onRow={(record) => ({
+                    onClick: () => {
+                        setEditingEvent(record)
+                        form.setFieldsValue({
+                            ...record,
+                            dateRange: [dayjs(record.startDate), dayjs(record.endDate)],
+                            meals: Object.fromEntries(
+                                (record.meals || []).map((m) => [m.date, m.times])
+                            )
+                        })
+                        setIsModalOpen(true)
+                    }
+                })}
+            />
             <Modal
-                title="Pridať nový termín"
+                title={editingEvent ? 'Upraviť termín' : 'Pridať nový termín'}
                 open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
+                onCancel={() => {
+                    setIsModalOpen(false)
+                    setEditingEvent(null)
+                    form.resetFields()
+                }}
                 onOk={async () => {
                     try {
-                        const values = await form.validateFields();
-                        console.log('✅ Valid form values:', values);
-                        await handleAddEvent(values); // Uprav handleAddEvent, aby prijímal values ako parameter
+                        const values = await form.validateFields()
+                        if (editingEvent) {
+                            await handleUpdateEvent(String(editingEvent._id), values)
+                        } else {
+                            await handleAddEvent(values)
+                        }
+                        form.resetFields()
+                        setEditingEvent(null)
+                        setIsModalOpen(false)
+                        await fetchEvents()
                     } catch (err) {
-                        console.warn('❌ Validation failed:', err);
+                        console.warn('❌ Validation failed:', err)
                     }
                 }}
-                okText="Vytvoriť"
+                okText={editingEvent ? 'Uložiť' : 'Vytvoriť'}
                 width={700}
             >
                 <Form layout="vertical" form={form} onFinish={handleAddEvent}>
@@ -151,12 +211,12 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                         <Input.TextArea rows={2} />
                     </Form.Item>
 
-                    <Form.Item name="startDate" label="Začiatok" rules={[{ required: true }]}>
-                        <DatePicker style={{ width: '100%' }} />
-                    </Form.Item>
-
-                    <Form.Item name="endDate" label="Koniec" rules={[{ required: true }]}>
-                        <DatePicker style={{ width: '100%' }} />
+                    <Form.Item
+                        name="dateRange"
+                        label="Dátum konania"
+                        rules={[{ required: true, message: 'Vyber dátum začiatku a konca' }]}
+                    >
+                        <DatePicker.RangePicker  style={{ width: '100%' }} />
                     </Form.Item>
 
                     <Form.Item name="grade" label="Ročník" rules={[{ required: true }]}>

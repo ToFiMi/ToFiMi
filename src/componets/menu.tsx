@@ -6,6 +6,17 @@ import Link from 'next/link'
 import {signOut} from 'next-auth/react'
 import {useLayoutEffect, useState} from 'react'
 import {useRouter} from "next/navigation";
+import dayjs from 'dayjs'
+import 'dayjs/locale/sk'
+import localeData from 'dayjs/plugin/localeData'
+import { ConfigProvider } from 'antd'
+import sk from 'antd/locale/sk_SK'
+
+dayjs.extend(localeData)
+dayjs.locale({
+    ...dayjs.Ls.sk,
+    weekStart: 1
+})
 
 
 const {Sider, Header} = Layout
@@ -182,9 +193,11 @@ export default function AppMenu({role, children}: Props) {
                 </Header>
 
                 {/* Page content */}
+                <ConfigProvider locale={sk}>
                 <Layout.Content style={{margin: '24px 16px', overflow: 'auto'}}>
                     {children}
                 </Layout.Content>
+                </ConfigProvider>
             </Layout>
         </Layout>
     )

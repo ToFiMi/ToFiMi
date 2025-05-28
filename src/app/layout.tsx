@@ -4,8 +4,19 @@ import { PwaInit } from "@/app/pwa-init";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import  AuthLayout  from "@/componets/layouts/auth-layout";
 import '@ant-design/v5-patch-for-react-19';
+import { ConfigProvider } from 'antd'
+import sk from 'antd/locale/sk_SK'
 import {cookies} from "next/headers";
 import {getToken} from "next-auth/jwt";
+import dayjs from 'dayjs'
+import 'dayjs/locale/sk'
+import localeData from 'dayjs/plugin/localeData'
+
+dayjs.extend(localeData)
+dayjs.locale({
+    ...dayjs.Ls.sk,
+    weekStart: 1
+})
 type JWTPayload = {
     user_id: string
     role?: 'ADMIN' | 'user' | 'leader' | 'animator'
@@ -32,9 +43,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </head>
         <body>
         <PwaInit />
+        <ConfigProvider locale={sk}>
         <AntdRegistry>
             <AuthLayout role={role} userId={userId}>{children}</AuthLayout>
         </AntdRegistry>
+        </ConfigProvider>
         </body>
         </html>
     );

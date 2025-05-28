@@ -12,16 +12,20 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
         secret: process.env.NEXTAUTH_SECRET,
     })
 
-   const  isAdmin = token?.isAdmin
+    const isAdmin = token?.isAdmin
 
     if (!isAdmin) {
         return new Response('Access denied', { status: 403 })
     }
 
     const eventId = params.event_id
-    const { title, description, startDate, endDate, grade } = await req.json()
+    const { title, description, startDate, endDate, grade, meals } = await req.json()
 
-    await db.collection('events').updateOne(
+    if (!title || !startDate || !endDate || grade == null) {
+        return new Response('Missing required fields', { status: 400 })
+    }
+
+    const result = await db.collection('events').updateOne(
         { _id: new ObjectId(eventId) },
         {
             $set: {
@@ -30,12 +34,13 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
                 grade,
+                meals: meals || [],
                 updated: new Date(),
             }
         }
     )
 
-    return Response.json({ success: true })
+    return Response.json({ success: result.modifiedCount > 0 })
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { event_id: string } }) {
