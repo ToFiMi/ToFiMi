@@ -48,4 +48,52 @@ export class Users {
             .limit(10)
             .toArray()
     }
+
+    async getUsersSchools(school_id?: string) {
+        const matchStage = school_id
+            ? [{ $match: { school_id: new ObjectId(school_id) } }]
+            : []
+
+        const pipeline: any[] = [
+            ...matchStage,
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$user_id' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { passwordHash: 0 } }
+                    ],
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $lookup: {
+                    from: 'schools',
+                    localField: 'school_id',
+                    foreignField: '_id',
+                    as: 'school'
+                }
+            },
+            { $unwind: '$school' }
+        ]
+
+        const records = await this.db.collection('user_school').aggregate(pipeline).toArray()
+
+        return records.map((record) => ({
+            ...record,
+            _id: record._id?.toString(),
+            user_id: record.user_id?.toString(),
+            school_id: record.school_id?.toString(),
+            user: {
+                ...record.user,
+                _id: record.user._id?.toString()
+            },
+            school: {
+                ...record.school,
+                _id: record.school._id?.toString()
+            }
+        }))
+    }
 }

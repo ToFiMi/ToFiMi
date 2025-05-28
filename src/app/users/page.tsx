@@ -7,12 +7,14 @@ import QrModal from "@/app/users/qr-modal";
 import {Layout, Space} from "antd";
 
 export default async function UsersPage() {
-    const token = await getToken({req: {cookies: cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
+    const cookieStore = await cookies()
+    const token = await getToken({req: {cookies: cookieStore} as any, secret: process.env.NEXTAUTH_SECRET})
     if (!token) return <p>Neautorizovaný prístup</p>
 
     const db = await connectToDatabase()
     const isAdmin = token.isAdmin
     const school_id = token.school_id ? new ObjectId(token.school_id) : null
+    const role = token.role
 
     if (isAdmin || school_id) {
         const matchStage = school_id ? [{$match: {school_id}}] : []
@@ -92,6 +94,7 @@ export default async function UsersPage() {
                     <section>
                         <UsersPageClient
                             school_id={String(school_id) as string}
+                            userRole={role}
                             initialUsers={userSchools as any} isAdmin={isAdmin} schools={schools}/>
                     </section>
                 </main>

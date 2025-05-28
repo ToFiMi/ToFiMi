@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
+import {useEffect, useState} from 'react'
+import {Button, Card, Form, Input, message, Modal, Select, Table, Tag, Typography} from 'antd'
 import {School} from "@/models/school";
 
 type Member = {
@@ -21,12 +21,14 @@ export default function UsersPageClient({
                                             school_id,
                                             isAdmin = false,
                                             initialUsers,
-                                            schools = []
+                                            schools = [],
+                                            userRole
                                         }: {
     school_id?: string
     isAdmin?: boolean
     initialUsers?: Member[]
     schools?: School[]
+    userRole: string
 }) {
     const [members, setMembers] = useState<Member[]>(initialUsers || [])
     const [loading, setLoading] = useState(!initialUsers)
@@ -36,11 +38,20 @@ export default function UsersPageClient({
     const role = Form.useWatch('role', form)
 
     const fetchMembers = async () => {
-        if (!school_id) return
+        let url = ""
+
+        if (school_id === "null" && isAdmin) {
+            url = `/api/users`
+        } else {
+            url = `/api/schools/${school_id}/members`
+        }
+
         setLoading(true)
-        const res = await fetch(`/api/schools/${school_id}/members`, {
+        const res = await fetch(url, {
             credentials: 'include'
         })
+
+
         const data = await res.json()
         setMembers(data)
         setLoading(false)
@@ -52,14 +63,16 @@ export default function UsersPageClient({
 
     const handleAddUser = async () => {
         try {
+
             const values = await form.validateFields()
+            const form_school_id = values.school_id !== "null" ? values.school_id : undefined
             const payload = {
                 ...values,
-                ...(role !== 'admin' && school_id ? { school_id } : {}),
+                school_id: form_school_id || school_id,
             }
             const res = await fetch(`/api/create_account/invite`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
                 body: JSON.stringify(payload)
             })
@@ -77,6 +90,28 @@ export default function UsersPageClient({
             }
         } catch (e) {
             console.error(e)
+        }
+    }
+    const handleDeactivate = async (member: Member) => {
+        if (!member._id) return;
+
+        try {
+            const res = await fetch(`/api/users/?user_id=${member._id.toString()}`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include'
+            })
+
+            if (res.ok) {
+                message.success('Používateľ deaktivovaný')
+                await fetchMembers()
+            } else {
+                const err = await res.text()
+                message.error(`Chyba: ${err}`)
+            }
+        } catch (e) {
+            console.error(e)
+            message.error('Nepodarilo sa deaktivovať používateľa')
         }
     }
 
@@ -97,11 +132,11 @@ export default function UsersPageClient({
             dataIndex: 'role',
             key: 'role',
             filters: [
-                { text: 'Vedúci', value: 'leader' },
-                { text: 'Animátor', value: 'animator' },
-                { text: 'Študent', value: 'student' },
+                {text: 'Vedúci', value: 'leader'},
+                {text: 'Animátor', value: 'animator'},
+                {text: 'Študent', value: 'user'},
                 isAdmin && {text: 'Administrador', value: 'administrador'}
-            ],
+            ].filter(Boolean),
             onFilter: (value: string, record: Member) => record.role === value,
             render: (role: string) => <Tag color="blue">{role}</Tag>
         },
@@ -110,6 +145,21 @@ export default function UsersPageClient({
             dataIndex: ['school', 'name'],
             key: 'school',
             render: (text: string) => <span>{text}</span>
+        },
+        (isAdmin || userRole === "leader") && {
+            title: 'Akcia',
+            key: 'action',
+            render: (_: any, record: Member) => {
+                return (
+                    <Button
+                        danger
+                        size="small"
+                        onClick={() => handleDeactivate(record)}
+                    >
+                        Deaktivovať
+                    </Button>
+                )
+            }
         }
     ].filter(Boolean)
 
@@ -118,7 +168,7 @@ export default function UsersPageClient({
             <Card
                 title="Používatelia"
                 loading={loading}
-                extra={
+                extra={userRole === "user" ? <></> :
                     <Button type="primary" onClick={() => setIsModalOpen(true)}>
                         Pridať používateľa
                     </Button>
@@ -139,23 +189,22 @@ export default function UsersPageClient({
                 okText="Pridať"
             >
                 <Form layout="vertical" form={form} onFinish={handleAddUser}>
-                    <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
-                        <Input />
+                    <Form.Item name="email" label="Email" rules={[{required: true, type: 'email'}]}>
+                        <Input/>
                     </Form.Item>
-                    <Form.Item name="first_name" label="Meno" rules={[{ required: true }]}>
-                        <Input />
+                    <Form.Item name="first_name" label="Meno" rules={[{required: true}]}>
+                        <Input/>
                     </Form.Item>
-                    <Form.Item name="last_name" label="Priezvisko" rules={[{ required: true }]}>
-                        <Input />
+                    <Form.Item name="last_name" label="Priezvisko" rules={[{required: true}]}>
+                        <Input/>
                     </Form.Item>
 
 
-
-                    <Form.Item name="role" label="Rola" rules={[{ required: true }]}>
+                    <Form.Item name="role" label="Rola" rules={[{required: true}]}>
                         <Select placeholder="Vyber rolu">
                             <Select.Option value="leader">Leader</Select.Option>
                             <Select.Option value="animator">Animator</Select.Option>
-                            <Select.Option value="student">Študent</Select.Option>
+                            <Select.Option value="user">Študent</Select.Option>
                             {isAdmin && <Select.Option value="admin">Administrátor</Select.Option>}
                         </Select>
                     </Form.Item>
@@ -163,7 +212,7 @@ export default function UsersPageClient({
                         <Form.Item
                             name="school_id"
                             label="Škola"
-                            rules={[{ required: true, message: 'Zvoľ školu' }]}
+                            rules={[{required: true, message: 'Zvoľ školu'}]}
                         >
                             <Select placeholder="Vyber školu">
                                 {schools.map((school) => (
@@ -189,7 +238,7 @@ export default function UsersPageClient({
                         <Typography.Text>
                             Pošli tento link pozvanému animátorovi/vedúcemu:
                         </Typography.Text>
-                        <Typography.Paragraph copyable={{ text: inviteToken }}>
+                        <Typography.Paragraph copyable={{text: inviteToken}}>
                             {inviteToken}
                         </Typography.Paragraph>
                     </>

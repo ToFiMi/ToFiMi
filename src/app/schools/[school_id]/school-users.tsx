@@ -218,7 +218,7 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
                         <Select>
                             <Select.Option value="leader">Leader</Select.Option>
                             <Select.Option value="animator">Animator</Select.Option>
-                            <Select.Option value="student">Študent</Select.Option>
+                            <Select.Option value="user">Študent</Select.Option>
                         </Select>
                     </Form.Item>
                 </Form>

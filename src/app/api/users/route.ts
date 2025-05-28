@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/mongo'
 import { getToken } from 'next-auth/jwt'
 import { ObjectId } from 'mongodb'
 import {Users} from "@/lib/class/Users";
+import {UserSchool} from "@/models/user-school";
 
 export async function GET(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json(results)
         }
 
-        const users = await usersInstance.getUsers()
+        const users = await usersInstance.getUsersSchools()
         return NextResponse.json(users)
     }
 
@@ -72,9 +73,32 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ success: true, updated: true })
 }
 
-export async function POST(req: NextRequest) {
+export async function DELETE(req: NextRequest) {
+    const { searchParams } = new URL(req.url)
+    const userId = searchParams.get('user_id')
 
+    console.log(userId)
 
+    if (!userId || !ObjectId.isValid(userId)) {
+        return NextResponse.json({ error: 'Invalid or missing user_id' }, { status: 400 })
+    }
 
+    try {
+        const db = await connectToDatabase()
+        const result = await db.collection<UserSchool>('user_school').updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { role: 'inactive' } }
+        )
+
+        if (result.modifiedCount === 0) {
+            return NextResponse.json({ error: 'User not found or already inactive' }, { status: 404 })
+        }
+
+        return NextResponse.json({ success: true })
+    } catch (error) {
+        console.error('❌ Deactivation error:', error)
+        return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    }
 }
+
 
