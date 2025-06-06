@@ -4,22 +4,24 @@ import { Homework } from "@/models/homework"
 import { Button, Form, Input, message, Typography } from "antd"
 import { useEffect } from "react"
 
+
 const { Title, Paragraph } = Typography
 
-export default function HomeworkUserPage({ homework, event_id }: { homework: Homework | null, event_id: string }) {
+export default function HomeworkUserPage({ homework, event_id, event_name }: { homework: Homework | null, event_id: string, event_name?: string }) {
     const [form] = Form.useForm()
+
 
     useEffect(() => {
         if (homework?.content) {
             form.setFieldsValue({ content: homework.content })
         }
-    }, [homework, form])
 
-    console.log(homework)
+    }, [homework, form, event_name, event_id])
+
+
 
     const handleSubmit = async (values: any) => {
 
-        //TODO: dorobiť API
         try {
             const res = await fetch(`/api/homeworks`, {
                 method: homework ? "PUT" : "POST",

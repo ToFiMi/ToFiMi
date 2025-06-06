@@ -31,7 +31,7 @@ export default async function HomeworkDetailPage({ params }: Params) {
             user_id: new ObjectId(userId),
             event_id: eventId
         })
-        content = <HomeworkUserPage homework={homework} event_id={eventId.toString()} />
+        content = <HomeworkUserPage homework={homework} event_id={eventId.toString()} event_name={event.title} />
     }
 
     if (role === "animator" || role === "leader") {
@@ -73,7 +73,7 @@ export default async function HomeworkDetailPage({ params }: Params) {
                 }
             }
         ]).toArray()
-        content = <HomeworkAnimatorPage homeworks={homeworks as unknown as HomeworkWithUser} />
+        content = <HomeworkAnimatorPage homeworks={homeworks as unknown as HomeworkWithUser} event_name={event.title} event_id={eventId.toString()} />
     }
 
     return (

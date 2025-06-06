@@ -1,10 +1,10 @@
 'use client'
 
 import {Breadcrumb, Button, ConfigProvider, Grid, Layout, Menu} from 'antd'
-import {LeftOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons'
+import {LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons'
 import Link from 'next/link'
 import {signOut} from 'next-auth/react'
-import {useLayoutEffect, useState} from 'react'
+import {useLayoutEffect, useState, useMemo} from 'react'
 import {usePathname, useRouter} from "next/navigation";
 import dayjs from 'dayjs'
 import 'dayjs/locale/sk'
@@ -12,26 +12,23 @@ import localeData from 'dayjs/plugin/localeData'
 import sk from 'antd/locale/sk_SK'
 
 dayjs.extend(localeData)
-dayjs.locale({
-    ...dayjs.Ls.sk,
-    weekStart: 1
-})
+dayjs.locale({ ...dayjs.Ls.sk, weekStart: 1 })
 
-
-const {Sider, Header} = Layout
+const { Sider, Header } = Layout
 
 type Props = {
     role: 'ADMIN' | 'user' | 'leader' | 'animator' | null | {}
     children: React.ReactNode
 }
-const {useBreakpoint} = Grid;
-export default function AppMenu({role, children}: Props) {
+
+export default function AppMenu({ role, children }: Props) {
     const mq = '(max-width: 768px)'
     const router = useRouter()
+    const pathname = usePathname()
+    const crumbs = pathname.split('/').filter(Boolean)
 
 
     const [collapsed, setCollapsed] = useState(() => {
-        // na SSR: schovám ho, aby nič nesvietilo
         if (typeof window === 'undefined') return true
         return window.matchMedia(mq).matches
     })
@@ -41,67 +38,58 @@ export default function AppMenu({role, children}: Props) {
         const handler = (e: MediaQueryListEvent) => setCollapsed(e.matches)
 
         setCollapsed(mql.matches)
-
         mql.addEventListener('change', handler)
-        return () => {
-            mql.removeEventListener('change', handler)
-        }
+        return () => mql.removeEventListener('change', handler)
     }, [])
 
     const handleLogout = () => {
-        signOut({redirect: false}).then(() => {
-                router.push('/')
-                router.refresh()
-            }
-        )
+        signOut({ redirect: false }).then(() => {
+            router.push('/')
+            router.refresh()
+        })
     }
-
 
     const getMenuItems = () => {
         if (role === "ADMIN") return [
-
-            {key: '/', label: "Domov"},
-            {key: '/schools', label: 'Správa škôl'},
-            {key: '/users', label: 'Účastníci'},
-            {key: '/reports', label: 'Prehľady'},
-            {key: "/notifications", label: 'Notifikácie'},
-            {key: '/profile', label: 'Profil'},
-
+            { key: '/', label: "Domov" },
+            { key: '/schools', label: 'Správa škôl' },
+            { key: '/users', label: 'Účastníci' },
+            { key: '/reports', label: 'Prehľady' },
+            { key: '/notifications', label: 'Notifikácie' },
+            { key: '/profile', label: 'Profil' },
         ]
-
         if (role === 'leader') return [
-            {key: '/', label: "Domov"},
-            {key: '/homeworks', label: 'Domáce úlohy'},
-            {key: '/groups', label: 'Skupinky'},
-            {key: '/users', label: 'Účastníci'},
-            {key: '/daily-reflections', label: 'Zamyslenia'},
-            {key: '/profile', label: 'Profil'},
+            { key: '/', label: "Domov" },
+            { key: '/homeworks', label: 'Domáce úlohy' },
+            { key: '/groups', label: 'Skupinky' },
+            { key: '/users', label: 'Účastníci' },
+            { key: '/daily-reflections', label: 'Zamyslenia' },
+            { key: '/profile', label: 'Profil' },
         ]
         if (role === 'animator') return [
-            {key: '/', label: "Domov"},
-            {key: '/homeworks', label: 'Domáce úlohy'},
-            {key: '/events', label: 'Termíny'},
-            {key: '/users', label: 'Účastníci'},
-            {key: '/daily-reflections', label: 'Zamyslenia'},
-            {key: '/profile', label: 'Profil'},
+            { key: '/', label: "Domov" },
+            { key: '/homeworks', label: 'Domáce úlohy' },
+            { key: '/events', label: 'Termíny' },
+            { key: '/users', label: 'Účastníci' },
+            { key: '/daily-reflections', label: 'Zamyslenia' },
+            { key: '/profile', label: 'Profil' },
         ]
         return [
-            {key: '/', label: "Domov"},
-            {key: '/homeworks', label: 'Domáce úlohy'},
-            {key: '/events', label: 'Termíny'},
-            {key: '/users', label: 'Účastníci'},
-            {key: '/daily-reflections', label: 'Zamyslenia'},
-            {key: '/profile', label: 'Profil'},
+            { key: '/', label: "Domov" },
+            { key: '/homeworks', label: 'Domáce úlohy' },
+            { key: '/events', label: 'Termíny' },
+            { key: '/users', label: 'Účastníci' },
+            { key: '/daily-reflections', label: 'Zamyslenia' },
+            { key: '/profile', label: 'Profil' },
         ]
     }
 
     const items = getMenuItems()
-    const pathname = usePathname()
+    const menuMap = useMemo(() => Object.fromEntries(items.map(i => [i.key.replace(/^\//, ''), i.label])), [items])
 
-    const crumbs = pathname.split('/').filter(Boolean)
 
     return (
-        <Layout style={{minHeight: '100vh'}}>
+        <Layout style={{ minHeight: '100vh' }}>
             <Sider
                 collapsible
                 trigger={null}
@@ -120,32 +108,16 @@ export default function AppMenu({role, children}: Props) {
                     zIndex: 1000,
                 }}
             >
-                {/* Logo + Collapse toggle */}
-                <div
-                    style={{
-                        height: 64,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0 16px',
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: 18,
-                        borderBottom: '1px solid rgba(255,255,255,0.1)',
-                    }}
-                >
-
+                <div style={{ height: 64, display: 'flex', alignItems: 'center', padding: '0 16px', color: 'white', fontWeight: 600, fontSize: 18, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                     <Button
                         type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
+                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                         onClick={() => setCollapsed(!collapsed)}
-                        style={{color: 'white'}}
+                        style={{ color: 'white' }}
                     />
-
                 </div>
 
-                {/* Menu */}
-                <div style={{flex: 1, overflowY: 'auto'}}>
+                <div style={{ flex: 1, overflowY: 'auto' }}>
                     <Menu
                         theme="dark"
                         mode="inline"
@@ -157,60 +129,44 @@ export default function AppMenu({role, children}: Props) {
                     />
                 </div>
 
-                {/* Logout */}
-                <div style={{padding: 16}}>
+                <div style={{ padding: 16 }}>
                     <Button
                         type="primary"
                         danger
-                        icon={<LogoutOutlined/>}
+                        icon={<LogoutOutlined />}
                         block={!collapsed}
                         onClick={handleLogout}
-                        style={{borderRadius: 6}}
+                        style={{ borderRadius: 6 }}
                     >
                         {!collapsed && 'Odhlásiť sa'}
                     </Button>
                 </div>
             </Sider>
 
-
-            <Layout style={{marginLeft: collapsed ? 0 : 220, transition: 'margin-left 0.2s'}}>
-                <Header
-                    style={{
-                        background: '#fff',
-                        padding: '0 16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        height: 64,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    }}
-                >
-                    {collapsed ? (
-                        <Button
-                            icon={<MenuUnfoldOutlined />}
-                            type="text"
-                            onClick={() => setCollapsed(false)}
-                        />
-                    ) : (
-                        <></>
-                        // <Button icon={<LeftOutlined />} type="text" onClick={() => router.back()}>
-                        //     Späť
-                        // </Button>
+            <Layout style={{ marginLeft: collapsed ? 0 : 220, transition: 'margin-left 0.2s' }}>
+                <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', height: 64, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                    {collapsed && (
+                        <Button icon={<MenuUnfoldOutlined />} type="text" onClick={() => setCollapsed(false)} />
                     )}
                     <Breadcrumb>
                         <Breadcrumb.Item key="home">
-                            <a href="/">Domov</a>
+                            <Link href="/">Domov</Link>
                         </Breadcrumb.Item>
-                        {crumbs.map((part, index) => (
-                            <Breadcrumb.Item key={index}>
-                                {decodeURIComponent(part)}
-                            </Breadcrumb.Item>
-                        ))}
+                        {crumbs.map((part, index) => {
+                            const pathKey = crumbs.slice(0, index + 1).join('/')
+                            const fullPath = '/' + pathKey
+                            const label =  menuMap[part] || decodeURIComponent(part)
+                            return (
+                                <Breadcrumb.Item key={index}>
+                                    <Link href={fullPath}>{label}</Link>
+                                </Breadcrumb.Item>
+                            )
+                        })}
                     </Breadcrumb>
                 </Header>
 
-                {/* Page content */}
                 <ConfigProvider locale={sk}>
-                    <Layout.Content style={{margin: '24px 16px', overflow: 'auto'}}>
+                    <Layout.Content style={{ margin: '24px 16px', overflow: 'auto' }}>
                         {children}
                     </Layout.Content>
                 </ConfigProvider>

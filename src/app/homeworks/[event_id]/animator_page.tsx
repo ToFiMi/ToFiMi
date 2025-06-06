@@ -25,7 +25,7 @@ export interface HomeworkWithUser {
     }
 }
 
-export default function HomeworkAnimatorPage({ homeworks }: { homeworks: HomeworkWithUser[] | unknown }) {
+export default function HomeworkAnimatorPage({ homeworks, event_id, event_name }: { homeworks: HomeworkWithUser[] | unknown, event_id?: string, event_name?: string }) {
     const [selectedHomework, setSelectedHomework] = useState<HomeworkWithUser | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [form] = Form.useForm()
@@ -35,6 +35,9 @@ export default function HomeworkAnimatorPage({ homeworks }: { homeworks: Homewor
         setModalOpen(true)
         form.resetFields()
     }
+
+
+
 
     const handleCommentSubmit = async (values: any) => {
         message.success("Komentár zatiaľ len UI – backend neskôr :)")
