@@ -40,7 +40,7 @@ export default function UsersPageClient({
     const fetchMembers = async () => {
         let url = ""
 
-        if (school_id === "null" && isAdmin) {
+        if ( isAdmin) {
             url = `/api/users`
         } else {
             url = `/api/schools/${school_id}/members`
@@ -120,7 +120,7 @@ export default function UsersPageClient({
             title: 'Meno',
             key: 'name',
             render: (_: any, record: Member) =>
-                `${record.user.first_name} ${record.user.last_name}`
+                `${record.user?.first_name} ${record.user?.last_name}`
         },
         {
             title: 'Email',

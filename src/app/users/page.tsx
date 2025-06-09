@@ -5,6 +5,7 @@ import {ObjectId} from 'mongodb'
 import UsersPageClient from './users-table'
 import QrModal from "@/app/users/qr-modal";
 import {Layout, Space} from "antd";
+import {Users} from "@/lib/class/Users";
 
 export default async function UsersPage() {
     const cookieStore = await cookies()
@@ -17,32 +18,10 @@ export default async function UsersPage() {
     const role = token.role
 
     if (isAdmin || school_id) {
-        const matchStage = school_id ? [{$match: {school_id}}] : []
+        const usersInstance = await Users.init()
 
-        const pipeline: any[] = [
-            ...matchStage,
-            {
-                $lookup: {
-                    from: 'users',
-                    let: {userId: '$user_id'},
-                    pipeline: [
-                        {$match: {$expr: {$eq: ['$_id', '$$userId']}}},
-                        {$project: {passwordHash: 0}}
-                    ],
-                    as: 'user'
-                }
-            },
-            {$unwind: '$user'},
-            {
-                $lookup: {
-                    from: 'schools',
-                    localField: 'school_id',
-                    foreignField: '_id',
-                    as: 'school'
-                }
-            },
-            {$unwind: '$school'}
-        ]
+        const rawUserSchools = isAdmin? await usersInstance.getUsersWithSchool(): await usersInstance.getUsersBySchoolId(school_id.toString())
+
 
         function normalizeUserSchools(data: any[]) {
             return data.map((record) => ({
@@ -60,8 +39,8 @@ export default async function UsersPage() {
                 },
             }))
         }
-        const rawUserSchools = await db.collection('user_school').aggregate(pipeline).toArray()
-        const userSchools = normalizeUserSchools(rawUserSchools)
+
+        const userSchools = (rawUserSchools)
         const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
         const schoolId = token?.school_id
         const registration_token = await db.collection('registration-tokens').findOne(

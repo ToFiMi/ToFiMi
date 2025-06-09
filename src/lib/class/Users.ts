@@ -16,84 +16,93 @@ export class Users {
 
     async getUsers(): Promise<UserModel[]> {
         return this.db.collection<UserModel>('users')
-            .find({}, { projection: { passwordHash: 0 } })
+            .find({}, {projection: {passwordHash: 0}})
             .toArray()
     }
 
     async getUsersBySchoolId(school_id: string): Promise<UserModel[]> {
         const userSchools = await this.db
             .collection('user_school')
-            .find({ school_id: new ObjectId(school_id) })
+            .find({school_id: new ObjectId(school_id)})
             .toArray()
 
         const userIds = userSchools.map(us => us.user_id)
 
         return this.db
             .collection<UserModel>('users')
-            .find({ _id: { $in: userIds } }, { projection: { passwordHash: 0 } })
+            .find({_id: {$in: userIds}}, {projection: {passwordHash: 0}})
             .toArray()
     }
 
     async searchUsers(query: string): Promise<UserModel[]> {
-        const regex = { $regex: query, $options: 'i' }
+        const regex = {$regex: query, $options: 'i'}
 
         return this.db.collection<UserModel>('users')
             .find({
                 $or: [
-                    { email: regex },
-                    { first_name: regex },
-                    { last_name: regex }
+                    {email: regex},
+                    {first_name: regex},
+                    {last_name: regex}
                 ]
-            }, { projection: { passwordHash: 0 } })
+            }, {projection: {passwordHash: 0}})
             .limit(10)
             .toArray()
     }
 
-    async getUsersSchools(school_id?: string) {
-        const matchStage = school_id
-            ? [{ $match: { school_id: new ObjectId(school_id) } }]
-            : []
+    async getUsersWithSchool() {
 
-        const pipeline: any[] = [
-            ...matchStage,
+
+        const pipeline = [
             {
                 $lookup: {
-                    from: 'users',
-                    let: { userId: '$user_id' },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-                        { $project: { passwordHash: 0 } }
-                    ],
-                    as: 'user'
+                    from: 'user_school',
+                    localField: '_id',
+                    foreignField: 'user_id',
+                    as: 'user_school'
                 }
             },
-            { $unwind: '$user' },
+            {
+                $unwind: {
+                    path: '$user_school',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
             {
                 $lookup: {
                     from: 'schools',
-                    localField: 'school_id',
+                    localField: 'user_school.school_id',
                     foreignField: '_id',
                     as: 'school'
                 }
             },
-            { $unwind: '$school' }
+            {
+                $unwind: {
+                    path: '$school',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    passwordHash: 0,
+                }
+            }
         ]
 
-        const records = await this.db.collection('user_school').aggregate(pipeline).toArray()
+        const results = await this.db.collection('users').aggregate(pipeline).toArray()
 
-        return records.map((record) => ({
-            ...record,
-            _id: record._id?.toString(),
-            user_id: record.user_id?.toString(),
-            school_id: record.school_id?.toString(),
+        return results.map((record: any) => ({
+            _id: record._id.toString(),
+            role: record.role || (record.isAdmin ? 'admin' : 'user'),
             user: {
-                ...record.user,
-                _id: record.user._id?.toString()
+                first_name: record.first_name,
+                last_name: record.last_name,
+                email: record.email
             },
-            school: {
-                ...record.school,
-                _id: record.school._id?.toString()
-            }
+            school: record.school?._id
+                ? {
+                    name: record.school.name
+                }
+                : undefined
         }))
     }
 }

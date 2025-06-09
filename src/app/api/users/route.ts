@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json(results)
         }
 
-        const users = await usersInstance.getUsersSchools()
+        const users = await usersInstance.getUsersWithSchool()
         return NextResponse.json(users)
     }
 
@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json()
     const { first_name, last_name, email } = body
 
-    // Možno si doplniť ďalšiu validáciu podľa potreby
+
     if (!first_name || !last_name || !email) {
         return new NextResponse('Chýbajú povinné údaje', { status: 400 })
     }
