@@ -9,9 +9,6 @@ export async function subscribeToPush(publicKey: string) {
     console.log("public_key: ", publicKey)
     const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-
-
-
         applicationServerKey: urlBase64ToUint8Array(publicKey),
     });
 

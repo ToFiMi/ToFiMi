@@ -1,27 +1,36 @@
 'use client'
-import {Button, Card, Divider, message, Typography} from 'antd'
+import {Button, Card, Divider, message, Typography, Select, Space, TimePicker} from 'antd'
 import {useEffect, useState} from 'react'
 import TagsInput from './tags-input'
 import {subscribeToPush} from '@/lib/subscribePush'
 import ChangePasswordModal from "@/app/profile/change-password-modal";
+import dayjs, {Dayjs} from "dayjs";
 
 const {Title, Text} = Typography
 
-export default function UserCard({user}: { user: any }) {
+export default function UserCard({ user }: { user: any }) {
     const [hasPush, setHasPush] = useState(false)
     const [checking, setChecking] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
 
+    const [reminderTime, setReminderTime] = useState<Dayjs | null>(null)
+    const [saving, setSaving] = useState(false)
 
     useEffect(() => {
-
         navigator.serviceWorker?.ready
             .then(reg => reg.pushManager.getSubscription())
-            .then(sub => {
-                setHasPush(!!sub)
-            })
+            .then(sub => setHasPush(!!sub))
             .catch(err => console.warn('Push check failed', err))
             .finally(() => setChecking(false))
+
+        fetch('/api/reminder')
+            .then(res => res.json())
+            .then(data => {
+                if (data?.hour !== undefined && data?.minute !== undefined) {
+                    setReminderTime(dayjs().hour(data.hour).minute(data.minute))
+                }
+            })
+            .catch(() => {})
     }, [])
 
     const handleEnablePush = async () => {
@@ -43,6 +52,29 @@ export default function UserCard({user}: { user: any }) {
         }
     }
 
+    const handleSaveReminder = async () => {
+        if (!reminderTime) return
+        setSaving(true)
+        try {
+            const res = await fetch('/api/reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hour: reminderTime.hour(),
+                    minute: reminderTime.minute(),
+                }),
+            })
+            if (res.ok) {
+                message.success('Denné pripomenutie bolo uložené')
+            } else {
+                message.error('Chyba pri ukladaní pripomenutia')
+            }
+        } catch (e) {
+            message.error('Chyba siete pri ukladaní')
+        } finally {
+            setSaving(false)
+        }
+    }
 
     return (
         <Card>
@@ -69,10 +101,31 @@ export default function UserCard({user}: { user: any }) {
                     </>
                 )}
             </div>
+            <Divider />
+            <Title level={4}>Denné pripomenutie</Title>
+            <Text>
+                Zvoľ si čas, kedy ti má prísť pripomenutie na zamyslenie dňa.
+            </Text>
+            <div style={{ marginTop: 8 }}>
+                <TimePicker
+                    value={reminderTime}
+                    onChange={(value) => setReminderTime(value)}
+                    format="HH:mm"
+                    minuteStep={5}
+                />
+                <Button
+                    type="primary"
+                    onClick={handleSaveReminder}
+                    loading={saving}
+                    style={{ marginLeft: 12 }}
+                >
+                    Uložiť pripomenutie
+                </Button>
+            </div>
 
             <Divider />
             <Title level={4}>Alergie a intolerancie</Title>
-            <TagsInput userId={user?._id.toString()} />
+            <TagsInput tag_type={"allergy"} />
             <Divider />
 
             <ChangePasswordModal setIsModalOpen={setIsModalOpen} isModalOpen={isModalOpen} />
