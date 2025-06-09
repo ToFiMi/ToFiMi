@@ -6,10 +6,10 @@ import {cookies} from "next/headers"; // or your actual dashboard component
 
 export default async function HomePage() {
     const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
-
+    console.log(token)
     if (!token) {
         console.log("NO TOKEN")
-        return null
+        return <LoginPage/>
     }
 
     const auth = {
