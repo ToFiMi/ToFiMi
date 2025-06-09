@@ -1,7 +1,8 @@
 // /api/schools/[school_id]/route.ts
-import { NextRequest } from 'next/server'
+import {NextRequest, NextResponse} from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import { ObjectId } from 'mongodb'
+import {getAuthContext} from "@/lib/auth-context";
 
 export async function GET(req: NextRequest, { params }: { params: { school_id: string } }) {
     const db = await connectToDatabase()
@@ -34,7 +35,10 @@ export async function GET(req: NextRequest, { params }: { params: { school_id: s
         }
     ]).toArray()
 
-    return Response.json({ school, users })
+    const groups = await db.collection('groups') .find({ school_id: schoolId })
+        .toArray()
+
+    return Response.json({ school, users, groups })
 }
 
 export async function POST(req: NextRequest, { params }: { params: { school_id: string } }) {
@@ -85,4 +89,47 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
     })
 
     return Response.json({ success: true })
+}
+
+export async function PUT(req: NextRequest, { params }: { params: { school_id: string } }) {
+    const db = await connectToDatabase()
+    const auth = await getAuthContext(req)
+
+    if (!auth || !auth.isAdmin) {
+        return new NextResponse('Access denied', { status: 403 })
+    }
+
+    const schoolId = params.school_id
+    const { name, slug } = await req.json()
+
+    if (!name && !slug) {
+        return new NextResponse('Nothing to update', { status: 400 })
+    }
+
+    const updateFields: any = {
+        updated: new Date()
+    }
+
+    if (name) updateFields.name = name
+    if (slug) {
+        const existingSlug = await db.collection('schools').findOne({
+            slug,
+            _id: { $ne: new ObjectId(schoolId) }
+        })
+        if (existingSlug) {
+            return new NextResponse('Slug already in use', { status: 400 })
+        }
+        updateFields.slug = slug
+    }
+
+    const result = await db.collection('schools').updateOne(
+        { _id: new ObjectId(schoolId) },
+        { $set: updateFields }
+    )
+
+    if (result.modifiedCount === 0) {
+        return new NextResponse('Nothing was updated', { status: 400 })
+    }
+
+    return NextResponse.json({ success: true })
 }

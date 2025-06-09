@@ -34,17 +34,37 @@ export class Users {
             .toArray()
     }
 
-    async searchUsers(query: string): Promise<UserModel[]> {
-        const regex = {$regex: query, $options: 'i'}
+    async searchUsers(query: string, schoolId?: string): Promise<UserModel[]> {
+        const regex = { $regex: query, $options: 'i' }
+
+        if (schoolId) {
+            const userSchoolLinks = await this.db.collection('user_school')
+                .find({ school_id: new ObjectId(schoolId) }, { projection: { user_id: 1 } })
+                .toArray()
+
+            const userIds = userSchoolLinks.map(link => link.user_id)
+
+            return this.db.collection<UserModel>('users')
+                .find({
+                    _id: { $in: userIds },
+                    $or: [
+                        { email: regex },
+                        { first_name: regex },
+                        { last_name: regex }
+                    ]
+                }, { projection: { passwordHash: 0 } })
+                .limit(10)
+                .toArray()
+        }
 
         return this.db.collection<UserModel>('users')
             .find({
                 $or: [
-                    {email: regex},
-                    {first_name: regex},
-                    {last_name: regex}
+                    { email: regex },
+                    { first_name: regex },
+                    { last_name: regex }
                 ]
-            }, {projection: {passwordHash: 0}})
+            }, { projection: { passwordHash: 0 } })
             .limit(10)
             .toArray()
     }

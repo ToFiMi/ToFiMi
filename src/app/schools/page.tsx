@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button, Table, Modal, Form, Input, message } from 'antd'
+import {Button, Table, Modal, Form, Input, message, InputNumber} from 'antd'
 import {useRouter} from "next/navigation";
 
 interface School {
@@ -129,6 +129,14 @@ export default function SchoolsPage() {
                     >
                         <Input />
                     </Form.Item>
+                    <Form.Item
+                        name="groups"
+                        label="Počet skupiniek"
+                        rules={[{ required: true, message: 'Zadajte počet skupiniek' }]}
+                    >
+                        <InputNumber min={1} max={20} />
+                    </Form.Item>
+
                 </Form>
             </Modal>
         </div>

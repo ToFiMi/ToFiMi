@@ -33,10 +33,10 @@ export async function POST(req: NextRequest) {
         return new NextResponse('Access denied', { status: 403 })
     }
 
-    const { name, slug } = await req.json()
+    const { name, slug, groups } = await req.json()
 
-    if (!name || !slug) {
-        return new NextResponse('Missing name or slug', { status: 400 })
+    if (!name || !slug || typeof groups !== 'number' || groups < 1) {
+        return new NextResponse('Missing or invalid data', { status: 400 })
     }
 
     const existing = await db.collection('schools').findOne({ slug })
@@ -51,6 +51,16 @@ export async function POST(req: NextRequest) {
         created: now,
         updated: now,
     })
+
+    const groupInserts = Array.from({ length: groups }).map((_, index) => ({
+        school_id: result.insertedId,
+        name: `Skupina ${index + 1}`,
+        animators: [],
+        created: now,
+        updated: now,
+    }))
+
+    await db.collection('groups').insertMany(groupInserts)
 
     return NextResponse.json({ success: true, insertedId: result.insertedId })
 }

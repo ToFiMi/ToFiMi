@@ -5,6 +5,7 @@ import {ObjectId} from 'mongodb'
 import {Suspense} from 'react'
 import SchoolUsers, {User} from "@/app/schools/[school_id]/school-users";
 import SchoolEvents from "@/app/schools/[school_id]/school-events";
+import SchoolGroups from "@/app/schools/[school_id]/school-groups";
 
 
 interface Props {
@@ -57,6 +58,11 @@ export default async function SchoolDetailPage({params}: Props) {
             <div className="mt-8">
                 <Suspense fallback={<p>Načítavam termíny...</p>}>
                     <SchoolEvents schoolId={param.school_id}/>
+                </Suspense>
+            </div>
+            <div className="mt-8">
+                <Suspense fallback={<p>Načítavam termíny...</p>}>
+                    <SchoolGroups schoolId={param.school_id}/>
                 </Suspense>
             </div>
         </div>

@@ -14,12 +14,24 @@ export async function GET(req: NextRequest) {
     // ?autocomplete=1&query=term
     const isAutocomplete = req.nextUrl.searchParams.get('autocomplete') === '1'
     const query = req.nextUrl.searchParams.get('query') || ''
+    const schoolIdParam = req.nextUrl.searchParams.get('school_id')
+    const schoolId = schoolIdParam || token.school_id
+    if (!isAutocomplete || query.length < 3) {
+        return NextResponse.json([]) // empty autocomplete response
+    }
 
     if (token.isAdmin) {
-        if (isAutocomplete && query.length > 2) {
+        if (!isAutocomplete || query.length < 3){
+            if (schoolId) {
+                const results = await usersInstance.searchUsers(query, schoolId)
+                return NextResponse.json(results)
+            }
+
             const results = await usersInstance.searchUsers(query)
             return NextResponse.json(results)
+
         }
+
 
         const users = await usersInstance.getUsersWithSchool()
         return NextResponse.json(users)
