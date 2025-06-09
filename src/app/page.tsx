@@ -20,6 +20,7 @@ export default async function HomePage() {
         schoolId: token.school_id as string | null,
     }
 
+
     if (!auth) return <LoginPage/>
     if (auth.role === "ADMIN") return <AdminDashboardPage/>
     else return <UsersDashboardPage/>
