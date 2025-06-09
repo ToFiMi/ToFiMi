@@ -144,7 +144,7 @@ export const authOptions = {
     },
     session: {
         strategy: 'jwt',
-    }, useSecureCookies: false,
+    }, useSecureCookies: true,
     trustHost: true,
     cookies: {
         sessionToken: {
@@ -153,7 +153,6 @@ export const authOptions = {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                secure: false,
             },
         },
     },
