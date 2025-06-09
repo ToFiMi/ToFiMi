@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import webpush from 'web-push'
-import { ObjectId } from 'mongodb'
 
 function ensureVapid() {
     const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
@@ -18,7 +17,6 @@ export async function GET() {
     const db = await connectToDatabase()
     ensureVapid()
 
-    // Nájdeme všetkých, ktorí majú nastavený reminder na aktuálny čas
     const reminders = await db.collection('reminders').find({ hour, minute }).toArray()
 
     const pushSubs = await db

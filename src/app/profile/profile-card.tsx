@@ -101,27 +101,29 @@ export default function UserCard({ user }: { user: any }) {
                     </>
                 )}
             </div>
-            <Divider />
-            <Title level={4}>Denné pripomenutie</Title>
-            <Text>
-                Zvoľ si čas, kedy ti má prísť pripomenutie na zamyslenie dňa.
-            </Text>
-            <div style={{ marginTop: 8 }}>
-                <TimePicker
-                    value={reminderTime}
-                    onChange={(value) => setReminderTime(value)}
-                    format="HH:mm"
-                    minuteStep={5}
-                />
-                <Button
-                    type="primary"
-                    onClick={handleSaveReminder}
-                    loading={saving}
-                    style={{ marginLeft: 12 }}
-                >
-                    Uložiť pripomenutie
-                </Button>
-            </div>
+            
+         {/*TODO to musi byť nejaky cron ešte*/}
+            {/*<Divider />*/}
+            {/*<Title level={4}>Denné pripomenutie</Title>*/}
+            {/*<Text>*/}
+            {/*    Zvoľ si čas, kedy ti má prísť pripomenutie na zamyslenie dňa.*/}
+            {/*</Text>*/}
+            {/*<div style={{ marginTop: 8 }}>*/}
+            {/*    <TimePicker*/}
+            {/*        value={reminderTime}*/}
+            {/*        onChange={(value) => setReminderTime(value)}*/}
+            {/*        format="HH:mm"*/}
+            {/*        minuteStep={5}*/}
+            {/*    />*/}
+            {/*    <Button*/}
+            {/*        type="primary"*/}
+            {/*        onClick={handleSaveReminder}*/}
+            {/*        loading={saving}*/}
+            {/*        style={{ marginLeft: 12 }}*/}
+            {/*    >*/}
+            {/*        Uložiť pripomenutie*/}
+            {/*    </Button>*/}
+            {/*</div>*/}
 
             <Divider />
             <Title level={4}>Alergie a intolerancie</Title>
