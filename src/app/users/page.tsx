@@ -18,29 +18,37 @@ export default async function UsersPage() {
     const role = token.role
 
     if (isAdmin || school_id) {
-        const usersInstance = await Users.init()
+        const usersInstance = await Users.init();
 
-        const rawUserSchools = isAdmin? await usersInstance.getUsersWithSchool(): await usersInstance.getUsersBySchoolId(school_id.toString())
+        const rawUserSchools = isAdmin
+            ? await usersInstance.getUsersWithSchool()
+            : await usersInstance.getUsersBySchoolId(school_id.toString());
+
+        const userSchools = rawUserSchools.map(normalizeUserRecord);
 
 
-        function normalizeUserSchools(data: any[]) {
-            return data.map((record) => ({
-                ...record,
+        function normalizeUserRecord(record: any) {
+            return {
                 _id: record._id?.toString(),
-                school_id: record.school_id?.toString(),
-                user_id: record.user_id?.toString(),
+                user_id: record.user_id?.toString() ?? record._id?.toString(), // fallback for admin
+                school_id: record.school_id?.toString() ?? record.school?._id?.toString(),
+                role: record.role || (record.isAdmin ? 'admin' : 'user'),
                 user: {
-                    ...record.user,
-                    _id: record.user._id?.toString(),
+                    _id: record.user?._id?.toString() ?? record._id?.toString(),
+                    first_name: record.user?.first_name ?? record.first_name,
+                    last_name: record.user?.last_name ?? record.last_name,
+                    email: record.user?.email ?? record.email,
                 },
-                school: {
-                    ...record.school,
-                    _id: record.school._id?.toString(),
-                },
-            }))
+                school: record.school?._id
+                    ? {
+                        _id: record.school._id?.toString(),
+                        name: record.school.name,
+                    }
+                    : undefined,
+            };
         }
 
-        const userSchools = (rawUserSchools)
+
         const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
         const schoolId = token?.school_id
         const registration_token = await db.collection('registration-tokens').findOne(

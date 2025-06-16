@@ -8,7 +8,7 @@ import dayjs, {Dayjs} from "dayjs";
 
 const {Title, Text} = Typography
 
-export default function UserCard({ user }: { user: any }) {
+export default function UserCard({ user, active_school_id }: { user: any, active_school_id?: string  }) {
     const [hasPush, setHasPush] = useState(false)
     const [checking, setChecking] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -75,7 +75,8 @@ export default function UserCard({ user }: { user: any }) {
             setSaving(false)
         }
     }
-
+    const active_school = user.schools.find((school)=> school.school._id ===  active_school_id )
+    console.log(active_school)
     return (
         <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -88,6 +89,7 @@ export default function UserCard({ user }: { user: any }) {
             <div style={{ marginTop: 12 }}>
                 <Text strong>Meno:</Text> <Text>{user?.first_name} {user?.last_name}</Text><br />
                 <Text strong>Email:</Text> <Text>{user?.email}</Text><br />
+                <Text strong>Rola:</Text> <Text>{active_school?.role}</Text><br />
             </div>
 
             <div style={{ marginTop: 12 }}>
@@ -101,7 +103,7 @@ export default function UserCard({ user }: { user: any }) {
                     </>
                 )}
             </div>
-            
+
          {/*TODO to musi byť nejaky cron ešte*/}
             {/*<Divider />*/}
             {/*<Title level={4}>Denné pripomenutie</Title>*/}

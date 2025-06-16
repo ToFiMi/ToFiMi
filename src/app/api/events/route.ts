@@ -2,36 +2,40 @@ import { NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongo"
 import { getToken } from "next-auth/jwt"
 import { Event } from "@/models/events"
-import {ObjectId} from "mongodb";
+import { ObjectId } from "mongodb"
 
 export async function GET(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token) {
-        return new NextResponse('Unauthorized', { status: 401 })
+        return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const db = await connectToDatabase()
+    if (!token.isAdmin && !token.school_id) {
+        return new NextResponse('School not found for user', { status: 400 });
+    }
 
     try {
-        let events: Event[] = []
-
-        if (token.isAdmin) {
-            events = await db.collection<Event>("events")
-                .find({})
-                .sort({ startDate: -1 })
-                .toArray()
-        } else if (token.school_id) {
-            events = await db.collection<Event>("events")
-                .find({ school_id: new ObjectId(token.school_id) })
-                .sort({ startDate: -1 })
-                .toArray()
-        } else {
-            return new NextResponse('School not found for user', { status: 400 })
-        }
-
-        return NextResponse.json(events)
+        const events = await findEvents({ isAdmin: token.isAdmin, school_id: token.school_id });
+        return NextResponse.json(events);
     } catch (error) {
-        console.error('❌ Error fetching events:', error)
-        return new NextResponse('Internal Server Error', { status: 500 })
+        console.error("❌ Error fetching events:", error);
+        return new NextResponse('Internal Server Error', { status: 500 });
     }
+}
+
+export async function findEvents({
+                                     isAdmin,
+                                     school_id,
+                                 }: {
+    isAdmin: boolean;
+    school_id?: string;
+}): Promise<Event[]> {
+    const db = await connectToDatabase();
+    const query = isAdmin ? {} : { school_id: new ObjectId(school_id!) };
+
+    return await db
+        .collection<Event>("events")
+        .find(query)
+        .sort({ startDate: -1 })
+        .toArray();
 }

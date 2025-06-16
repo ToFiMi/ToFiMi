@@ -37,14 +37,14 @@ export default async function ProfilePage() {
                     from: 'user_school',
                     localField: '_id',
                     foreignField: 'user_id',
-                    as: 'user_schools'
+                    as: 'user_school'
                 }
             },
-            { $unwind: '$user_schools' },
+            { $unwind: '$user_school' },
             {
                 $lookup: {
                     from: 'schools',
-                    localField: 'user_schools.school_id',
+                    localField: 'user_school.school_id',
                     foreignField: '_id',
                     as: 'school_info'
                 }
@@ -58,7 +58,7 @@ export default async function ProfilePage() {
                     email: { $first: '$email' },
                     schools: {
                         $push: {
-                            role: '$user_schools.role',
+                            role: '$user_school.role',
                             school: '$school_info'
                         }
                     }
@@ -66,12 +66,15 @@ export default async function ProfilePage() {
             }
         ]).toArray()
 
+
+
         user = me[0]
+        console.log(user.schools)
     }
 
     return (
         <main className="max-w-3xl mx-auto py-10 px-6">
-            <UserCard user={user} />
+            <UserCard user={user} active_school_id={token.school_id} />
         </main>
     )
 }
