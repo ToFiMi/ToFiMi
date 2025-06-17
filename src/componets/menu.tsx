@@ -10,6 +10,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/sk'
 import localeData from 'dayjs/plugin/localeData'
 import sk from 'antd/locale/sk_SK'
+import {useMobile} from "@/hooks/useMobile";
 
 dayjs.extend(localeData)
 dayjs.locale({ ...dayjs.Ls.sk, weekStart: 1 })
@@ -70,6 +71,7 @@ export default function AppMenu({ role, children }: Props) {
             { key: '/', label: "Domov" },
             { key: '/homeworks', label: 'Domáce úlohy' },
             { key: '/events', label: 'Termíny' },
+            { key: '/groups', label: 'Skupinky' },
             { key: '/users', label: 'Účastníci' },
             { key: '/daily-reflections', label: 'Zamyslenia' },
             { key: '/profile', label: 'Profil' },
@@ -86,7 +88,7 @@ export default function AppMenu({ role, children }: Props) {
 
     const items = getMenuItems()
     const menuMap = useMemo(() => Object.fromEntries(items.map(i => [i.key.replace(/^\//, ''), i.label])), [items])
-
+    const isMobile= useMobile()
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -124,7 +126,8 @@ export default function AppMenu({ role, children }: Props) {
                         defaultSelectedKeys={['/']}
                         items={items.map(item => ({
                             key: item.key,
-                            label: <Link href={item.key}>{item.label}</Link>,
+                            label: <Link onClick={isMobile&& (()=> setCollapsed(true))} href={item.key}>{item.label}</Link>,
+
                         }))}
                     />
                 </div>

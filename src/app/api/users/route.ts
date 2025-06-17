@@ -16,8 +16,10 @@ export async function GET(req: NextRequest) {
     const query = req.nextUrl.searchParams.get('query') || ''
     const schoolIdParam = req.nextUrl.searchParams.get('school_id')
     const schoolId = schoolIdParam || token.school_id
-    if (!isAutocomplete || query.length < 3) {
-        return NextResponse.json([]) // empty autocomplete response
+
+    if (isAutocomplete && query.length < 3) {
+
+        return NextResponse.json([])
     }
 
     if (token.isAdmin) {
@@ -36,9 +38,10 @@ export async function GET(req: NextRequest) {
         const users = await usersInstance.getUsersWithSchool()
         return NextResponse.json(users)
     }
-
     if (token.school_id) {
+
         const users = await usersInstance.getUsersBySchoolId(token.school_id as string)
+
         return NextResponse.json(users)
     }
 

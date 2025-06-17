@@ -20,17 +20,46 @@ export class Users {
             .toArray()
     }
 
-    async getUsersBySchoolId(school_id: string): Promise<UserModel[]> {
-        const userSchools = await this.db
-            .collection('user_school')
-            .find({school_id: new ObjectId(school_id)})
-            .toArray()
-
-        const userIds = userSchools.map(us => us.user_id)
-
+    async getUsersBySchoolId(school_id: string): Promise<any[]> {
         return this.db
-            .collection<UserModel>('users')
-            .find({_id: {$in: userIds}}, {projection: {passwordHash: 0}})
+            .collection('user_school')
+            .aggregate([
+                {
+                    $match: {
+                        school_id: new ObjectId(school_id),
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'user_id',
+                        foreignField: '_id',
+                        as: 'user',
+                    },
+                },
+                {
+                    $unwind: '$user',
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        school_id: 1,
+                        user_id: 1,
+                        group_id: 1,
+                        role: 1,
+                        user: {
+                            _id: 1,
+                            email: 1,
+                            first_name: 1,
+                            last_name: 1,
+                            isAdmin: 1,
+                            created: 1,
+                            updated: 1,
+
+                        },
+                    },
+                },
+            ])
             .toArray()
     }
 
