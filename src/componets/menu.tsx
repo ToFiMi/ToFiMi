@@ -4,13 +4,14 @@ import {Breadcrumb, Button, ConfigProvider, Grid, Layout, Menu} from 'antd'
 import {LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons'
 import Link from 'next/link'
 import {signOut} from 'next-auth/react'
-import {useLayoutEffect, useState, useMemo} from 'react'
+import {useLayoutEffect, useState, useMemo, useEffect} from 'react'
 import {usePathname, useRouter} from "next/navigation";
 import dayjs from 'dayjs'
 import 'dayjs/locale/sk'
 import localeData from 'dayjs/plugin/localeData'
 import sk from 'antd/locale/sk_SK'
 import {useMobile} from "@/hooks/useMobile";
+import {ROUTES_BY_ROLE, UserRole} from "@/config/routes";
 
 dayjs.extend(localeData)
 dayjs.locale({ ...dayjs.Ls.sk, weekStart: 1 })
@@ -50,45 +51,46 @@ export default function AppMenu({ role, children }: Props) {
         })
     }
 
-    const getMenuItems = () => {
-        if (role === "ADMIN") return [
-            { key: '/', label: "Domov" },
-            { key: '/schools', label: 'Správa škôl' },
-            { key: '/users', label: 'Účastníci' },
-            { key: '/reports', label: 'Prehľady' },
-            { key: '/notifications', label: 'Notifikácie' },
-            { key: '/profile', label: 'Profil' },
-        ]
-        if (role === 'leader') return [
-            { key: '/', label: "Domov" },
-            { key: '/homeworks', label: 'Domáce úlohy' },
-            { key: '/groups', label: 'Skupinky' },
-            { key: '/users', label: 'Účastníci' },
-            { key: '/daily-reflections', label: 'Zamyslenia' },
-            { key: '/profile', label: 'Profil' },
-        ]
-        if (role === 'animator') return [
-            { key: '/', label: "Domov" },
-            { key: '/homeworks', label: 'Domáce úlohy' },
-            { key: '/events', label: 'Termíny' },
-            { key: '/groups', label: 'Skupinky' },
-            { key: '/users', label: 'Účastníci' },
-            { key: '/daily-reflections', label: 'Zamyslenia' },
-            { key: '/profile', label: 'Profil' },
-        ]
-        return [
-            { key: '/', label: "Domov" },
-            { key: '/homeworks', label: 'Domáce úlohy' },
-            { key: '/events', label: 'Termíny' },
-            { key: '/users', label: 'Účastníci' },
-            { key: '/daily-reflections', label: 'Zamyslenia' },
-            { key: '/profile', label: 'Profil' },
-        ]
+
+    const getMenuItems = (role: UserRole) => {
+        return ROUTES_BY_ROLE[role as keyof typeof ROUTES_BY_ROLE] || []
     }
 
-    const items = getMenuItems()
+    const items = getMenuItems(role as keyof typeof ROUTES_BY_ROLE)
     const menuMap = useMemo(() => Object.fromEntries(items.map(i => [i.key.replace(/^\//, ''), i.label])), [items])
     const isMobile= useMobile()
+    const [idNameMap, setIdNameMap] = useState<Record<string, string>>({})
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.app?.callback?.path) {
+            const map: Record<string, string> = {}
+            for (const id in window.app.callback.path) {
+                map[id] = window.app.callback.path[id].name
+            }
+            setIdNameMap(map)
+        }
+    }, [])
+
+    const crumb_items = [
+        {
+            title: <Link href="/">Domov</Link>,
+        },
+        ...crumbs.map((part, index) => {
+            const fullPath = '/' + crumbs.slice(0, index + 1).join('/')
+            const isLast = index === crumbs.length - 1
+
+            // Získaj názov z window.app.callback.path alebo použijeme segment
+            const label = idNameMap[part] || decodeURIComponent(part)
+
+            return {
+                title: isLast ? (
+                    <span>{label}</span>
+                ) : (
+                    <Link href={fullPath}>{label}</Link>
+                ),
+            }
+        }),
+    ]
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -151,21 +153,9 @@ export default function AppMenu({ role, children }: Props) {
                     {collapsed && (
                         <Button icon={<MenuUnfoldOutlined />} type="text" onClick={() => setCollapsed(false)} />
                     )}
-                    <Breadcrumb>
-                        <Breadcrumb.Item key="home">
-                            <Link href="/">Domov</Link>
-                        </Breadcrumb.Item>
-                        {crumbs.map((part, index) => {
-                            const pathKey = crumbs.slice(0, index + 1).join('/')
-                            const fullPath = '/' + pathKey
-                            const label =  menuMap[part] || decodeURIComponent(part)
-                            return (
-                                <Breadcrumb.Item key={index}>
-                                    <Link href={fullPath}>{label}</Link>
-                                </Breadcrumb.Item>
-                            )
-                        })}
-                    </Breadcrumb>
+                    <Breadcrumb items={crumb_items}/>
+
+
                 </Header>
 
                 <ConfigProvider locale={sk}>

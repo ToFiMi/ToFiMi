@@ -14,7 +14,7 @@ interface Group {
 
 export default function SchoolGroups({schoolId, hide_add_group = false}: {
     schoolId: string,
-    hide_add_group: boolean
+    hide_add_group?: boolean
 }) {
     const [groups, setGroups] = useState<Group[]>([])
     const [loading, setLoading] = useState(false)

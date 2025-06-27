@@ -1,6 +1,7 @@
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
+import { ROUTES_BY_ROLE } from '@/config/routes'
 
 const PUBLIC_PATHS = ['/', '/api/public', '/favicon.ico']
 
@@ -17,6 +18,15 @@ export async function middleware(req: NextRequest) {
     if (!token) {
         return NextResponse.redirect(new URL('/', req.url))
     }
+    const role = token.role as keyof typeof ROUTES_BY_ROLE
+    const allowedRoutes = ROUTES_BY_ROLE[role]?.map(r => r.key) || []
+
+    console.log("Allowed ",allowedRoutes)
+
+    const isAllowed = allowedRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
+    if (!isAllowed) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
 
 
     const res = NextResponse.next()
@@ -31,5 +41,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next|_static|favicon.ico).*)'],
+    matcher: [
+        '/((?!api|_next|static|favicon.ico|login|unauthorized).*)',
+    ],
 }

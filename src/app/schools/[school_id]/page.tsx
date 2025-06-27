@@ -6,6 +6,7 @@ import {Suspense} from 'react'
 import SchoolUsers, {User} from "@/app/schools/[school_id]/school-users";
 import SchoolEvents from "@/app/schools/[school_id]/school-events";
 import SchoolGroups from "@/app/schools/[school_id]/school-groups";
+import SetBreadcrumbName from "@/componets/set-breadcrumb-name";
 
 
 interface Props {
@@ -45,6 +46,7 @@ export default async function SchoolDetailPage({params}: Props) {
 
     return (
         <div className="p-4">
+            <SetBreadcrumbName id={params.school_id} name={school.name} />
             <h1 className="text-2xl font-bold mb-2">{school.name}</h1>
             <p><strong>Slug:</strong> {school.slug}</p>
             <p><strong>ID školy:</strong> {school._id.toString()}</p>
