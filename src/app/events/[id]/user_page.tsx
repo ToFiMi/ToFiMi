@@ -3,6 +3,7 @@
 import { Homework } from "@/models/homework"
 import { Button, Form, Input, message, Typography } from "antd"
 import { useEffect } from "react"
+import CommentsThread from "@/componets/comments/thread";
 
 
 const { Title, Paragraph } = Typography
@@ -74,6 +75,10 @@ export default function HomeworkUserPage({ homework, event_id, event_name }: { h
                     </Button>
                 </Form.Item>
             </Form>
+            {homework && (
+
+                <CommentsThread entity="homework" entityId={homework._id.toString()} />
+            )}
         </div>
     )
 }

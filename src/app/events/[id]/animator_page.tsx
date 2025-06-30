@@ -1,8 +1,9 @@
 "use client"
 
-import {Button, Card, Form, Input, List, message, Modal, Typography} from "antd"
+import {Button, Card, Form, List, message, Modal, Typography} from "antd"
 import {useState} from "react"
 import {ObjectId} from "mongodb";
+import CommentsThread from "@/componets/comments/thread";
 
 const {Title, Text, Paragraph} = Typography
 
@@ -79,15 +80,16 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                 <Paragraph style={{whiteSpace: 'pre-line', background: '#fafafa', padding: 12, borderRadius: 6}}>
                     {selectedHomework?.content || "Bez odpovede"}
                 </Paragraph>
+                <CommentsThread entity="homework" entityId={selectedHomework?._id.toString() || ""}/>
 
-                <Form form={form} layout="vertical" onFinish={handleCommentSubmit}>
-                    <Form.Item name="comment" label="Komentár pre účastníka" rules={[{required: true}]}>
-                        <Input.TextArea rows={3} placeholder="Napíš pripomienku alebo spätnú väzbu..."/>
-                    </Form.Item>
-                    <Form.Item>
-                        <Button htmlType="submit" type="primary">Odoslať komentár</Button>
-                    </Form.Item>
-                </Form>
+                {/*<Form form={form} layout="vertical" onFinish={handleCommentSubmit}>*/}
+                {/*    <Form.Item name="comment" label="Komentár pre účastníka" rules={[{required: true}]}>*/}
+                {/*        <Input.TextArea rows={3} placeholder="Napíš pripomienku alebo spätnú väzbu..."/>*/}
+                {/*    </Form.Item>*/}
+                {/*    <Form.Item>*/}
+                {/*        <Button htmlType="submit" type="primary">Odoslať komentár</Button>*/}
+                {/*    </Form.Item>*/}
+                {/*</Form>*/}
             </Modal>
         </div>
     )

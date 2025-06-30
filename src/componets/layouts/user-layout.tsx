@@ -1,5 +1,6 @@
 import {ReactNode} from 'react';
 import Menu from "@/componets/menu";
+import { SocketProvider } from '@/hooks/socket-provider';
 
 
 
@@ -15,8 +16,11 @@ export default async function UserLayout({
 
 
     return <Menu role={role}>
-
+        <SocketProvider url={process.env.NEXT_PUBLIC_SOCKET_URL!}>
             {children}
+        </SocketProvider>
+
+
 
     </Menu>
 }

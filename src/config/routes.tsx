@@ -6,14 +6,13 @@ export const ROUTES_BY_ROLE: Record<UserRole, { key: string, label: string }[]> 
     ADMIN: [
         { key: '/', label: 'Domov' },
         { key: '/schools', label: 'Správa škôl' },
-        { key: '/users', label: 'Účastníci' },
+        { key: '/users', label: 'Použivatelia' },
         { key: '/reports', label: 'Prehľady' },
         { key: '/notifications', label: 'Notifikácie' },
         { key: '/profile', label: 'Profil' },
     ],
     leader: [
         { key: '/', label: 'Domov' },
-        { key: '/homeworks', label: 'Domáce úlohy' },
         { key: '/groups', label: 'Skupinky' },
         { key: '/users', label: 'Účastníci' },
         { key: '/daily-reflections', label: 'Zamyslenia' },
@@ -21,7 +20,6 @@ export const ROUTES_BY_ROLE: Record<UserRole, { key: string, label: string }[]> 
     ],
     animator: [
         { key: '/', label: 'Domov' },
-        { key: '/homeworks', label: 'Domáce úlohy' },
         { key: '/events', label: 'Termíny' },
         { key: '/groups', label: 'Skupinky' },
         { key: '/users', label: 'Účastníci' },
@@ -30,9 +28,7 @@ export const ROUTES_BY_ROLE: Record<UserRole, { key: string, label: string }[]> 
     ],
     user: [
         { key: '/', label: 'Domov' },
-        { key: '/homeworks', label: 'Domáce úlohy' },
         { key: '/events', label: 'Termíny' },
-        { key: '/users', label: 'Účastníci' },
         { key: '/daily-reflections', label: 'Zamyslenia' },
         { key: '/profile', label: 'Profil' },
     ],
