@@ -58,11 +58,12 @@ export default async function EventDetailPage({ params }: Params) {
                     $lookup: {
                         from: "user_school",
                         localField: "user_id",
-                        foreignField: "_id",
+                        foreignField: "user_id",
                         as: "userSchool",
                     },
                 },
                 { $unwind: "$userSchool" },
+                { $match: { "userSchool.school_id": new ObjectId(token.school_id) } },
                 {
                     $lookup: {
                         from: "users",
@@ -88,6 +89,7 @@ export default async function EventDetailPage({ params }: Params) {
                 },
             ])
             .toArray()) as HomeworkWithUser[];
+        
     }
 
     /* ---------- render ---------- */

@@ -271,7 +271,7 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
                 onCancel={() => setHomeworkModal({ ...homeworkModal, visible: false })}
                 footer={[
                     homeworkModal.eventId && (
-                        <Link key="review" href={`/events/${homeworkModal.eventId}`}>
+                        <Link key="review" href={`/events/${homeworkModal.eventId}?userId=${userId}`}>
                             <Button type="primary" icon={<EditOutlined />}>
                                 Posúdiť domácu úlohu
                             </Button>

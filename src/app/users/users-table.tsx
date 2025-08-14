@@ -9,6 +9,7 @@ import UserOverviewCard from "@/componets/user-overview-card";
 type Member = {
     _id?: string
     role: string
+    user_id?: string
     user: {
         first_name: string
         last_name: string
@@ -161,7 +162,7 @@ export default function UsersPageClient({
                                 ghost
                                 size="small"
                                 icon={<EyeOutlined />}
-                                onClick={() => setUserOverviewModal({ visible: true, userId: record.user_id || '' })}
+                            onClick={() => setUserOverviewModal({ visible: true, userId: record.user_id || '' })}
                             >
                                 Prehľad
                             </Button>
