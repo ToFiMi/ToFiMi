@@ -1,8 +1,8 @@
 'use client'
 
 import {useEffect, useState} from 'react'
-import {Button, Card, Form, Input, message, Modal, Select, Table, Tag, Typography, Space} from 'antd'
-import {EyeOutlined} from '@ant-design/icons'
+import {Button, Card, Form, Input, message, Modal, Select, Table, Tag, Typography, Space, Grid} from 'antd'
+import {EyeOutlined, UserOutlined, MailOutlined} from '@ant-design/icons'
 import {School} from "@/models/school";
 import UserOverviewCard from "@/componets/user-overview-card";
 
@@ -40,6 +40,8 @@ export default function UsersPageClient({
     const [userOverviewModal, setUserOverviewModal] = useState<{visible: boolean, userId: string}>({ visible: false, userId: '' })
     const [form] = Form.useForm()
     const role = Form.useWatch('role', form)
+    const { useBreakpoint } = Grid
+    const screens = useBreakpoint()
 
     const fetchMembers = async () => {
         let url = ""
@@ -119,6 +121,141 @@ export default function UsersPageClient({
         }
     }
 
+    const renderMobileCards = () => {
+        if (loading) {
+            return (
+                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                    {[1, 2, 3].map((i) => (
+                        <Card key={i} loading style={{ width: '100%' }} />
+                    ))}
+                </Space>
+            )
+        }
+
+        if (members.length === 0) {
+            return (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                    <Typography.Text type="secondary">
+                        Žiadni používatelia neboli nájdení
+                    </Typography.Text>
+                </div>
+            )
+        }
+
+        return (
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                {members.map((member) => (
+                    <Card 
+                        key={member._id?.toString() || `${member.user.email}-${member.role}`}
+                        size="small"
+                        style={{ 
+                            width: '100%',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}
+                        bodyStyle={{ padding: '12px' }}
+                    >
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'flex-start',
+                            gap: '12px'
+                        }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                                    <div>
+                                        <Space size="small">
+                                            <UserOutlined style={{ color: '#1890ff' }} />
+                                            <Typography.Text strong style={{ fontSize: '14px' }}>
+                                                {member.user?.first_name} {member.user?.last_name}
+                                            </Typography.Text>
+                                        </Space>
+                                    </div>
+                                    
+                                    <div>
+                                        <Space size="small">
+                                            <MailOutlined style={{ color: '#8c8c8c' }} />
+                                            <Typography.Text 
+                                                type="secondary" 
+                                                style={{ 
+                                                    fontSize: '12px',
+                                                    wordBreak: 'break-all'
+                                                }}
+                                            >
+                                                {member.user?.email}
+                                            </Typography.Text>
+                                        </Space>
+                                    </div>
+                                    
+                                    <div style={{ marginTop: '4px' }}>
+                                        <Tag 
+                                            color={
+                                                member.role === 'inactive' ? 'red' :
+                                                member.role === 'leader' ? 'gold' :
+                                                member.role === 'animator' ? 'blue' : 'green'
+                                            }
+                                            style={{ fontSize: '11px' }}
+                                        >
+                                            {member.role}
+                                        </Tag>
+                                    </div>
+                                    
+                                    {isAdmin && member.school?.name && (
+                                        <div>
+                                            <Typography.Text 
+                                                type="secondary" 
+                                                style={{ fontSize: '11px' }}
+                                            >
+                                                Škola: {member.school.name}
+                                            </Typography.Text>
+                                        </div>
+                                    )}
+                                </Space>
+                            </div>
+                            
+                            {(isAdmin || userRole === "leader" || userRole === "animator") && (
+                                <div style={{ minWidth: '80px' }}>
+                                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                                        {(userRole === "leader" || userRole === "animator") && !isAdmin && (
+                                            <Button
+                                                type="primary"
+                                                ghost
+                                                size="small"
+                                                icon={<EyeOutlined />}
+                                                onClick={() => setUserOverviewModal({ visible: true, userId: member.user_id || '' })}
+                                                style={{ 
+                                                    width: '100%',
+                                                    height: '32px',
+                                                    fontSize: '11px'
+                                                }}
+                                            >
+                                                Prehľad
+                                            </Button>
+                                        )}
+                                        {(isAdmin || userRole === "leader") && (
+                                            <Button
+                                                danger
+                                                size="small"
+                                                onClick={() => handleDeactivate(member)}
+                                                style={{ 
+                                                    width: '100%',
+                                                    height: '32px',
+                                                    fontSize: '11px'
+                                                }}
+                                            >
+                                                Deaktivovať
+                                            </Button>
+                                        )}
+                                    </Space>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
+                ))}
+            </Space>
+        )
+    }
+
     const columns = [
         {
             title: 'Meno',
@@ -186,18 +323,24 @@ export default function UsersPageClient({
         <>
             <Card
                 title="Používatelia"
-                loading={loading}
+                loading={screens.md ? loading : false} // Only show loading on table view
                 extra={userRole === "user" ? <></> :
                     <Button type="primary" onClick={() => setIsModalOpen(true)}>
                         Pridať používateľa
                     </Button>
                 }
             >
-                <Table
-                    columns={columns as any}
-                    dataSource={members}
-                    rowKey={(r) => r._id?.toString() || `${r.user.email}-${r.role}`}
-                />
+                {/* Show table on desktop, cards on mobile */}
+                {screens.md ? (
+                    <Table
+                        columns={columns as any}
+                        dataSource={members}
+                        rowKey={(r) => r._id?.toString() || `${r.user.email}-${r.role}`}
+                        scroll={{ x: true }} // Allow horizontal scroll on smaller screens
+                    />
+                ) : (
+                    renderMobileCards()
+                )}
             </Card>
 
             <Modal
