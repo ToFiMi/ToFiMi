@@ -5,13 +5,23 @@ import {DailyReflection as DailyReflectionModel} from "@/models/daliy-reflection
 import {useEffect, useState} from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
+import ReflectionEditModal from "@/componets/reflection-edit-modal";
 
 const { Text, Paragraph } = Typography;
 
-export const DailyReflection = ({last_event}: { last_event :Event }) =>{
+interface DailyReflectionProps {
+    last_event: Event
+    userRole?: 'ADMIN' | 'user' | 'leader' | 'animator' | null
+}
+
+export const DailyReflection = ({last_event, userRole}: DailyReflectionProps) =>{
     const [todayReflection, setTodayReflection] = useState<DailyReflectionModel | null>(null);
     const [loading, setLoading] = useState(true);
     const [hasHomework, setHasHomework] = useState(false);
+
+    const handleReflectionUpdate = (updatedReflection: DailyReflectionModel) => {
+        setTodayReflection(updatedReflection)
+    }
 
     useEffect(() => {
         // Fetch today's reflection
@@ -31,9 +41,9 @@ export const DailyReflection = ({last_event}: { last_event :Event }) =>{
             }
         };
 
-        // Check if user has submitted homework for the last event
+        // Check if user has submitted homework for the last event (only for regular users)
         const checkHomework = async () => {
-            if (last_event?._id) {
+            if (last_event?._id && userRole === 'user') {
                 try {
                     const response = await fetch(`/api/homeworks?event_id=${last_event._id}`, {
                         credentials: 'include'
@@ -50,7 +60,7 @@ export const DailyReflection = ({last_event}: { last_event :Event }) =>{
 
         fetchTodayReflection();
         checkHomework();
-    }, [last_event]);
+    }, [last_event, userRole]);
 
     if (loading) {
         return (
@@ -66,9 +76,18 @@ export const DailyReflection = ({last_event}: { last_event :Event }) =>{
                 title={todayReflection ? `Denné zamyslenie - ${dayjs(todayReflection.date).format('DD.MM.YYYY')}` : "Denné zamyslenie"} 
                 variant="borderless"
                 extra={
-                    <Link href="/daily-reflections">
-                        <Button type="link" size="small">Všetky zamyslenia</Button>
-                    </Link>
+                    <Space>
+                        {todayReflection && (
+                            <ReflectionEditModal 
+                                reflection={todayReflection} 
+                                userRole={userRole} 
+                                onUpdate={handleReflectionUpdate}
+                            />
+                        )}
+                        <Link href="/daily-reflections">
+                            <Button type="link" size="small">Všetky zamyslenia</Button>
+                        </Link>
+                    </Space>
                 }
             >
                 {todayReflection ? (
@@ -81,7 +100,7 @@ export const DailyReflection = ({last_event}: { last_event :Event }) =>{
                         ))}
                         <Paragraph>{todayReflection.content}</Paragraph>
                         
-                        {last_event && !hasHomework && (
+                        {last_event && !hasHomework && userRole === 'user' && (
                             <div style={{ marginTop: 16, padding: 12, backgroundColor: '#fff7e6', borderRadius: 6, border: '1px solid #ffd591' }}>
                                 <Text type="warning">
                                     Ešte si neodovzdal domácu úlohu pre "{last_event.title}".{' '}

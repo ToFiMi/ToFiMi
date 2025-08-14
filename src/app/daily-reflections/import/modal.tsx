@@ -1,8 +1,8 @@
 'use client'
 
-import {Button, Modal, Upload, Select, message, Typography, Form, Input} from 'antd'
+import {Button, Modal, Upload, Select, message, Typography, Form, Input, Space, Divider} from 'antd'
 import {useEffect, useState} from 'react'
-import { UploadOutlined } from '@ant-design/icons'
+import { UploadOutlined, DownloadOutlined } from '@ant-design/icons'
 import {Event} from "@/models/events"
 import dayjs from "dayjs";
 
@@ -32,6 +32,38 @@ export default function ImportModal() {
         }
 
     }, [open])
+
+    const downloadTemplate = async (format: 'csv' | 'xlsx') => {
+        try {
+            const response = await fetch(`/api/daily-reflections/template?format=${format}&days=7`)
+            if (format === 'csv') {
+                const blob = await response.blob()
+                const url = window.URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = 'daily-reflections-template.csv'
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                window.URL.revokeObjectURL(url)
+                message.success('CSV template stiahnuté')
+            } else {
+                const data = await response.json()
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                const url = window.URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = 'daily-reflections-template.json'
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                window.URL.revokeObjectURL(url)
+                message.success('JSON template stiahnuté')
+            }
+        } catch (error) {
+            message.error('Chyba pri sťahovaní template')
+        }
+    }
 
     const handleUpload = async (values: any) => {
         const fileList = values.file?.fileList
@@ -78,7 +110,27 @@ export default function ImportModal() {
                 onOk={() => form.submit()}
                 okText="Importovať"
                 confirmLoading={uploading}
+                width={600}
             >
+                <div style={{ marginBottom: 16 }}>
+                    <Typography.Text strong>Stiahnuť šablónu:</Typography.Text>
+                    <br />
+                    <Space>
+                        <Button 
+                            icon={<DownloadOutlined />} 
+                            onClick={() => downloadTemplate('csv')}
+                            type="dashed"
+                        >
+                            CSV šablóna
+                        </Button>
+                        <Typography.Text type="secondary">
+                            (Odporúčané - otvorí sa v Excel/Google Sheets)
+                        </Typography.Text>
+                    </Space>
+                </div>
+                
+                <Divider />
+                
                 <Form layout="vertical" form={form} onFinish={handleUpload}>
                     <Form.Item
                         name="event_id"

@@ -12,4 +12,6 @@ export interface DailyReflection {
     content: string
     created_by: ObjectId
     created: Date
+    updated_by?: ObjectId
+    updated?: Date
 }

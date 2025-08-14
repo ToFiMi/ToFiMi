@@ -43,7 +43,10 @@ export default async function UsersDashboardPage() {
         <Layout className="min-h-screen">
             <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
 
-            <DailyReflection last_event={last_event[0] ? { ...last_event[0] as Event, _id: last_event[0]._id.toString() } : null}/>
+            <DailyReflection 
+                last_event={last_event[0] ? { ...last_event[0] as Event, _id: last_event[0]._id.toString() } : null}
+                userRole={token?.role}
+            />
 
             <RegistrationCard next_event={ next?._id? next: null} userRole={token?.role}/>
 

@@ -8,6 +8,9 @@ export interface Registration {
     event_id: ObjectId,
     meals: MealDefinition[]
     going: boolean,
+    attended?: boolean, // null = not set, true = attended, false = did not attend
+    attendance_marked_by?: ObjectId, // who marked the attendance
+    attendance_marked_at?: Date, // when attendance was marked
     created: Date,
     updated: Date,
 

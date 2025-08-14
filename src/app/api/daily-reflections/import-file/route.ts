@@ -36,34 +36,42 @@ export async function POST(req: NextRequest) {
             skip_empty_lines: true,
         })
 
-        reflections = records.map((row: any) => ({
-            verse_reference: [
-                {
-                    reference: row['reference'],
-                    verse: row['verse'],
-                },
-            ],
-            content: row['content'],
-        }))
+        reflections = records
+            .filter((row: any) => row['reference'] && row['verse'] && row['content'])
+            .map((row: any) => ({
+                verse_reference: [
+                    {
+                        reference: row['reference']?.trim(),
+                        verse: row['verse']?.trim(),
+                    },
+                ],
+                content: row['content']?.trim(),
+            }))
     } else if (extension === 'xlsx') {
         const workbook = XLSX.read(buffer, { type: 'buffer' })
         const sheet = workbook.Sheets[workbook.SheetNames[0]]
         const data = XLSX.utils.sheet_to_json(sheet)
 
-        reflections = (data as any[]).map((row) => ({
-            verse_reference: [
-                {
-                    reference: row['reference'],
-                    verse: row['verse'],
-                },
-            ],
-            content: row['content'],
-        }))
+        reflections = (data as any[])
+            .filter((row) => row['reference'] && row['verse'] && row['content'])
+            .map((row) => ({
+                verse_reference: [
+                    {
+                        reference: row['reference']?.toString()?.trim(),
+                        verse: row['verse']?.toString()?.trim(),
+                    },
+                ],
+                content: row['content']?.toString()?.trim(),
+            }))
     } else if (extension === 'md') {
         const content = buffer.toString()
         reflections = parseMarkdownReflections(content)
     } else {
         return new NextResponse('Unsupported file type', { status: 400 })
+    }
+
+    if (reflections.length === 0) {
+        return new NextResponse('No valid reflections found in file', { status: 400 })
     }
 
     const event = await db.collection<Event>('events').findOne({ _id: new ObjectId(event_id) })

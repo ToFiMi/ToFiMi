@@ -44,7 +44,7 @@ export default async function DailyReflectionsPage() {
                     )}
                 </div>
 
-                <ReflectionsList reflections={reflections} />
+                <ReflectionsList reflections={reflections} userRole={role} />
             </Space>
         </main>
     )

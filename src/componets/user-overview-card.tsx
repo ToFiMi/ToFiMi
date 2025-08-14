@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Card, Table, Tag, Typography, Space, Tooltip, Button, Modal, Statistic, Row, Col } from 'antd'
+import { Card, Table, Tag, Typography, Space, Tooltip, Button, Modal, Statistic, Row, Col, Switch, message } from 'antd'
 import { CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, CalendarOutlined, UserOutlined, EditOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import Link from 'next/link'
@@ -21,9 +21,13 @@ interface EventData {
     endDate: string
     description?: string
     grade?: number
+    registrationId?: string
     attendance: {
         registered: boolean
         going: boolean
+        attended?: boolean | null
+        attendanceMarkedBy?: string
+        attendanceMarkedAt?: string
         registrationDate?: string
     }
     homework: {
@@ -92,14 +96,43 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
         setHomeworkModal({ visible: true, content, title, eventId })
     }
 
+    const handleAttendanceToggle = async (registrationId: string, attended: boolean) => {
+        try {
+            const response = await fetch('/api/attendance', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ registrationId, attended }),
+                credentials: 'include'
+            })
+
+            if (response.ok) {
+                message.success(`Účasť ${attended ? 'označená' : 'odobraná'}`)
+                fetchUserData() // Refresh data
+            } else {
+                const error = await response.text()
+                message.error(error || 'Chyba pri aktualizácii účasti')
+            }
+        } catch (error) {
+            console.error('Error updating attendance:', error)
+            message.error('Chyba pri komunikácii so serverom')
+        }
+    }
+
     const getAttendanceIcon = (attendance: EventData['attendance']) => {
         if (!attendance.registered) {
             return <Tooltip title="Nezaregistrovaný"><CloseCircleOutlined style={{ color: '#ff4d4f' }} /></Tooltip>
         }
-        if (attendance.going) {
-            return <Tooltip title="Zaregistrovaný a zúčastní sa"><CheckCircleOutlined style={{ color: '#52c41a' }} /></Tooltip>
+        if (!attendance.going) {
+            return <Tooltip title="Zaregistrovaný ale nejde"><CloseCircleOutlined style={{ color: '#faad14' }} /></Tooltip>
         }
-        return <Tooltip title="Zaregistrovaný ale nezúčastní sa"><CloseCircleOutlined style={{ color: '#faad14' }} /></Tooltip>
+        if (attendance.attended === true) {
+            return <Tooltip title="Zúčastnil sa"><CheckCircleOutlined style={{ color: '#52c41a' }} /></Tooltip>
+        }
+        if (attendance.attended === false) {
+            return <Tooltip title="Nezúčastnil sa"><CloseCircleOutlined style={{ color: '#ff4d4f' }} /></Tooltip>
+        }
+        // attended is null/undefined - not marked yet
+        return <Tooltip title="Plánuje sa zúčastniť - účasť neoznačená"><CheckCircleOutlined style={{ color: '#1677ff' }} /></Tooltip>
     }
 
     const getHomeworkIcon = (homework: EventData['homework'], eventId: string) => {
@@ -154,11 +187,26 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
         {
             title: 'Účasť',
             key: 'attendance',
-            width: 80,
+            width: 120,
             align: 'center' as const,
-            render: (_: any, record: EventData) => getAttendanceIcon(record.attendance)
+            render: (_: any, record: EventData) => (
+                <Space direction="vertical" size={2} style={{ textAlign: 'center' }}>
+                    {getAttendanceIcon(record.attendance)}
+                    {/* Show attendance toggle only for registered users who are going */}
+                    {record.attendance.registered && record.attendance.going && record.registrationId && (
+                        <Switch
+                            size="small"
+                            checked={record.attendance.attended === true}
+                            onChange={(checked) => handleAttendanceToggle(record.registrationId!, checked)}
+                            checkedChildren="✓"
+                            unCheckedChildren="✗"
+                        />
+                    )}
+                </Space>
+            )
         },
-        {
+        // Only show homework column for regular users
+        ...(data?.user.role === 'user' ? [{
             title: 'Domáca úloha',
             key: 'homework',
             width: 120,
@@ -169,7 +217,7 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
                     {getHomeworkStatus(record.homework)}
                 </Space>
             )
-        },
+        }] : []),
         {
             title: 'Dátumy',
             key: 'dates',
@@ -181,7 +229,8 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
                             Reg: {dayjs(record.attendance.registrationDate).format('DD.MM HH:mm')}
                         </Text>
                     )}
-                    {record.homework.submissionDate && (
+                    {/* Only show homework date for regular users */}
+                    {data?.user.role === 'user' && record.homework.submissionDate && (
                         <Text style={{ fontSize: '11px' }}>
                             DÚ: {dayjs(record.homework.submissionDate).format('DD.MM HH:mm')}
                         </Text>
@@ -220,34 +269,37 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
 
                         {/* Stats */}
                         <Row gutter={16}>
-                            <Col span={6}>
+                            <Col span={data.user.role === 'user' ? 6 : 8}>
                                 <Statistic
                                     title="Celkom termínov"
                                     value={data.stats.totalEvents}
                                     prefix={<CalendarOutlined />}
                                 />
                             </Col>
-                            <Col span={6}>
+                            <Col span={data.user.role === 'user' ? 6 : 8}>
                                 <Statistic
                                     title="Zaregistrovaných"
                                     value={data.stats.registeredEvents}
                                     valueStyle={{ color: '#1677ff' }}
                                 />
                             </Col>
-                            <Col span={6}>
+                            <Col span={data.user.role === 'user' ? 6 : 8}>
                                 <Statistic
                                     title="Zúčastnených"
                                     value={data.stats.attendedEvents}
                                     valueStyle={{ color: '#52c41a' }}
                                 />
                             </Col>
-                            <Col span={6}>
-                                <Statistic
-                                    title="Domácich úloh"
-                                    value={data.stats.submittedHomeworks}
-                                    valueStyle={{ color: '#722ed1' }}
-                                />
-                            </Col>
+                            {/* Only show homework stats for regular users */}
+                            {data.user.role === 'user' && (
+                                <Col span={6}>
+                                    <Statistic
+                                        title="Domácich úloh"
+                                        value={data.stats.submittedHomeworks}
+                                        valueStyle={{ color: '#722ed1' }}
+                                    />
+                                </Col>
+                            )}
                         </Row>
 
                         {/* Events Table */}
