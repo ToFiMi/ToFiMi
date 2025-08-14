@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Card, Table, Tag, Typography, Space, Tooltip, Button, Modal, Statistic, Row, Col, Switch, message } from 'antd'
-import { CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, CalendarOutlined, UserOutlined, EditOutlined } from '@ant-design/icons'
+import { Card, Table, Tag, Typography, Space, Tooltip, Button, Modal, Statistic, Row, Col, Switch, message, Select, Popconfirm } from 'antd'
+import { CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, CalendarOutlined, UserOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import Link from 'next/link'
 
@@ -12,6 +12,7 @@ interface UserOverviewProps {
     userId: string
     visible: boolean
     onClose: () => void
+    currentUserRole?: string // Role of the user viewing the modal
 }
 
 interface EventData {
@@ -59,9 +60,19 @@ interface UserOverviewData {
     }
 }
 
-export default function UserOverviewCard({ userId, visible, onClose }: UserOverviewProps) {
+export default function UserOverviewCard({ userId, visible, onClose, currentUserRole }: UserOverviewProps) {
     const [data, setData] = useState<UserOverviewData | null>(null)
     const [loading, setLoading] = useState(false)
+    const [roleInfo, setRoleInfo] = useState<{
+        currentRole: string
+        assignableRoles: string[]
+        canChangeRole: boolean
+        permissions: {
+            canActivate: boolean
+            canDeactivate: boolean
+        }
+    } | null>(null)
+    const [changingRole, setChangingRole] = useState(false)
     const [homeworkModal, setHomeworkModal] = useState<{ visible: boolean; content: string; title: string; eventId?: string }>({
         visible: false,
         content: '',
@@ -72,8 +83,28 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
     useEffect(() => {
         if (visible && userId) {
             fetchUserData()
+            fetchRoleInfo()
         }
     }, [visible, userId])
+
+    const fetchRoleInfo = async () => {
+        // Only fetch role info if current user can manage roles
+        if (!currentUserRole || !['ADMIN', 'leader'].includes(currentUserRole)) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/users/${userId}/role`, {
+                credentials: 'include'
+            })
+            if (response.ok) {
+                const roleData = await response.json()
+                setRoleInfo(roleData)
+            }
+        } catch (error) {
+            console.error('Error fetching role info:', error)
+        }
+    }
 
     const fetchUserData = async () => {
         setLoading(true)
@@ -94,6 +125,33 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
 
     const showHomework = (content: string, title: string, eventId: string) => {
         setHomeworkModal({ visible: true, content, title, eventId })
+    }
+
+    const handleRoleChange = async (newRole: string) => {
+        setChangingRole(true)
+        try {
+            const response = await fetch(`/api/users/${userId}/role`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newRole }),
+                credentials: 'include'
+            })
+
+            if (response.ok) {
+                const result = await response.json()
+                message.success(`Rola používateľa zmenená na ${newRole}`)
+                fetchUserData() // Refresh user data
+                fetchRoleInfo() // Refresh role info
+            } else {
+                const error = await response.text()
+                message.error(error || 'Chyba pri zmene role')
+            }
+        } catch (error) {
+            console.error('Error changing role:', error)
+            message.error('Chyba pri komunikácii so serverom')
+        } finally {
+            setChangingRole(false)
+        }
     }
 
     const handleAttendanceToggle = async (registrationId: string, attended: boolean) => {
@@ -259,10 +317,73 @@ export default function UserOverviewCard({ userId, visible, onClose }: UserOverv
                         <Card size="small">
                             <Space>
                                 <UserOutlined style={{ fontSize: 20 }} />
-                                <div>
+                                <div style={{ flex: 1 }}>
                                     <Text strong>{data.user.first_name} {data.user.last_name}</Text><br />
                                     <Text type="secondary">{data.user.email}</Text><br />
-                                    <Tag color="blue">{data.user.role}</Tag>
+                                    <Space>
+                                        <Tag 
+                                            color={data.user.role === 'inactive' ? 'red' : 
+                                                   data.user.role === 'leader' ? 'gold' :
+                                                   data.user.role === 'animator' ? 'blue' : 'green'}
+                                        >
+                                            {data.user.role}
+                                        </Tag>
+                                        
+                                        {/* Role Management */}
+                                        {roleInfo?.canChangeRole && (
+                                            <Space>
+                                                <Select
+                                                    value={roleInfo.currentRole}
+                                                    onChange={handleRoleChange}
+                                                    loading={changingRole}
+                                                    size="small"
+                                                    style={{ minWidth: 100 }}
+                                                >
+                                                    {roleInfo.assignableRoles.map(role => (
+                                                        <Select.Option key={role} value={role}>
+                                                            <Tag 
+                                                                color={role === 'inactive' ? 'red' : 
+                                                                       role === 'leader' ? 'gold' :
+                                                                       role === 'animator' ? 'blue' : 'green'}
+                                                                style={{ margin: 0 }}
+                                                            >
+                                                                {role}
+                                                            </Tag>
+                                                        </Select.Option>
+                                                    ))}
+                                                </Select>
+                                                
+                                                {/* Quick Actions */}
+                                                {roleInfo.permissions.canActivate && (
+                                                    <Popconfirm
+                                                        title="Aktivovať používateľa?"
+                                                        description="Používateľ získa späť prístup do systému."
+                                                        onConfirm={() => handleRoleChange('user')}
+                                                        okText="Áno"
+                                                        cancelText="Nie"
+                                                    >
+                                                        <Button type="primary" size="small" loading={changingRole}>
+                                                            Aktivovať
+                                                        </Button>
+                                                    </Popconfirm>
+                                                )}
+                                                
+                                                {roleInfo.permissions.canDeactivate && (
+                                                    <Popconfirm
+                                                        title="Deaktivovať používateľa?"
+                                                        description="Používateľ stratí prístup do systému."
+                                                        onConfirm={() => handleRoleChange('inactive')}
+                                                        okText="Áno"
+                                                        cancelText="Nie"
+                                                    >
+                                                        <Button type="default" danger size="small" loading={changingRole}>
+                                                            Deaktivovať
+                                                        </Button>
+                                                    </Popconfirm>
+                                                )}
+                                            </Space>
+                                        )}
+                                    </Space>
                                 </div>
                             </Space>
                         </Card>

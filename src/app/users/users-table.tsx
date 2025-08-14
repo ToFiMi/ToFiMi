@@ -268,6 +268,7 @@ export default function UsersPageClient({
                 userId={userOverviewModal.userId}
                 visible={userOverviewModal.visible}
                 onClose={() => setUserOverviewModal({ visible: false, userId: '' })}
+                currentUserRole={userRole}
             />
         </>
     )

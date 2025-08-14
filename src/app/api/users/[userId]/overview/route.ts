@@ -25,12 +25,18 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
     const db = await connectToDatabase()
 
     try {
-        // Verify the user belongs to the same school and get user_school ID
-        const userSchool = await db.collection('user_school').findOne({
+        // Get user_school relationship (including inactive users for leaders/admins)
+        const userSchoolQuery: any = {
             user_id: new ObjectId(userId),
-            school_id: new ObjectId(school_id),
-            role: { $ne: 'inactive' }
-        })
+            school_id: new ObjectId(school_id)
+        }
+
+        // Only exclude inactive users if the requester is not a leader/admin
+        if (role !== 'leader' && role !== 'animator' && role !== 'ADMIN') {
+            userSchoolQuery.role = { $ne: 'inactive' }
+        }
+
+        const userSchool = await db.collection('user_school').findOne(userSchoolQuery)
 
         if (!userSchool) {
             return new NextResponse('User not found in your school', { status: 404 })

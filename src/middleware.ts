@@ -18,6 +18,13 @@ export async function middleware(req: NextRequest) {
     if (!token) {
         return NextResponse.redirect(new URL('/', req.url))
     }
+
+    // Check if user is active - if not, deny access
+    if (token.isActive === false) {
+        console.log(`Access denied for inactive user: ${token.email}`)
+        return NextResponse.redirect(new URL('/unauthorized?reason=inactive', req.url))
+    }
+
     const role = token.role as keyof typeof ROUTES_BY_ROLE
     const allowedRoutes = ROUTES_BY_ROLE[role]?.map(r => r.key) || []
 

@@ -29,8 +29,14 @@ export const authOptions: AuthOptions = {
                     if (!valid) return null
                 }
 
+                // Only get active user-school relationships (exclude inactive users)
                 const schools = await db.collection('user_school').aggregate([
-                    { $match: { user_id: new ObjectId(user._id) } },
+                    { 
+                        $match: { 
+                            user_id: new ObjectId(user._id),
+                            role: { $ne: 'inactive' } // Exclude inactive users
+                        } 
+                    },
                     {
                         $lookup: {
                             from: 'schools',
@@ -50,12 +56,18 @@ export const authOptions: AuthOptions = {
                     }
                 ]).toArray()
 
+                // If no active schools found, deny access
+                if (schools.length === 0 && !user.isAdmin) {
+                    return null // User is inactive in all schools
+                }
+
                 // Admin – nezávislý od školy
                 if (user.isAdmin) {
                     return {
                         id: user._id.toString(),
                         email: user.email,
                         isAdmin: true,
+                        isActive: true, // Admins are always active
                         role: 'ADMIN',
                         school_choices: schools.map(s => ({
                             id: s.id.toString(),
@@ -74,6 +86,7 @@ export const authOptions: AuthOptions = {
                         school_id: schools[0].school_id.toString(),
                         email: user.email,
                         role: schools[0].role,
+                        isActive: true, // User is active since we filtered out inactive
                         isAdmin: false
                     }
                 }
@@ -89,6 +102,7 @@ export const authOptions: AuthOptions = {
                         school_id: selected.school_id.toString(),
                         email: user.email,
                         role: selected.role,
+                        isActive: true, // User is active since we filtered out inactive
                         isAdmin: false
                     }
                 }
@@ -119,6 +133,8 @@ export const authOptions: AuthOptions = {
                 token.email = user.email
                 token.isAdmin = user.isAdmin
                 // @ts-ignore
+                token.isActive = user.isActive ?? true
+                // @ts-ignore
                 token.role = user.role ?? null
                 token.user_id = user.user_id ?? null
                 token.school_id = user.school_id ?? null
@@ -133,6 +149,8 @@ export const authOptions: AuthOptions = {
                 id: token.id,
                 email: token.email,
                 isAdmin: token.isAdmin,
+                // @ts-ignore
+                isActive: token.isActive,
                 user_id: token.user_id,
                 school_id: token.school_id,
                 // @ts-ignore

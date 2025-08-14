@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
-import { getToken } from 'next-auth/jwt'
 import { ObjectId } from 'mongodb'
 import { DailyReflection } from '@/models/daliy-reflections'
+import { requireAuth } from '@/lib/auth-helpers'
 
 export async function GET(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token) return new NextResponse('Unauthorized', { status: 401 })
-
-    const school_id = token.school_id
-    if (!school_id) {
+    const authResult = await requireAuth(req)
+    if (authResult instanceof NextResponse) return authResult
+    
+    const { auth } = authResult
+    if (!auth.schoolId) {
         return new NextResponse('School ID required', { status: 400 })
     }
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const today = req.nextUrl.searchParams.get('today') === 'true'
 
     try {
-        let query: any = { school_id: new ObjectId(school_id) }
+        let query: any = { school_id: new ObjectId(auth.schoolId) }
         
         if (today) {
             // Get today's reflection
@@ -57,16 +57,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token) return new NextResponse('Unauthorized', { status: 401 })
-
-    const role = token.role
-    if (role !== 'leader' && role !== 'animator') {
-        return new NextResponse('Forbidden - insufficient permissions', { status: 403 })
-    }
-
-    const school_id = token.school_id
-    if (!school_id) {
+    const authResult = await requireAuth(req, ['leader', 'animator'])
+    if (authResult instanceof NextResponse) return authResult
+    
+    const { auth } = authResult
+    if (!auth.schoolId) {
         return new NextResponse('School ID required', { status: 400 })
     }
 
@@ -82,11 +77,11 @@ export async function POST(req: NextRequest) {
 
         const reflection: Omit<DailyReflection, '_id'> = {
             event_id: new ObjectId(event_id),
-            school_id: new ObjectId(school_id),
+            school_id: new ObjectId(auth.schoolId),
             date: new Date(date),
             verse_reference,
             content,
-            created_by: new ObjectId(token.id),
+            created_by: new ObjectId(auth.userId),
             created: new Date()
         }
 
