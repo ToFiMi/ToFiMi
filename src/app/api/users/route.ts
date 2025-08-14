@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (token.isAdmin) {
-        if (!isAutocomplete || query.length < 3){
+        if (isAutocomplete && query.length >= 3){
             if (schoolId) {
                 const results = await usersInstance.searchUsers(query, schoolId)
                 return NextResponse.json(results)
@@ -31,12 +31,12 @@ export async function GET(req: NextRequest) {
 
             const results = await usersInstance.searchUsers(query)
             return NextResponse.json(results)
-
         }
 
-
-        const users = await usersInstance.getUsersWithSchool()
-        return NextResponse.json(users)
+        if (!isAutocomplete) {
+            const users = await usersInstance.getUsersWithSchool()
+            return NextResponse.json(users)
+        }
     }
     if (token.school_id) {
 

@@ -1,8 +1,10 @@
 'use client'
 
 import {useEffect, useState} from 'react'
-import {Button, Card, Form, Input, message, Modal, Select, Table, Tag, Typography} from 'antd'
+import {Button, Card, Form, Input, message, Modal, Select, Table, Tag, Typography, Space} from 'antd'
+import {EyeOutlined} from '@ant-design/icons'
 import {School} from "@/models/school";
+import UserOverviewCard from "@/componets/user-overview-card";
 
 type Member = {
     _id?: string
@@ -34,6 +36,7 @@ export default function UsersPageClient({
     const [loading, setLoading] = useState(!initialUsers)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [inviteToken, setInviteToken] = useState<string | null>(null)
+    const [userOverviewModal, setUserOverviewModal] = useState<{visible: boolean, userId: string}>({ visible: false, userId: '' })
     const [form] = Form.useForm()
     const role = Form.useWatch('role', form)
 
@@ -146,18 +149,33 @@ export default function UsersPageClient({
             key: 'school',
             render: (text: string) => <span>{text}</span>
         },
-        (isAdmin || userRole === "leader") && {
+        (isAdmin || userRole === "leader" || userRole === "animator") && {
             title: 'Akcia',
             key: 'action',
             render: (_: any, record: Member) => {
                 return (
-                    <Button
-                        danger
-                        size="small"
-                        onClick={() => handleDeactivate(record)}
-                    >
-                        Deaktivovať
-                    </Button>
+                    <Space>
+                        {(userRole === "leader" || userRole === "animator") && !isAdmin && (
+                            <Button
+                                type="primary"
+                                ghost
+                                size="small"
+                                icon={<EyeOutlined />}
+                                onClick={() => setUserOverviewModal({ visible: true, userId: record.user_id || '' })}
+                            >
+                                Prehľad
+                            </Button>
+                        )}
+                        {(isAdmin || userRole === "leader") && (
+                            <Button
+                                danger
+                                size="small"
+                                onClick={() => handleDeactivate(record)}
+                            >
+                                Deaktivovať
+                            </Button>
+                        )}
+                    </Space>
                 )
             }
         }
@@ -244,6 +262,12 @@ export default function UsersPageClient({
                     </>
                 )}
             </Modal>
+
+            <UserOverviewCard
+                userId={userOverviewModal.userId}
+                visible={userOverviewModal.visible}
+                onClose={() => setUserOverviewModal({ visible: false, userId: '' })}
+            />
         </>
     )
 }

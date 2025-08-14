@@ -149,6 +149,7 @@ export class Users {
             },
             school: record.school?._id
                 ? {
+                    _id: record.school._id.toString(),
                     name: record.school.name
                 }
                 : undefined

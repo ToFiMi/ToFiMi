@@ -1,6 +1,6 @@
 'use client'
 import { debounce } from 'lodash'
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Table, Modal, Form, Input, Select, Button, message, Typography, Space } from 'antd'
 import {User as UserModel} from "@/models/user"
 
@@ -23,6 +23,8 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
     const [searchTerm, setSearchTerm] = useState('')
     const [showDropdown, setShowDropdown] = useState(false)
     const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+    const dropdownRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     const fetchUsers = async () => {
         setLoading(true)
@@ -98,29 +100,40 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
             key: 'role',
         },
     ]
-    const handleSearch = async (value: string) => {
-        setSearchTerm(value)
-        if (value.length > 3 && value.includes('@')) {
-            setLoading(true)
-            try {
-                const res = await fetch(`/api/users?autocomplete=1&query=${encodeURIComponent(value)}`, {
-                    credentials: 'include',
-                })
-                if (res.ok) {
-                    const data = await res.json()
-                    setEmailOptions(data)
-                    setShowDropdown(true)
-                } else {
+    const debouncedSearch = useCallback(
+        debounce(async (value: string) => {
+            if (value.length >= 3) {
+                setLoading(true)
+                try {
+                    const res = await fetch(`/api/users?autocomplete=1&query=${encodeURIComponent(value)}`, {
+                        credentials: 'include',
+                    })
+                    if (res.ok) {
+                        const data = await res.json()
+                        setEmailOptions(data)
+                        setShowDropdown(data.length > 0)
+                    } else {
+                        setEmailOptions([])
+                        setShowDropdown(false)
+                    }
+                } catch (e) {
+                    message.error('Chyba pri načítaní používateľov')
                     setEmailOptions([])
+                    setShowDropdown(false)
+                } finally {
+                    setLoading(false)
                 }
-            } catch (e) {
-                message.error('Chyba pri načítaní používateľov')
-            } finally {
-                setLoading(false)
+            } else {
+                setEmailOptions([])
+                setShowDropdown(false)
             }
-        } else {
-            setShowDropdown(false)
-        }
+        }, 300),
+        []
+    )
+
+    const handleSearch = (value: string) => {
+        setSearchTerm(value)
+        debouncedSearch(value)
     }
 
     const handleSelect = (email: string, option: UserModel) => {
@@ -131,7 +144,36 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
         })
         setSearchTerm(email)
         setShowDropdown(false)
+        setEmailOptions([])
     }
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node
+            const isClickInsideDropdown = dropdownRef.current?.contains(target)
+            const isClickInsideInput = inputRef.current?.contains(target)
+            
+            if (!isClickInsideDropdown && !isClickInsideInput) {
+                setShowDropdown(false)
+            }
+        }
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setShowDropdown(false)
+            }
+        }
+
+        if (showDropdown) {
+            document.addEventListener('click', handleClickOutside, true)
+            document.addEventListener('keydown', handleKeyDown)
+        }
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside, true)
+            document.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [showDropdown])
 
     return (
         <>
@@ -150,6 +192,10 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
                 onCancel={() => {
                     setIsModalOpen(false)
                     setInviteUrl(null)
+                    setShowDropdown(false)
+                    setSearchTerm('')
+                    setEmailOptions([])
+                    form.resetFields()
                 }}
                 onOk={() => form.submit()}
                 okText="Vytvoriť pozvánku"
@@ -163,50 +209,64 @@ export default function SchoolUsers({ schoolId, initialUsers }: { schoolId: stri
                             { type: 'email', message: 'Neplatný formát emailu' },
                         ]}
                     >
-                        <>
+                        <div style={{ position: 'relative' }}>
                             <Input
+                                ref={inputRef}
                                 autoComplete="off"
                                 value={searchTerm}
-                                type={"email"}
+                                type="email"
                                 onChange={(e) => {
                                     const value = e.target.value
                                     setSearchTerm(value)
                                     form.setFieldsValue({ email: value })
                                     handleSearch(value)
                                 }}
+                                onFocus={() => {
+                                    if (emailOptions.length > 0) {
+                                        setShowDropdown(true)
+                                    }
+                                }}
                                 placeholder="Zadajte email"
                             />
                             {showDropdown && emailOptions.length > 0 && (
                                 <div
+                                    ref={dropdownRef}
                                     style={{
                                         position: 'absolute',
+                                        top: '100%',
+                                        left: 0,
+                                        right: 0,
                                         backgroundColor: '#fff',
+                                        border: '1px solid #d9d9d9',
                                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
                                         zIndex: 1000,
-                                        width: '100%',
                                         maxHeight: 200,
                                         overflowY: 'auto',
                                         borderRadius: 4,
-                                        marginTop: 4,
-                                        padding: 4,
                                     }}
                                 >
                                     {emailOptions.map((opt) => (
                                         <div
-                                            key={ Number(opt._id)}
+                                            key={opt._id?.toString() || opt.email}
                                             style={{
                                                 padding: '8px 12px',
                                                 cursor: 'pointer',
                                                 borderRadius: 4,
                                             }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#f5f5f5'
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'transparent'
+                                            }}
                                             onMouseDown={() => handleSelect(opt.email, opt)}
                                         >
-                                            <p>{opt.first_name + " "  + opt.last_name + " (" + opt.email+ ")"  }</p>
+                                            <div>{opt.first_name && opt.last_name ? `${opt.first_name} ${opt.last_name}` : 'Bez mena'} ({opt.email})</div>
                                         </div>
                                     ))}
                                 </div>
                             )}
-                        </>
+                        </div>
                     </Form.Item>
                     <Form.Item name="first_name" label="Meno" rules={[{ required: true }]}>
                         <Input />

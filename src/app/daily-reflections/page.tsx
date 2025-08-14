@@ -6,6 +6,7 @@ import { Button, Space} from 'antd'
 import Link from 'next/link'
 import ReflectionsList from "@/app/daily-reflections/reflections-list";
 import { DailyReflection } from "@/models/daliy-reflections";
+import { ObjectId } from 'mongodb';
 import ImportModal from "@/app/daily-reflections/import/modal";
 
 export default async function DailyReflectionsPage() {
@@ -16,10 +17,19 @@ export default async function DailyReflectionsPage() {
     })
 
     const role = token?.role
+    const school_id = token?.school_id
+
+    if (!school_id) {
+        return (
+            <main className="max-w-4xl mx-auto py-10 px-4">
+                <div>Neautorizovaný prístup - chýba škola</div>
+            </main>
+        )
+    }
 
     const reflections = await db.collection<DailyReflection>('daily_reflections')
-        .find({})
-        .sort({ date: 1 })
+        .find({ school_id: new ObjectId(school_id) })
+        .sort({ date: -1 })
         .toArray()
 
     return (

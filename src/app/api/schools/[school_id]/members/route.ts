@@ -27,7 +27,7 @@ export async function GET(
         { $unwind: '$user_info' },
         {
             $project: {
-                _id: 0,
+                _id: '$user_info._id',
                 role: 1,
                 user: {
                     first_name: '$user_info.first_name',

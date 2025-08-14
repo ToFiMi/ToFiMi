@@ -20,7 +20,7 @@ export default async function UsersDashboardPage() {
         .find({ endDate: { $lt: now }, school_id: new ObjectId(school_id as string) })
         .sort({ endDate: -1 })
         .limit(1)
-        .project({ _id: 0, school_id: 0 })
+        .project({ school_id: 0 })
         .toArray()
     const next_event = await db.collection<Event>("events")
         .find({ startDate: { $gte: now },school_id: new ObjectId(school_id as string) })
@@ -43,7 +43,7 @@ export default async function UsersDashboardPage() {
         <Layout className="min-h-screen">
             <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
 
-            <DailyReflection last_event={last_event[0] as Event || null}/>
+            <DailyReflection last_event={last_event[0] ? { ...last_event[0] as Event, _id: last_event[0]._id.toString() } : null}/>
 
             <RegistrationCard next_event={ next?._id? next: null} userRole={token?.role}/>
 

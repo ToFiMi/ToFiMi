@@ -75,8 +75,29 @@ export default function UserCard({ user, active_school_id }: { user: any, active
             setSaving(false)
         }
     }
+
+    const handleSchoolSwitch = async (schoolId: string) => {
+        try {
+            const res = await fetch('/api/me/switch-school', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ school_id: schoolId }),
+            })
+            if (res.ok) {
+                message.success('Škola bola prepnutá')
+                // Reload the page to update the session
+                window.location.reload()
+            } else {
+                message.error('Chyba pri prepínaní školy')
+            }
+        } catch (e) {
+            message.error('Chyba siete pri prepínaní školy')
+        }
+    }
+
     const active_school = user.schools.find((school)=> school.school._id ===  active_school_id )
-    console.log(active_school)
+    const hasMultipleSchools = user.schools && user.schools.length > 1
     return (
         <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -89,8 +110,46 @@ export default function UserCard({ user, active_school_id }: { user: any, active
             <div style={{ marginTop: 12 }}>
                 <Text strong>Meno:</Text> <Text>{user?.first_name} {user?.last_name}</Text><br />
                 <Text strong>Email:</Text> <Text>{user?.email}</Text><br />
-                <Text strong>Rola:</Text> <Text>{active_school?.role}</Text><br />
+                {active_school && (
+                    <>
+                        <Text strong>Škola:</Text> <Text>{active_school.school.name}</Text><br />
+                        <Text strong>Rola:</Text> <Text>{active_school.role}</Text><br />
+                    </>
+                )}
             </div>
+
+            {hasMultipleSchools && (
+                <div style={{ marginTop: 12 }}>
+                    <Divider />
+                    <Title level={4}>Prepnúť školu</Title>
+                    <Text>Máš prístup k viacerým školám. Môžeš prepnúť na inú školu bez odhlásenia.</Text>
+                    <div style={{ marginTop: 8 }}>
+                        <Select
+                            placeholder="Vyber školu"
+                            style={{ width: '100%', maxWidth: 300 }}
+                            value={active_school_id}
+                            onChange={handleSchoolSwitch}
+                        >
+                            {user.schools.map((school: any) => (
+                                <Select.Option 
+                                    key={school.school._id} 
+                                    value={school.school._id}
+                                >
+                                    {school.school.name} ({school.role})
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </div>
+                </div>
+            )}
+
+            {user.schools && user.schools.length > 0 && !hasMultipleSchools && (
+                <div style={{ marginTop: 12 }}>
+                    <Text type="secondary">
+                        Pripojený k 1 škole: {active_school?.school.name}
+                    </Text>
+                </div>
+            )}
 
             <div style={{ marginTop: 12 }}>
                 <Text strong>Notifikácie:</Text>{' '}
