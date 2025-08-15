@@ -42,7 +42,7 @@ export const RegistrationCard = ({next_event, userRole}: { next_event: Event | n
                 form.setFieldsValue({
                     meals: registration.meals.map((m: any) =>
                         JSON.stringify({
-                            date: dayjs(m.date).startOf('day').toISOString(), // normalize na UTC midnight
+                            date: dayjs(m.date).format('YYYY-MM-DD'), // format as simple date string
                             time: m.time
                         })
                     )
@@ -215,7 +215,7 @@ export const RegistrationCard = ({next_event, userRole}: { next_event: Event | n
                                     <strong>{dayjs(meal.date).format('dddd, DD.MM.YYYY')}</strong>
                                     {meal.times.map((time) => {
                                         const value = JSON.stringify({
-                                            date: dayjs(meal.date).startOf('day').toISOString(), // normalize aj tu
+                                            date: dayjs(meal.date).format('YYYY-MM-DD'), // format as simple date string
                                             time
                                         })
 

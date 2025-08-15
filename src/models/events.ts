@@ -14,6 +14,6 @@ export interface Event  {
     meals: MealDefinition[]
 }
 export interface MealDefinition {
-    date: Date
+    date: string
     times: string[]
 }

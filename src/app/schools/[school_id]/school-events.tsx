@@ -71,7 +71,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
     const handleAddEvent = async (values: any) => {
         const meals = Object.entries(values.meals || {}).map(([date, mealList]) => ({
             date,
-            times: mealList,
+            times: (mealList as string[]).sort(),
         }))
         const [startDate, endDate] = values.dateRange;
 
@@ -122,7 +122,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
     const handleUpdateEvent = async (eventId: string, values: any) => {
         const meals = Object.entries(values.meals || {}).map(([date, mealList]) => ({
             date,
-            times: mealList,
+            times: (mealList as string[]).sort(),
         }))
         const [startDate, endDate] = values.dateRange;
 

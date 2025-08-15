@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
             created: r.created?.toISOString(),
             updated: r.updated?.toISOString(),
             meals: r.meals?.map((m: any) => ({
-                date: m.date?.toISOString(),
+                date: typeof m.date === 'string' ? m.date : m.date?.toISOString?.()?.split('T')[0],
                 time: m.time
             })) || []
         }))
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
         const parsedMeals = Array.isArray(meals)
             ? meals.map((entry: { date: string, time: string }) => ({
-                date: new Date(entry.date),
+                date: entry.date,
                 time: entry.time
             }))
             : []
