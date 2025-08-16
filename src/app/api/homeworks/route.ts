@@ -36,15 +36,16 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json()
-        const { content, event_id } = body
+        const { content, event_id, homework_type_id } = body
 
-        if (!content || !event_id) {
+        if (!content || !event_id || !homework_type_id) {
             return new NextResponse('Missing required fields', { status: 400 })
         }
 
         const homework: Omit<Homework, '_id'> = {
             event_id: new ObjectId(event_id),
             user_id: new ObjectId(token.id),
+            homework_type_id,
             content,
             status: 'pending',
             comments: [],
@@ -72,10 +73,19 @@ export async function PUT(req: NextRequest) {
     
     try {
         const body = await req.json()
-        const { content, event_id } = body
+        const { content, event_id, homework_type_id } = body
 
         if (!content || !event_id) {
             return new NextResponse('Missing required fields', { status: 400 })
+        }
+
+        const updateData: any = { 
+            content,
+            updated: new Date()
+        }
+        
+        if (homework_type_id) {
+            updateData.homework_type_id = homework_type_id
         }
 
         const result = await db.collection<Homework>('homeworks').updateOne(
@@ -84,10 +94,7 @@ export async function PUT(req: NextRequest) {
                 user_id: new ObjectId(token.id)
             },
             { 
-                $set: { 
-                    content,
-                    updated: new Date()
-                }
+                $set: updateData
             }
         )
 

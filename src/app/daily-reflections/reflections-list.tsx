@@ -2,7 +2,7 @@
 import { Card, Space, Typography} from "antd";
 import dayjs from "dayjs";
 import {DailyReflection} from "@/models/daliy-reflections";
-import ReflectionEditModal from "@/componets/reflection-edit-modal";
+import ReflectionEditModal from "@/components/reflection-edit-modal";
 import { useState } from "react";
 
 const { Text, Paragraph } = Typography
@@ -14,12 +14,12 @@ interface ReflectionsListProps {
 
 export default function ReflectionsList({reflections, userRole}: ReflectionsListProps){
     const [reflectionsList, setReflectionsList] = useState(reflections)
-    
+
     const handleReflectionUpdate = (updatedReflection: DailyReflection) => {
-        setReflectionsList(prev => 
-            prev.map(reflection => 
-                reflection._id.toString() === updatedReflection._id.toString() 
-                    ? updatedReflection 
+        setReflectionsList(prev =>
+            prev.map(reflection =>
+                reflection._id.toString() === updatedReflection._id.toString()
+                    ? updatedReflection
                     : reflection
             )
         )
@@ -30,13 +30,13 @@ export default function ReflectionsList({reflections, userRole}: ReflectionsList
 
 
                 {reflectionsList.map(ref => (
-                    <Card 
-                        key={ref._id.toString()} 
+                    <Card
+                        key={ref._id.toString()}
                         title={dayjs(ref.date).format('DD. MM. YYYY')}
                         extra={
-                            <ReflectionEditModal 
-                                reflection={ref} 
-                                userRole={userRole} 
+                            <ReflectionEditModal
+                                reflection={ref}
+                                userRole={userRole}
                                 onUpdate={handleReflectionUpdate}
                             />
                         }

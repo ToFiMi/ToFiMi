@@ -2,7 +2,7 @@
 import "./globals.css";
 import { PwaInit } from "@/app/pwa-init";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import  AuthLayout  from "@/componets/layouts/auth-layout";
+import  AuthLayout  from "@/components/layouts/auth-layout";
 import '@ant-design/v5-patch-for-react-19';
 import { ConfigProvider } from 'antd'
 import sk from 'antd/locale/sk_SK'

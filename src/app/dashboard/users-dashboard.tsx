@@ -1,8 +1,8 @@
 import {Button, Layout, Space} from 'antd'
-import {DailyReflection} from "@/componets/daily-reflection";
+import {DailyReflection} from "@/components/daily-reflection";
 import {connectToDatabase} from "@/lib/mongo";
 import {Event} from "@/models/events";
-import {RegistrationCard} from "@/componets/registration-card";
+import {RegistrationCard} from "@/components/registration-card";
 import {getToken} from "next-auth/jwt";
 import {cookies} from "next/headers";
 import {ObjectId} from "mongodb";
@@ -43,7 +43,7 @@ export default async function UsersDashboardPage() {
         <Layout className="min-h-screen">
             <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
 
-            <DailyReflection 
+            <DailyReflection
                 last_event={last_event[0] ? { ...last_event[0] as Event, _id: last_event[0]._id.toString() } : null}
                 userRole={token?.role}
             />

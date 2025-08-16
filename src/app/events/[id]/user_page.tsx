@@ -3,7 +3,7 @@
 import { Homework } from "@/models/homework"
 import { Button, Form, Input, message, Typography } from "antd"
 import { useEffect } from "react"
-import CommentsThread from "@/componets/comments/thread";
+import CommentsThread from "@/components/comments/thread";
 
 
 const { Title, Paragraph } = Typography

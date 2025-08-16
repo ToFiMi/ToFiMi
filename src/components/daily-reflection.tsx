@@ -5,7 +5,7 @@ import {DailyReflection as DailyReflectionModel} from "@/models/daliy-reflection
 import {useEffect, useState} from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
-import ReflectionEditModal from "@/componets/reflection-edit-modal";
+import ReflectionEditModal from "@/components/reflection-edit-modal";
 
 const { Text, Paragraph } = Typography;
 
@@ -72,15 +72,15 @@ export const DailyReflection = ({last_event, userRole}: DailyReflectionProps) =>
 
     return(
         <>
-            <Card 
-                title={todayReflection ? `Denné zamyslenie - ${dayjs(todayReflection.date).format('DD.MM.YYYY')}` : "Denné zamyslenie"} 
+            <Card
+                title={todayReflection ? `Denné zamyslenie - ${dayjs(todayReflection.date).format('DD.MM.YYYY')}` : "Denné zamyslenie"}
                 variant="borderless"
                 extra={
                     <Space>
                         {todayReflection && (
-                            <ReflectionEditModal 
-                                reflection={todayReflection} 
-                                userRole={userRole} 
+                            <ReflectionEditModal
+                                reflection={todayReflection}
+                                userRole={userRole}
                                 onUpdate={handleReflectionUpdate}
                             />
                         )}
@@ -99,7 +99,7 @@ export const DailyReflection = ({last_event, userRole}: DailyReflectionProps) =>
                             </div>
                         ))}
                         <Paragraph>{todayReflection.content}</Paragraph>
-                        
+
                         {last_event && !hasHomework && userRole === 'user' && (
                             <div style={{ marginTop: 16, padding: 12, backgroundColor: '#fff7e6', borderRadius: 6, border: '1px solid #ffd591' }}>
                                 <Text type="warning">

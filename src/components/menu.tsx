@@ -73,7 +73,7 @@ export default function AppMenu({ role, children }: Props) {
 
     const crumb_items = [
         {
-            title: <Link href="/">Domov</Link>,
+            title: <Link href="/public">Domov</Link>,
         },
         ...crumbs.map((part, index) => {
             const fullPath = '/' + crumbs.slice(0, index + 1).join('/')

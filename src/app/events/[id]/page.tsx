@@ -11,7 +11,7 @@ import HomeworkUserPage from "./user_page";
 import HomeworkAnimatorPage, {
     HomeworkWithUser,
 } from "./animator_page";
-import SetBreadcrumbName from "@/componets/set-breadcrumb-name";
+import SetBreadcrumbName from "@/components/set-breadcrumb-name";
 import { Event } from "@/models/events";
 import { Homework } from "@/models/homework";
 
@@ -89,7 +89,7 @@ export default async function EventDetailPage({ params }: Params) {
                 },
             ])
             .toArray()) as HomeworkWithUser[];
-        
+
     }
 
     /* ---------- render ---------- */

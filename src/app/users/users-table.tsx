@@ -4,7 +4,7 @@ import {useEffect, useState} from 'react'
 import {Button, Card, Form, Input, message, Modal, Select, Table, Tag, Typography, Space, Grid} from 'antd'
 import {EyeOutlined, UserOutlined, MailOutlined} from '@ant-design/icons'
 import {School} from "@/models/school";
-import UserOverviewCard from "@/componets/user-overview-card";
+import UserOverviewCard from "@/components/user-overview-card";
 
 type Member = {
     _id?: string
@@ -145,19 +145,19 @@ export default function UsersPageClient({
         return (
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                 {members.map((member) => (
-                    <Card 
+                    <Card
                         key={member._id?.toString() || `${member.user.email}-${member.role}`}
                         size="small"
-                        style={{ 
+                        style={{
                             width: '100%',
                             borderRadius: '8px',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                         }}
                         bodyStyle={{ padding: '12px' }}
                     >
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'flex-start',
                             gap: '12px'
                         }}>
@@ -171,13 +171,13 @@ export default function UsersPageClient({
                                             </Typography.Text>
                                         </Space>
                                     </div>
-                                    
+
                                     <div>
                                         <Space size="small">
                                             <MailOutlined style={{ color: '#8c8c8c' }} />
-                                            <Typography.Text 
-                                                type="secondary" 
-                                                style={{ 
+                                            <Typography.Text
+                                                type="secondary"
+                                                style={{
                                                     fontSize: '12px',
                                                     wordBreak: 'break-all'
                                                 }}
@@ -186,9 +186,9 @@ export default function UsersPageClient({
                                             </Typography.Text>
                                         </Space>
                                     </div>
-                                    
+
                                     <div style={{ marginTop: '4px' }}>
-                                        <Tag 
+                                        <Tag
                                             color={
                                                 member.role === 'inactive' ? 'red' :
                                                 member.role === 'leader' ? 'gold' :
@@ -199,11 +199,11 @@ export default function UsersPageClient({
                                             {member.role}
                                         </Tag>
                                     </div>
-                                    
+
                                     {isAdmin && member.school?.name && (
                                         <div>
-                                            <Typography.Text 
-                                                type="secondary" 
+                                            <Typography.Text
+                                                type="secondary"
                                                 style={{ fontSize: '11px' }}
                                             >
                                                 Škola: {member.school.name}
@@ -212,7 +212,7 @@ export default function UsersPageClient({
                                     )}
                                 </Space>
                             </div>
-                            
+
                             {(isAdmin || userRole === "leader" || userRole === "animator") && (
                                 <div style={{ minWidth: '80px' }}>
                                     <Space direction="vertical" size="small" style={{ width: '100%' }}>
@@ -223,7 +223,7 @@ export default function UsersPageClient({
                                                 size="small"
                                                 icon={<EyeOutlined />}
                                                 onClick={() => setUserOverviewModal({ visible: true, userId: member.user_id || '' })}
-                                                style={{ 
+                                                style={{
                                                     width: '100%',
                                                     height: '32px',
                                                     fontSize: '11px'
@@ -237,7 +237,7 @@ export default function UsersPageClient({
                                                 danger
                                                 size="small"
                                                 onClick={() => handleDeactivate(member)}
-                                                style={{ 
+                                                style={{
                                                     width: '100%',
                                                     height: '32px',
                                                     fontSize: '11px'

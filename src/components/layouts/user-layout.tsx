@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import Menu from "@/componets/menu";
+import Menu from "@/components/menu";
 import { SocketProvider } from '@/hooks/socket-provider';
 
 

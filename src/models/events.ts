@@ -12,6 +12,16 @@ export interface Event  {
     created: Date
     updated: Date
     meals: MealDefinition[]
+    homeworkTypes: HomeworkType[]
+    worksheet_id?: ObjectId | string // optional worksheet for missed participants
+}
+
+export interface HomeworkType {
+    id: string
+    name: string // e.g., "Text Essay", "Project", "Evangelist Discussion", "Testimony"
+    description?: string
+    required: boolean
+    dueDate?: Date
 }
 export interface MealDefinition {
     date: string

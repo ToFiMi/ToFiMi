@@ -6,7 +6,7 @@ import {Suspense} from 'react'
 import SchoolUsers, {User} from "@/app/schools/[school_id]/school-users";
 import SchoolEvents from "@/app/schools/[school_id]/school-events";
 import SchoolGroups from "@/app/schools/[school_id]/school-groups";
-import SetBreadcrumbName from "@/componets/set-breadcrumb-name";
+import SetBreadcrumbName from "@/components/set-breadcrumb-name";
 
 
 interface Props {

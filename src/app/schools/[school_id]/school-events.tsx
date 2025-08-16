@@ -10,11 +10,17 @@ import {
     message,
     Modal,
     Table,
-    Checkbox, Divider
+    Checkbox,
+    Divider,
+    Switch,
+    Card,
+    Space,
+    Select
 } from 'antd'
 import dayjs, {Dayjs} from 'dayjs'
 import { Event } from '@/models/events'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import WorksheetBuilder from '@/components/worksheet-builder'
 
 dayjs.extend(isSameOrBefore)
 
@@ -26,6 +32,16 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
     const [editingEvent, setEditingEvent] = useState<Event | null>(null)
     const [form] = Form.useForm()
     const dateRange: Dayjs[] | null = Form.useWatch('dateRange', form);
+    const [homeworkTypes, setHomeworkTypes] = useState<{id: string, name: string, description?: string, required: boolean, dueDate?: Date}[]>([])
+    const [worksheetModalOpen, setWorksheetModalOpen] = useState(false)
+    const [availableWorksheets, setAvailableWorksheets] = useState<any[]>([])
+
+    const predefinedHomeworkTypes = [
+        { id: 'text-essay', name: 'Text Essay', description: 'Written essay assignment' },
+        { id: 'project', name: 'Project', description: 'Project work assignment' },
+        { id: 'evangelist-discussion', name: 'Evangelist Discussion', description: 'Discussion about evangelism' },
+        { id: 'testimony', name: 'Testimony', description: 'Personal testimony sharing' }
+    ]
 
 
 
@@ -66,7 +82,22 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
 
     useEffect(() => {
         fetchEvents()
+        fetchAvailableWorksheets()
     }, [schoolId])
+
+    const fetchAvailableWorksheets = async () => {
+        try {
+            const response = await fetch('/api/worksheets/library', {
+                credentials: 'include'
+            })
+            if (response.ok) {
+                const data = await response.json()
+                setAvailableWorksheets(data)
+            }
+        } catch (error) {
+            console.error('Error fetching worksheets:', error)
+        }
+    }
 
     const handleAddEvent = async (values: any) => {
         const meals = Object.entries(values.meals || {}).map(([date, mealList]) => ({
@@ -75,6 +106,14 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
         }))
         const [startDate, endDate] = values.dateRange;
 
+        // Process homework types
+        const homeworkTypesData = (values.homeworkTypes || []).map((hw: any) => ({
+            id: hw.id,
+            name: hw.name,
+            description: hw.description,
+            required: hw.required || false,
+            dueDate: hw.dueDate ? hw.dueDate.toISOString() : undefined
+        }))
 
         const res = await fetch(`/api/schools/${schoolId}/events`, {
             method: 'POST',
@@ -86,7 +125,9 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
                 grade: values.grade,
-                meals
+                meals,
+                homeworkTypes: homeworkTypesData,
+                worksheet_id: values.worksheet_id && values.worksheet_id !== 'create_new' ? values.worksheet_id : undefined
             })
         })
 
@@ -126,6 +167,15 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
         }))
         const [startDate, endDate] = values.dateRange;
 
+        // Process homework types
+        const homeworkTypesData = (values.homeworkTypes || []).map((hw: any) => ({
+            id: hw.id,
+            name: hw.name,
+            description: hw.description,
+            required: hw.required || false,
+            dueDate: hw.dueDate ? hw.dueDate.toISOString() : undefined
+        }))
+
         const res = await fetch(`/api/schools/${schoolId}/events/${eventId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -137,6 +187,8 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                 endDate: endDate.toISOString(),
                 grade: values.grade,
                 meals,
+                homeworkTypes: homeworkTypesData,
+                worksheet_id: values.worksheet_id && values.worksheet_id !== 'create_new' ? values.worksheet_id : undefined
             }),
         })
 
@@ -169,7 +221,11 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                             dateRange: [dayjs(record.startDate), dayjs(record.endDate)],
                             meals: Object.fromEntries(
                                 (record.meals || []).map((m) => [m.date, m.times])
-                            )
+                            ),
+                            homeworkTypes: (record.homeworkTypes || []).map(hw => ({
+                                ...hw,
+                                dueDate: hw.dueDate ? dayjs(hw.dueDate) : undefined
+                            }))
                         })
                         setIsModalOpen(true)
                     }
@@ -243,7 +299,155 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                         </>
                     )}
 
+                    <Divider />
+                    <h4 className="mb-2 font-semibold">Domáce úlohy</h4>
+                    <Form.List name="homeworkTypes">
+                        {(fields, { add, remove }) => (
+                            <>
+                                {fields.map(({ key, name, ...restField }) => (
+                                    <Card
+                                        key={key}
+                                        size="small"
+                                        className="mb-3"
+                                        title={`Typ domacej úlohy ${name + 1}`}
+                                        extra={
+                                            <Button
+                                                type="link"
+                                                danger
+                                                onClick={() => remove(name)}
+                                            >
+                                                Remove
+                                            </Button>
+                                        }
+                                    >
+                                        <Space direction="vertical" className="w-full">
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'id']}
+                                                label="Type"
+                                                rules={[{ required: true, message: 'Vyber typ domacej úlohy' }]}
+                                            >
+                                                <Select
+                                                    placeholder="Vyber typ domacej úlohy"
+                                                    onChange={(value) => {
+                                                        const selectedType = predefinedHomeworkTypes.find(t => t.id === value)
+                                                        if (selectedType) {
+                                                            form.setFieldValue(['homeworkTypes', name, 'name'], selectedType.name)
+                                                            form.setFieldValue(['homeworkTypes', name, 'description'], selectedType.description)
+                                                        }
+                                                    }}
+                                                >
+                                                    {predefinedHomeworkTypes.map(type => (
+                                                        <Select.Option key={type.id} value={type.id}>
+                                                            {type.name}
+                                                        </Select.Option>
+                                                    ))}
+                                                    <Select.Option value="custom">Custom Type</Select.Option>
+                                                </Select>
+                                            </Form.Item>
+
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'name']}
+                                                label="Name"
+                                            >
+                                                <Input placeholder="e.g., Text Essay" />
+                                            </Form.Item>
+
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'description']}
+                                                label="Description"
+                                            >
+                                                <Input.TextArea rows={2} placeholder="Optional description" />
+                                            </Form.Item>
+
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'required']}
+                                                valuePropName="checked"
+                                            >
+                                                <Switch /> Required
+                                            </Form.Item>
+
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'dueDate']}
+                                                label="Due Date (Optional)"
+                                            >
+                                                <DatePicker style={{ width: '100%' }} />
+                                            </Form.Item>
+                                        </Space>
+                                    </Card>
+                                ))}
+                                <Form.Item>
+                                    <Button
+                                        type="dashed"
+                                        onClick={() => add()}
+                                        block
+                                        className="mb-3"
+                                    >
+                                        + Pridať domácu úlohu
+                                    </Button>
+                                </Form.Item>
+                            </>
+                        )}
+                    </Form.List>
+
+                    <Divider />
+                    <h4 className="mb-2 font-semibold">Worksheet for Missed Participants</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                        Assign a worksheet that participants who missed the event can fill out instead of writing homework essays.
+                    </p>
+
+                    <Form.Item
+                        name="worksheet_id"
+                        label="Select Worksheet"
+                    >
+                        <Select
+                            placeholder="Choose an existing worksheet or create new"
+                            allowClear
+                            options={[
+                                { value: 'create_new', label: '+ Create New Worksheet' },
+                                ...availableWorksheets.map(worksheet => ({
+                                    value: worksheet._id,
+                                    label: `${worksheet.title} ${worksheet.school_name ? `(${worksheet.school_name})` : ''}${worksheet.is_template ? ' [Template]' : ''}`,
+                                    disabled: false
+                                }))
+                            ]}
+                            onChange={(value) => {
+                                if (value === 'create_new') {
+                                    setWorksheetModalOpen(true)
+                                }
+                            }}
+                            showSearch
+                            filterOption={(input, option) =>
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+
                 </Form>
+            </Modal>
+
+            {/* Worksheet Builder Modal */}
+            <Modal
+                title={`Create Worksheet for: ${editingEvent?.title || 'Event'}`}
+                open={worksheetModalOpen}
+                onCancel={() => setWorksheetModalOpen(false)}
+                footer={null}
+                width={1000}
+                className="worksheet-builder-modal"
+            >
+                {editingEvent && (
+                    <WorksheetBuilder
+                        eventId={String(editingEvent._id)}
+                        onSave={(worksheetId) => {
+                            message.success('Worksheet created successfully')
+                            setWorksheetModalOpen(false)
+                        }}
+                    />
+                )}
             </Modal>
         </div>
     )

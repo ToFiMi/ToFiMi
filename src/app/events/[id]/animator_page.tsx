@@ -3,7 +3,7 @@
 import {Button, Card, Form, List, message, Modal, Typography, Space, Tag} from "antd"
 import {useState, useEffect} from "react"
 import {ObjectId} from "mongodb";
-import CommentsThread from "@/componets/comments/thread";
+import CommentsThread from "@/components/comments/thread";
 import {useSearchParams} from "next/navigation";
 import {CheckCircleOutlined, CloseCircleOutlined} from "@ant-design/icons";
 
@@ -76,10 +76,10 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
 
             if (response.ok) {
                 message.success(`Domáca úloha bola ${status === 'approved' ? 'schválená' : 'zamietnutá'}`)
-                
+
                 // Update the local state to reflect the change
                 setSelectedHomework(prev => prev ? { ...prev, status } : null)
-                
+
                 // Optionally close the modal after a short delay
                 setTimeout(() => {
                     setModalOpen(false)
@@ -104,9 +104,9 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                         <Card
                             key={homework?._id.toString()}
                             title={`${homework.user?.first_name} ${homework.user?.last_name}`}
-                            style={isHighlighted ? { 
-                                border: '2px solid #1677ff', 
-                                backgroundColor: '#f6ffed' 
+                            style={isHighlighted ? {
+                                border: '2px solid #1677ff',
+                                backgroundColor: '#f6ffed'
                             } : {}}
                             extra={
                                 <Button onClick={() => handleOpen(homework)} type="link">
@@ -121,7 +121,7 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                                 <div>
                                     <Text strong>Stav: </Text>
                                     <Tag color={
-                                        homework.status === 'approved' ? 'green' : 
+                                        homework.status === 'approved' ? 'green' :
                                         homework.status === 'rejected' ? 'red' : 'orange'
                                     }>
                                         {homework.status === 'approved' ? 'Schválené' :
@@ -140,15 +140,15 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                 onCancel={() => setModalOpen(false)}
                 footer={[
                     <Space key="actions">
-                        <Button 
-                            type="primary" 
+                        <Button
+                            type="primary"
                             icon={<CheckCircleOutlined />}
                             onClick={() => handleStatusUpdate('approved')}
                             disabled={selectedHomework?.status === 'approved'}
                         >
                             Schváliť
                         </Button>
-                        <Button 
+                        <Button
                             danger
                             icon={<CloseCircleOutlined />}
                             onClick={() => handleStatusUpdate('rejected')}
@@ -166,7 +166,7 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                 <div style={{ marginBottom: 16 }}>
                     <Text strong>Stav: </Text>
                     <Tag color={
-                        selectedHomework?.status === 'approved' ? 'green' : 
+                        selectedHomework?.status === 'approved' ? 'green' :
                         selectedHomework?.status === 'rejected' ? 'red' : 'orange'
                     }>
                         {selectedHomework?.status === 'approved' ? 'Schválené' :
