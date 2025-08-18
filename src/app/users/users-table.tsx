@@ -364,8 +364,8 @@ export default function UsersPageClient({
 
                     <Form.Item name="role" label="Rola" rules={[{required: true}]}>
                         <Select placeholder="Vyber rolu">
-                            <Select.Option value="leader">Leader</Select.Option>
-                            <Select.Option value="animator">Animator</Select.Option>
+                            <Select.Option value="leader">Vedúci</Select.Option>
+                            <Select.Option value="animator">Animátor</Select.Option>
                             <Select.Option value="user">Študent</Select.Option>
                             {isAdmin && <Select.Option value="admin">Administrátor</Select.Option>}
                         </Select>

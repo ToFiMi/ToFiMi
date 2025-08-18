@@ -117,7 +117,7 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
     const renderQuestion = (question: WorksheetQuestion) => {
         const fieldName = `answer_${question.id}`
         
-        const rules = question.required ? [{ required: true, message: 'This field is required' }] : []
+        const rules = question.required ? [{ required: true, message: 'Toto pole je povinné' }] : []
 
         switch (question.type) {
             case 'text':
@@ -132,7 +132,7 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
                         }
                         rules={rules}
                     >
-                        <Input placeholder="Your answer" />
+                        <Input placeholder="Vaša odpoveď" />
                     </Form.Item>
                 )
 
@@ -148,7 +148,7 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
                         }
                         rules={rules}
                     >
-                        <Input.TextArea rows={4} placeholder="Your answer" />
+                        <Input.TextArea rows={4} placeholder="Vaša odpoveď" />
                     </Form.Item>
                 )
 
@@ -283,7 +283,7 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
     if (!worksheet) {
         return (
             <Card>
-                <Text type="secondary">No worksheet available for this event.</Text>
+                <Text type="secondary">Žiaden pracovný list nie je dostupný pre túto udalosť.</Text>
             </Card>
         )
     }
@@ -300,8 +300,8 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
                 
                 {existingSubmission && (
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded mb-4">
-                        <Text strong>You have already submitted this worksheet. </Text>
-                        <Text>Status: {existingSubmission.status}</Text>
+                        <Text strong>Tento pracovný list ste už odovzdali. </Text>
+                        <Text>Stav: {existingSubmission.status}</Text>
                     </div>
                 )}
             </div>
@@ -322,12 +322,12 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
 
                 <Form.Item
                     name="essay_content"
-                    label="Additional Essay (Optional)"
-                    help="You can write an additional essay if you want to share more thoughts about the event."
+                    label="Dodatočná esáž (Voľiteľné)"
+                    help="Môžete napísať dodatočnú esáž, ak sa chcete podeliť o ďalšie myšlienky o tejto udalosti."
                 >
                     <Input.TextArea 
                         rows={6} 
-                        placeholder="Write your additional thoughts here..." 
+                        placeholder="Tu napíšte svoje dodatočné myšlienky..." 
                     />
                 </Form.Item>
 
@@ -339,7 +339,7 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
                             loading={submitting}
                             size="large"
                         >
-                            Submit Worksheet
+                            Odovzdať pracovný list
                         </Button>
                     </Form.Item>
                 )}

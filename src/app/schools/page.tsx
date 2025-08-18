@@ -25,11 +25,11 @@ export default function SchoolsPage() {
                 const data = await res.json()
                 setSchools(data)
             } else {
-                message.error('Failed to load schools')
+                message.error('Nepodarilo sa načítať školy')
             }
         } catch (error) {
             console.error(error)
-            message.error('Error loading schools')
+            message.error('Chyba pri načítavaní škôl')
         }
         setLoading(false)
     }
@@ -50,13 +50,13 @@ export default function SchoolsPage() {
             })
 
             if (res.ok) {
-                message.success('School created successfully')
+                message.success('Škola bola úspešne vytvorená')
                 setIsModalOpen(false)
                 form.resetFields()
                 fetchSchools()
             } else {
                 const err = await res.text()
-                message.error(`Failed to create school: ${err}`)
+                message.error(`Nepodarilo sa vytvoriť školu: ${err}`)
             }
         } catch (error) {
             console.error(error)

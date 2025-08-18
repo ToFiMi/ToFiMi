@@ -349,17 +349,17 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                                             <Form.Item
                                                 {...restField}
                                                 name={[name, 'name']}
-                                                label="Name"
+                                                label="Názov"
                                             >
-                                                <Input placeholder="e.g., Text Essay" />
+                                                <Input placeholder="napr. Textová esáž" />
                                             </Form.Item>
 
                                             <Form.Item
                                                 {...restField}
                                                 name={[name, 'description']}
-                                                label="Description"
+                                                label="Popis"
                                             >
-                                                <Input.TextArea rows={2} placeholder="Optional description" />
+                                                <Input.TextArea rows={2} placeholder="Voľiteľný popis" />
                                             </Form.Item>
 
                                             <Form.Item

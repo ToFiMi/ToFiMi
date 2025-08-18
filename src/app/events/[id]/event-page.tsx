@@ -51,9 +51,9 @@ export function EventPage({ event, userRole }: { event: Event; userRole?: string
             });
 
             if (response.ok) {
-                message.success('Worksheet bol úspešne priradený k eventu');
+                message.success('Pracovný list bol úspešne priradený k termínu');
             } else {
-                message.error('Nepodarilo sa priradiť worksheet');
+                message.error('Nepodarilo sa priradiť pracovný list');
             }
         } catch (error) {
             console.error('Error updating worksheet:', error);
@@ -85,11 +85,11 @@ export function EventPage({ event, userRole }: { event: Event; userRole?: string
                     <>
                         <Divider />
                         <div className="mb-4">
-                            <strong>Priradený worksheet:</strong>
+                            <strong>Priradený pracovný list:</strong>
                             <div className="flex gap-2 mt-2">
                                 <Select
                                     style={{ width: 300 }}
-                                    placeholder="Vyberte worksheet pre tento event"
+                                    placeholder="Vyberte pracovný list pre tento termín"
                                     value={selectedWorksheet}
                                     onChange={setSelectedWorksheet}
                                     allowClear

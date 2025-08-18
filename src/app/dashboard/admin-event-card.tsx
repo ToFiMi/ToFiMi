@@ -159,7 +159,7 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
                 )}
             </Flex>
             ) : (
-                <Text strong>No next event</Text>
+                <Text strong>Žiadny nasledujúci termín</Text>
             )}
 
         </Card>
