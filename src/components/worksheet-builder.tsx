@@ -28,22 +28,22 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
     const [loading, setLoading] = useState(false)
 
     const questionTypes = [
-        { value: 'text', label: 'Short Text' },
-        { value: 'textarea', label: 'Long Text (Paragraph)' },
-        { value: 'multiple_choice', label: 'Multiple Choice' },
-        { value: 'checkbox', label: 'Checkboxes' },
-        { value: 'scale', label: 'Scale (1-10)' },
-        { value: 'date', label: 'Date' }
+        { value: 'text', label: 'Krátky text' },
+        { value: 'textarea', label: 'Dlhý text (Odstavec)' },
+        { value: 'multiple_choice', label: 'Výber z možností' },
+        { value: 'checkbox', label: 'Zaškrtávacie políčka' },
+        { value: 'scale', label: 'Stupnica (1-10)' },
+        { value: 'date', label: 'Dátum' }
     ]
 
     const handleSave = async (values: any) => {
         setLoading(true)
         try {
             const isEditing = existingWorksheet && existingWorksheet._id
-            const endpoint = isEditing 
+            const endpoint = isEditing
                 ? `/api/worksheets/${existingWorksheet._id}`
                 : eventId ? '/api/worksheets' : '/api/worksheets/library'
-            
+
             const payload: any = {
                 title: values.title,
                 description: values.description,
@@ -64,15 +64,15 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
 
             if (response.ok) {
                 const result = await response.json()
-                message.success(isEditing ? 'Worksheet updated successfully' : 'Worksheet created successfully')
+                message.success(isEditing ? 'Pracovný list bol úspešne aktualizovaný' : 'Pracovný list bol úspešne vytvorený')
                 onSave?.(isEditing ? existingWorksheet._id : result.worksheetId)
             } else {
                 const error = await response.text()
-                message.error(`Error: ${error}`)
+                message.error(`Chyba: ${error}`)
             }
         } catch (error) {
             console.error('Error saving worksheet:', error)
-            message.error('Failed to save worksheet')
+            message.error('Nepodarilo sa uložiť pracovný list')
         }
         setLoading(false)
     }
@@ -80,9 +80,9 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
     const renderQuestionPreview = (question: WorksheetQuestion) => {
         switch (question.type) {
             case 'text':
-                return <Input placeholder="Short answer" disabled />
+                return <Input placeholder="Krátka odpoveď" disabled />
             case 'textarea':
-                return <Input.TextArea rows={3} placeholder="Long answer" disabled />
+                return <Input.TextArea rows={3} placeholder="Dlhá odpoveď" disabled />
             case 'multiple_choice':
                 return (
                     <div>
@@ -127,7 +127,7 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
     }
 
     return (
-        <Card title={existingWorksheet ? "Edit Worksheet" : "Create Worksheet"} className="max-w-4xl mx-auto">
+        <Card title={existingWorksheet ? "Upraviť pracovný list" : "Vytvoriť pracovný list"} className="max-w-4xl mx-auto">
             <Form
                 form={form}
                 layout="vertical"
@@ -136,19 +136,19 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
             >
                 <Form.Item
                     name="title"
-                    label="Worksheet Title"
-                    rules={[{ required: true, message: 'Please enter worksheet title' }]}
+                    label="Názov pracovného listu"
+                    rules={[{ required: true, message: 'Prosím zadajte názov pracovného listu' }]}
                 >
-                    <Input placeholder="e.g., Weekend Reflection Worksheet" />
+                    <Input placeholder="napr. Víkendový reflexný pracovný list" />
                 </Form.Item>
 
                 <Form.Item
                     name="description"
-                    label="Description (Optional)"
+                    label="Popis (voliteľné)"
                 >
-                    <Input.TextArea 
-                        rows={2} 
-                        placeholder="Brief description of the worksheet purpose" 
+                    <Input.TextArea
+                        rows={2}
+                        placeholder="Stručný popis účelu pracovného listu"
                     />
                 </Form.Item>
 
@@ -158,25 +158,22 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                     {(fields, { add, remove }) => (
                         <>
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold">Questions</h3>
-                                <Button type="dashed" onClick={() => add()}>
-                                    + Add Question
-                                </Button>
+                                <h3 className="text-lg font-semibold">Otázky</h3>
                             </div>
 
                             {fields.map(({ key, name, ...restField }) => (
-                                <Card 
-                                    key={key} 
-                                    size="small" 
+                                <Card
+                                    key={key}
+                                    size="small"
                                     className="mb-4"
-                                    title={`Question ${name + 1}`}
+                                    title={`Otázka ${name + 1}`}
                                     extra={
-                                        <Button 
-                                            type="link" 
-                                            danger 
+                                        <Button
+                                            type="link"
+                                            danger
                                             onClick={() => remove(name)}
                                         >
-                                            Remove
+                                            Odstrániť
                                         </Button>
                                     }
                                 >
@@ -184,11 +181,11 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                                         <Form.Item
                                             {...restField}
                                             name={[name, 'question']}
-                                            label="Question Text"
-                                            rules={[{ required: true, message: 'Enter question text' }]}
+                                            label="Text otázky"
+                                            rules={[{ required: true, message: 'Zadajte text otázky' }]}
                                         >
-                                            <Input.TextArea 
-                                                placeholder="Enter your question here" 
+                                            <Input.TextArea
+                                                placeholder="Zadajte svoju otázku"
                                                 rows={2}
                                             />
                                         </Form.Item>
@@ -196,11 +193,11 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                                         <Form.Item
                                             {...restField}
                                             name={[name, 'type']}
-                                            label="Question Type"
-                                            rules={[{ required: true, message: 'Select question type' }]}
+                                            label="Typ otázky"
+                                            rules={[{ required: true, message: 'Vyberte typ otázky' }]}
                                         >
-                                            <Select 
-                                                placeholder="Select question type"
+                                            <Select
+                                                placeholder="Vyberte typ otázky"
                                                 options={questionTypes}
                                             />
                                         </Form.Item>
@@ -210,43 +207,43 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                                             name={[name, 'required']}
                                             valuePropName="checked"
                                         >
-                                            <Switch /> Required
+                                            <Switch /> Povinné
                                         </Form.Item>
 
-                                        <Form.Item dependencies={[name, 'type']} noStyle>
+                                        <Form.Item dependencies={[['questions', name, 'type']]} noStyle>
                                             {({ getFieldValue }) => {
                                                 const questionType = getFieldValue(['questions', name, 'type'])
-                                                
+
                                                 if (questionType === 'multiple_choice' || questionType === 'checkbox') {
                                                     return (
                                                         <Form.List name={[name, 'options']}>
                                                             {(optionFields, { add: addOption, remove: removeOption }) => (
                                                                 <>
-                                                                    <label className="block mb-2 font-medium">Options:</label>
+                                                                    <label className="block mb-2 font-medium">Možnosti:</label>
                                                                     {optionFields.map(({ key: optionKey, name: optionName }) => (
                                                                         <div key={optionKey} className="flex items-center mb-2">
                                                                             <Form.Item
                                                                                 name={optionName}
                                                                                 className="flex-1 mb-0 mr-2"
-                                                                                rules={[{ required: true, message: 'Enter option text' }]}
+                                                                                rules={[{ required: true, message: 'Zadajte text možnosti' }]}
                                                                             >
-                                                                                <Input placeholder="Option text" />
+                                                                                <Input placeholder="Text možnosti" />
                                                                             </Form.Item>
-                                                                            <Button 
-                                                                                type="link" 
-                                                                                danger 
+                                                                            <Button
+                                                                                type="link"
+                                                                                danger
                                                                                 onClick={() => removeOption(optionName)}
                                                                             >
-                                                                                Remove
+                                                                                Odstrániť
                                                                             </Button>
                                                                         </div>
                                                                     ))}
-                                                                    <Button 
-                                                                        type="dashed" 
-                                                                        onClick={() => addOption()} 
+                                                                    <Button
+                                                                        type="dashed"
+                                                                        onClick={() => addOption()}
                                                                         className="mb-2"
                                                                     >
-                                                                        + Add Option
+                                                                        + Pridať možnosť
                                                                     </Button>
                                                                 </>
                                                             )}
@@ -260,7 +257,7 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                                                             <Form.Item
                                                                 {...restField}
                                                                 name={[name, 'scale_min']}
-                                                                label="Min Value"
+                                                                label="Minimálna hodnota"
                                                                 initialValue={1}
                                                             >
                                                                 <InputNumber min={1} max={10} />
@@ -268,7 +265,7 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                                                             <Form.Item
                                                                 {...restField}
                                                                 name={[name, 'scale_max']}
-                                                                label="Max Value"
+                                                                label="Maximálna hodnota"
                                                                 initialValue={10}
                                                             >
                                                                 <InputNumber min={1} max={10} />
@@ -276,16 +273,16 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                                                             <Form.Item
                                                                 {...restField}
                                                                 name={[name, 'scale_labels', 'min']}
-                                                                label="Min Label (Optional)"
+                                                                label="Minimálny popis (voliteľné)"
                                                             >
-                                                                <Input placeholder="e.g., Strongly Disagree" />
+                                                                <Input placeholder="napr. Úplne nesúhlasím" />
                                                             </Form.Item>
                                                             <Form.Item
                                                                 {...restField}
                                                                 name={[name, 'scale_labels', 'max']}
-                                                                label="Max Label (Optional)"
+                                                                label="Maximálny popis (voliteľné)"
                                                             >
-                                                                <Input placeholder="e.g., Strongly Agree" />
+                                                                <Input placeholder="napr. Úplne súhlasím" />
                                                             </Form.Item>
                                                         </div>
                                                     )
@@ -296,13 +293,13 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                                         </Form.Item>
 
                                         {/* Preview */}
-                                        <Form.Item dependencies={[name]} noStyle>
+                                        <Form.Item dependencies={[['questions', name, 'type'], ['questions', name, 'question'], ['questions', name, 'options'], ['questions', name, 'required']]} noStyle>
                                             {({ getFieldValue }) => {
                                                 const question = getFieldValue(['questions', name])
                                                 if (question?.type && question?.question) {
                                                     return (
                                                         <div className="p-3 bg-gray-50 rounded">
-                                                            <strong>Preview:</strong>
+                                                            <strong>Náhľad:</strong>
                                                             <div className="mt-2">
                                                                 <div className="mb-2">
                                                                     {question.question}
@@ -323,16 +320,29 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                     )}
                 </Form.List>
 
-                <Form.Item className="text-center">
-                    <Button 
-                        type="primary" 
-                        htmlType="submit" 
-                        loading={loading}
-                        size="large"
-                    >
-                        {existingWorksheet ? 'Update Worksheet' : 'Create Worksheet'}
-                    </Button>
-                </Form.Item>
+                <Form.List name="questions">
+                    {(fields, { add }) => (
+                        <Form.Item className="text-center">
+                            <Space size="middle">
+                                <Button
+                                    type="dashed"
+                                    onClick={() => add()}
+                                    size="large"
+                                >
+                                    + Pridať otázku
+                                </Button>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    loading={loading}
+                                    size="large"
+                                >
+                                    {existingWorksheet ? 'Aktualizovať pracovný list' : 'Vytvoriť pracovný list'}
+                                </Button>
+                            </Space>
+                        </Form.Item>
+                    )}
+                </Form.List>
             </Form>
         </Card>
     )

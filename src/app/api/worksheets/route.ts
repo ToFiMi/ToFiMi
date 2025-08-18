@@ -78,9 +78,18 @@ export async function GET(req: NextRequest) {
             return new NextResponse('Missing event_id parameter', { status: 400 })
         }
 
-        // Find worksheet for this event
+        // First get the event to find the worksheet_id
+        const event = await db.collection('events').findOne({
+            _id: new ObjectId(eventId)
+        })
+
+        if (!event || !event.worksheet_id) {
+            return NextResponse.json(null)
+        }
+
+        // Find worksheet by its ID
         const worksheet = await db.collection<Worksheet>('worksheets').findOne({
-            event_id: new ObjectId(eventId)
+            _id: new ObjectId(event.worksheet_id)
         })
 
         return NextResponse.json(worksheet)

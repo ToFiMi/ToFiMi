@@ -16,6 +16,9 @@ export interface HomeworkWithUser {
     user_id: ObjectId
     content: string
     status: "approved" | "pending" | "rejected"
+    type?: "worksheet" | "homework"
+    worksheet_submission_id?: ObjectId
+    worksheet_submission?: any
     created: Date
     updated: Date
     user: {
@@ -103,7 +106,14 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                     return (
                         <Card
                             key={homework?._id.toString()}
-                            title={`${homework.user?.first_name} ${homework.user?.last_name}`}
+                            title={
+                                <Space>
+                                    {`${homework.user?.first_name} ${homework.user?.last_name}`}
+                                    {homework.type === 'worksheet' && (
+                                        <Tag color="blue" size="small">Worksheet</Tag>
+                                    )}
+                                </Space>
+                            }
                             style={isHighlighted ? {
                                 border: '2px solid #1677ff',
                                 backgroundColor: '#f6ffed'
@@ -164,7 +174,11 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                 width={700}
             >
                 <div style={{ marginBottom: 16 }}>
-                    <Text strong>Stav: </Text>
+                    <Text strong>Typ: </Text>
+                    <Tag color={selectedHomework?.type === 'worksheet' ? 'blue' : 'default'}>
+                        {selectedHomework?.type === 'worksheet' ? 'Worksheet' : 'Domáca úloha'}
+                    </Tag>
+                    <Text strong style={{ marginLeft: 16 }}>Stav: </Text>
                     <Tag color={
                         selectedHomework?.status === 'approved' ? 'green' :
                         selectedHomework?.status === 'rejected' ? 'red' : 'orange'
@@ -173,12 +187,41 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                          selectedHomework?.status === 'rejected' ? 'Zamietnuté' : 'Čaká na posúdenie'}
                     </Tag>
                 </div>
-                <Paragraph>
-                    <Text strong>Odpoveď:</Text>
-                </Paragraph>
-                <Paragraph style={{whiteSpace: 'pre-line', background: '#fafafa', padding: 12, borderRadius: 6}}>
-                    {selectedHomework?.content || "Bez odpovede"}
-                </Paragraph>
+                
+                {selectedHomework?.type === 'worksheet' && selectedHomework?.worksheet_submission ? (
+                    <div>
+                        <Paragraph>
+                            <Text strong>Worksheet odpovede:</Text>
+                        </Paragraph>
+                        {selectedHomework.worksheet_submission.answers?.map((answer: any, index: number) => (
+                            <div key={index} style={{ marginBottom: 16, background: '#fafafa', padding: 12, borderRadius: 6 }}>
+                                <Text strong>Otázka {index + 1}:</Text>
+                                <Paragraph style={{ margin: 0, marginTop: 4 }}>
+                                    {answer.answer}
+                                </Paragraph>
+                            </div>
+                        ))}
+                        {selectedHomework.worksheet_submission.essay_content && (
+                            <div>
+                                <Paragraph>
+                                    <Text strong>Esej:</Text>
+                                </Paragraph>
+                                <Paragraph style={{whiteSpace: 'pre-line', background: '#fafafa', padding: 12, borderRadius: 6}}>
+                                    {selectedHomework.worksheet_submission.essay_content}
+                                </Paragraph>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div>
+                        <Paragraph>
+                            <Text strong>Odpoveď:</Text>
+                        </Paragraph>
+                        <Paragraph style={{whiteSpace: 'pre-line', background: '#fafafa', padding: 12, borderRadius: 6}}>
+                            {selectedHomework?.content || "Bez odpovede"}
+                        </Paragraph>
+                    </div>
+                )}
                 <CommentsThread entity="homework" entityId={selectedHomework?._id.toString() || ""}/>
 
                 {/*<Form form={form} layout="vertical" onFinish={handleCommentSubmit}>*/}

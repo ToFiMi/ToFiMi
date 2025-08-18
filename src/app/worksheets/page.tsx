@@ -15,11 +15,11 @@ import {
     Tooltip,
     Popconfirm
 } from 'antd'
-import { 
-    PlusOutlined, 
-    SearchOutlined, 
-    CopyOutlined, 
-    EditOutlined, 
+import {
+    PlusOutlined,
+    SearchOutlined,
+    CopyOutlined,
+    EditOutlined,
     EyeOutlined,
     MoreOutlined,
     FileTextOutlined,
@@ -70,7 +70,7 @@ export default function WorksheetsPage() {
             const response = await fetch(`/api/worksheets/library?search=${encodeURIComponent(searchTerm)}`, {
                 credentials: 'include'
             })
-            
+
             if (response.ok) {
                 const data = await response.json()
                 setWorksheets(data)
@@ -137,7 +137,7 @@ export default function WorksheetsPage() {
             const response = await fetch(`/api/worksheets/${worksheet._id}`, {
                 credentials: 'include'
             })
-            
+
             if (response.ok) {
                 const data = await response.json()
                 setEditingWorksheet(data)
@@ -273,10 +273,12 @@ export default function WorksheetsPage() {
 
                 // Add delete option if user can delete
                 if (canDelete) {
+                    // @ts-ignore
                     menuItems.push({
                         key: 'delete',
                         label: 'Delete',
                         icon: <DeleteOutlined />,
+                        // @ts-ignore
                         danger: true,
                         onClick: () => {} // Handled separately with Popconfirm
                     })
@@ -295,7 +297,7 @@ export default function WorksheetsPage() {
                         >
                             Preview
                         </Button>
-                        
+
                         {canEdit && (
                             <Button
                                 size="small"
@@ -306,10 +308,10 @@ export default function WorksheetsPage() {
                             </Button>
                         )}
 
-                        <Dropdown 
-                            menu={{ 
-                                items: menuItems.filter(item => item.key !== 'edit' && item.key !== 'delete') 
-                            }} 
+                        <Dropdown
+                            menu={{
+                                items: menuItems.filter(item => item.key !== 'edit' && item.key !== 'delete')
+                            }}
                             trigger={['click']}
                         >
                             <Button size="small" icon={<MoreOutlined />} />
@@ -324,9 +326,9 @@ export default function WorksheetsPage() {
                                 cancelText="Cancel"
                                 okButtonProps={{ danger: true }}
                             >
-                                <Button 
-                                    size="small" 
-                                    danger 
+                                <Button
+                                    size="small"
+                                    danger
                                     icon={<DeleteOutlined />}
                                 />
                             </Popconfirm>
@@ -347,8 +349,8 @@ export default function WorksheetsPage() {
                             Create, manage, and reuse worksheets for events
                         </Text>
                     </div>
-                    <Button 
-                        type="primary" 
+                    <Button
+                        type="primary"
                         icon={<PlusOutlined />}
                         onClick={() => setCreateModalOpen(true)}
                     >
@@ -379,7 +381,7 @@ export default function WorksheetsPage() {
                     pagination={{
                         showSizeChanger: true,
                         showQuickJumper: true,
-                        showTotal: (total, range) => 
+                        showTotal: (total, range) =>
                             `${range[0]}-${range[1]} of ${total} worksheets`
                     }}
                 />
@@ -421,7 +423,7 @@ export default function WorksheetsPage() {
 
             {/* Edit Worksheet Modal */}
             <Modal
-                title={`Edit Worksheet: ${editingWorksheet?.title}`}
+                title={`Upraviť pracovný list: ${editingWorksheet?.title}`}
                 open={editModalOpen}
                 onCancel={() => {
                     setEditModalOpen(false)

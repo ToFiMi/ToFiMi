@@ -101,15 +101,15 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
             })
 
             if (response.ok) {
-                message.success('Worksheet submitted successfully')
+                message.success('Pracovný list bol úspešne odovzdaný')
                 onSubmit?.()
             } else {
                 const error = await response.text()
-                message.error(`Error: ${error}`)
+                message.error(`Chyba: ${error}`)
             }
         } catch (error) {
             console.error('Error submitting worksheet:', error)
-            message.error('Failed to submit worksheet')
+            message.error('Nepodarilo sa odovzdať pracovný list')
         }
         setSubmitting(false)
     }
