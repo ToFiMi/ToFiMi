@@ -8,7 +8,7 @@ import { requireAuth } from '@/lib/auth-helpers';
 
 export async function GET(req: NextRequest, { params }: { params: { school_id: string } }) {
     const db = await connectToDatabase()
-    const schoolId = params.school_id
+    const { school_id: schoolId } = await params
 
     const events = await db.collection('events')
         .find({ school_id: new ObjectId(schoolId) })
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
     }
     const { auth } = authResult
 
-    const schoolId = params.school_id
+    const { school_id: schoolId } = await params
     const { title, description, startDate, endDate, grade, meals, homeworkTypes, worksheet_id } = await req.json()
 
     if (!title || !startDate || !endDate || grade == null) {

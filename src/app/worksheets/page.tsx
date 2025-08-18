@@ -266,7 +266,7 @@ export default function WorksheetsPage() {
                                         Náhľad
                                     </Button>
 
-                                    {worksheet.can_edit !== false && (
+                                    {(worksheet.can_edit !== false) && (
                                         <Button
                                             size="small"
                                             icon={<EditOutlined />}
@@ -296,7 +296,7 @@ export default function WorksheetsPage() {
                                             />
                                         )}
 
-                                        {worksheet.can_delete !== false && (
+                                        {(worksheet.can_delete !== false) && (
                                             <Popconfirm
                                                 title="Vymazať pracovný list"
                                                 description="Ste si istí, že chcete vymazať tento pracovný list? Táto akcia sa nedá vrátiť."
@@ -507,6 +507,8 @@ export default function WorksheetsPage() {
                         icon={<PlusOutlined />}
                         onClick={() => setCreateModalOpen(true)}
                         block={!screens.md}
+                        style={{marginBottom: '6px'}}
+
                     >
                         Vytvoriť pracovný list
                     </Button>

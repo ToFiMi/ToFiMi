@@ -17,6 +17,7 @@ export default async function RegistrationPage() {
         {
             school_id: new ObjectId(schoolId as string),
             expiresAt: { $gte: now },
+            type: 'qr' // Only QR tokens for multiple use
         },
         { sort: { created: -1 } }
     )

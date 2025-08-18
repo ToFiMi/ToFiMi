@@ -7,7 +7,6 @@ import {useRouter} from "next/navigation";
 interface School {
     _id: string
     name: string
-    slug: string
     created: string
 }
 
@@ -70,11 +69,6 @@ export default function SchoolsPage() {
             key: 'name',
         },
         {
-            title: 'Slug',
-            dataIndex: 'slug',
-            key: 'slug',
-        },
-        {
             title: 'Vytvorená',
             dataIndex: 'created',
             key: 'created',
@@ -119,13 +113,6 @@ export default function SchoolsPage() {
                         name="name"
                         label="Názov školy"
                         rules={[{ required: true, message: 'Zadajte názov školy' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="slug"
-                        label="Slug"
-                        rules={[{ required: true, message: 'Zadajte slug' }]}
                     >
                         <Input />
                     </Form.Item>

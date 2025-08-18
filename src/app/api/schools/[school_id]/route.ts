@@ -100,9 +100,9 @@ export async function PUT(req: NextRequest, { params }: { params: { school_id: s
     }
 
     const schoolId = params.school_id
-    const { name, slug } = await req.json()
+    const { name } = await req.json()
 
-    if (!name && !slug) {
+    if (!name) {
         return new NextResponse('Nothing to update', { status: 400 })
     }
 
@@ -111,16 +111,6 @@ export async function PUT(req: NextRequest, { params }: { params: { school_id: s
     }
 
     if (name) updateFields.name = name
-    if (slug) {
-        const existingSlug = await db.collection('schools').findOne({
-            slug,
-            _id: { $ne: new ObjectId(schoolId) }
-        })
-        if (existingSlug) {
-            return new NextResponse('Slug already in use', { status: 400 })
-        }
-        updateFields.slug = slug
-    }
 
     const result = await db.collection('schools').updateOne(
         { _id: new ObjectId(schoolId) },

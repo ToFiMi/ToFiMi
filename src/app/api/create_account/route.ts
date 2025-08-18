@@ -47,6 +47,11 @@ export async function POST(req: NextRequest) {
         })
     }
 
+    // Delete token only if it's a single-use invite token
+    if (ott.type === 'invite') {
+        await db.collection('registration-tokens').deleteOne({ token })
+    }
+
     return new NextResponse('Účet bol vytvorený', { status: 201 })
 }
 export async function GET(req: NextRequest) {

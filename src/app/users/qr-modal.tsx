@@ -43,7 +43,7 @@ if(!window){
                     </Button>,
                 ]}
             >
-                <Text type="secondary">Naskenuj kód alebo ho otvor na mobile pre rýchlu registráciu</Text>
+                <Text type="secondary">Naskenuj kód alebo ho otvor na mobile pre rýchlu registráciu. Link je platný 2 hodiny.</Text>
             </Card>
 
             <Modal

@@ -33,21 +33,15 @@ export async function POST(req: NextRequest) {
         return new NextResponse('Access denied', { status: 403 })
     }
 
-    const { name, slug, groups } = await req.json()
+    const { name, groups } = await req.json()
 
-    if (!name || !slug || typeof groups !== 'number' || groups < 1) {
+    if (!name || typeof groups !== 'number' || groups < 1) {
         return new NextResponse('Missing or invalid data', { status: 400 })
-    }
-
-    const existing = await db.collection('schools').findOne({ slug })
-    if (existing) {
-        return new NextResponse('School with this slug already exists', { status: 400 })
     }
 
     const now = new Date()
     const result = await db.collection('schools').insertOne({
         name,
-        slug,
         created: now,
         updated: now,
     })

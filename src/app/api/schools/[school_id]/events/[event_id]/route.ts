@@ -16,7 +16,7 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
     }
     const { auth } = authResult
 
-    const eventId = params.event_id
+    const { event_id: eventId } = await params
     const { title, description, startDate, endDate, grade, meals, homeworkTypes, worksheet_id } = await req.json()
 
     if (!title || !startDate || !endDate || grade == null) {
@@ -36,13 +36,16 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
 
     if (worksheet_id) {
         updateData.worksheet_id = new ObjectId(worksheet_id)
-    } else {
-        updateData.$unset = { worksheet_id: "" }
+    }
+
+    const updateQuery = { $set: updateData }
+    if (!worksheet_id) {
+        updateQuery.$unset = { worksheet_id: "" }
     }
 
     const result = await db.collection('events').updateOne(
         { _id: new ObjectId(eventId) },
-        worksheet_id ? { $set: updateData } : { $set: updateData, $unset: { worksheet_id: "" } }
+        updateQuery
     )
 
     return Response.json({ success: result.modifiedCount > 0 })
@@ -61,7 +64,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { event_id:
         return new Response('Access denied', { status: 403 })
     }
 
-    const eventId = params.event_id
+    const { event_id: eventId } = await params
 
     await db.collection('events').deleteOne({ _id: new ObjectId(eventId) })
 

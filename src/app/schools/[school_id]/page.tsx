@@ -48,7 +48,6 @@ export default async function SchoolDetailPage({params}: Props) {
         <div className="p-4">
             <SetBreadcrumbName id={params.school_id} name={school.name} />
             <h1 className="text-2xl font-bold mb-2">{school.name}</h1>
-            <p><strong>Slug:</strong> {school.slug}</p>
             <p><strong>ID školy:</strong> {school._id.toString()}</p>
 
             <div className="mt-6">

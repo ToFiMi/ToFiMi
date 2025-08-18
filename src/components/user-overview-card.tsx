@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Card, Table, Tag, Typography, Space, Tooltip, Button, Modal, Statistic, Row, Col, Switch, message, Select, Popconfirm } from 'antd'
+import { Card, Table, Tag, Typography, Space, Tooltip, Button, Modal, Statistic, Row, Col, Switch, message, Select, Popconfirm, Grid } from 'antd'
 import { CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, CalendarOutlined, UserOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import Link from 'next/link'
 
 const { Title, Text, Paragraph } = Typography
+const { useBreakpoint } = Grid
 
 interface UserOverviewProps {
     userId: string
@@ -61,6 +62,7 @@ interface UserOverviewData {
 }
 
 export default function UserOverviewCard({ userId, visible, onClose, currentUserRole }: UserOverviewProps) {
+    const screens = useBreakpoint()
     const [data, setData] = useState<UserOverviewData | null>(null)
     const [loading, setLoading] = useState(false)
     const [roleInfo, setRoleInfo] = useState<{
@@ -227,6 +229,119 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
         return <Tag color={status.color}>{status.text}</Tag>
     }
 
+    const renderMobileEventCards = () => {
+        if (loading) {
+            return (
+                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                    {[1, 2, 3].map((i) => (
+                        <Card key={i} loading style={{ width: '100%' }} />
+                    ))}
+                </Space>
+            )
+        }
+
+        if (!data?.events || data.events.length === 0) {
+            return (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                    <Text type="secondary">
+                        Žiadne termíny neboli nájdené
+                    </Text>
+                </div>
+            )
+        }
+
+        return (
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                {data.events.map((event) => (
+                    <Card
+                        key={event._id}
+                        size="small"
+                        style={{
+                            width: '100%',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}
+                        bodyStyle={{ padding: '12px' }}
+                    >
+                        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            {/* Event Title and Date */}
+                            <div>
+                                <Text strong style={{ fontSize: '14px', display: 'block' }}>
+                                    {event.title}
+                                </Text>
+                                <Text type="secondary" style={{ fontSize: '11px' }}>
+                                    {dayjs(event.startDate).format('DD.MM.YYYY')} - {dayjs(event.endDate).format('DD.MM.YYYY')}
+                                </Text>
+                                {event.grade && (
+                                    <div style={{ marginTop: '4px' }}>
+                                        <Tag size="small">{event.grade}. ročník</Tag>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Attendance Section */}
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '8px',
+                                backgroundColor: '#f5f5f5',
+                                borderRadius: '4px'
+                            }}>
+                                <Space size="small">
+                                    <Text strong style={{ fontSize: '12px' }}>Účasť:</Text>
+                                    {getAttendanceIcon(event.attendance)}
+                                </Space>
+                                {/* Show attendance toggle only for registered users who are going */}
+                                {event.attendance.registered && event.attendance.going && event.registrationId && (
+                                    <Switch
+                                        size="small"
+                                        checked={event.attendance.attended === true}
+                                        onChange={(checked) => handleAttendanceToggle(event.registrationId!, checked)}
+                                        checkedChildren="✓"
+                                        unCheckedChildren="✗"
+                                    />
+                                )}
+                            </div>
+
+                            {/* Homework Section - Only for regular users */}
+                            {data?.user.role === 'user' && (
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '8px',
+                                    backgroundColor: '#f5f5f5',
+                                    borderRadius: '4px'
+                                }}>
+                                    <Space size="small">
+                                        <Text strong style={{ fontSize: '12px' }}>DÚ:</Text>
+                                        {getHomeworkIcon(event.homework, event._id)}
+                                        {getHomeworkStatus(event.homework)}
+                                    </Space>
+                                </div>
+                            )}
+
+                            {/* Dates Section */}
+                            <div style={{ fontSize: '10px', color: '#8c8c8c' }}>
+                                {event.attendance.registrationDate && (
+                                    <div>
+                                        Reg: {dayjs(event.attendance.registrationDate).format('DD.MM HH:mm')}
+                                    </div>
+                                )}
+                                {data?.user.role === 'user' && event.homework.submissionDate && (
+                                    <div>
+                                        DÚ: {dayjs(event.homework.submissionDate).format('DD.MM HH:mm')}
+                                    </div>
+                                )}
+                            </div>
+                        </Space>
+                    </Card>
+                ))}
+            </Space>
+        )
+    }
+
     const columns = [
         {
             title: 'Termín',
@@ -304,7 +419,8 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
                 title={data ? `Prehľad užívateľa: ${data.user.first_name} ${data.user.last_name}` : 'Prehľad užívateľa'}
                 open={visible}
                 onCancel={onClose}
-                width={900}
+                width={screens.md ? 900 : '95%'}
+                style={!screens.md ? { top: 20 } : {}}
                 footer={[
                     <Button key="close" onClick={onClose}>
                         Zavrieť
@@ -389,22 +505,22 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
                         </Card>
 
                         {/* Stats */}
-                        <Row gutter={16}>
-                            <Col span={data.user.role === 'user' ? 6 : 8}>
+                        <Row gutter={[16, screens.md ? 0 : 16]}>
+                            <Col xs={12} sm={data.user.role === 'user' ? 6 : 8}>
                                 <Statistic
                                     title="Celkom termínov"
                                     value={data.stats.totalEvents}
                                     prefix={<CalendarOutlined />}
                                 />
                             </Col>
-                            <Col span={data.user.role === 'user' ? 6 : 8}>
+                            <Col xs={12} sm={data.user.role === 'user' ? 6 : 8}>
                                 <Statistic
                                     title="Zaregistrovaných"
                                     value={data.stats.registeredEvents}
                                     valueStyle={{ color: '#1677ff' }}
                                 />
                             </Col>
-                            <Col span={data.user.role === 'user' ? 6 : 8}>
+                            <Col xs={12} sm={data.user.role === 'user' ? 6 : 8}>
                                 <Statistic
                                     title="Zúčastnených"
                                     value={data.stats.attendedEvents}
@@ -413,7 +529,7 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
                             </Col>
                             {/* Only show homework stats for regular users */}
                             {data.user.role === 'user' && (
-                                <Col span={6}>
+                                <Col xs={12} sm={6}>
                                     <Statistic
                                         title="Domácich úloh"
                                         value={data.stats.submittedHomeworks}
@@ -423,16 +539,32 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
                             )}
                         </Row>
 
-                        {/* Events Table */}
-                        <Table
-                            columns={columns}
-                            dataSource={data.events}
-                            rowKey="_id"
-                            loading={loading}
-                            pagination={{ pageSize: 10 }}
-                            size="small"
-                            scroll={{ y: 400 }}
-                        />
+                        {/* Events - Table on desktop, cards on mobile */}
+                        <div>
+                            <Title level={4} style={{ marginBottom: 16 }}>História termínov</Title>
+                            {screens.md ? (
+                                <Table
+                                    columns={columns}
+                                    dataSource={data.events}
+                                    rowKey="_id"
+                                    loading={loading}
+                                    pagination={{ pageSize: 10 }}
+                                    size="small"
+                                    scroll={{ y: 400, x: true }}
+                                />
+                            ) : (
+                                <>
+                                    {renderMobileEventCards()}
+                                    {data.events.length > 0 && (
+                                        <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                Zobrazených: {data.events.length} termínov
+                                            </Text>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </Space>
                 )}
             </Modal>

@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = randomUUID()
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24) // 24h
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 2) // 2 hours
 
     await db.collection('registration-tokens').insertOne({
         token,
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         first_name,
         last_name,
         role,
+        type: 'invite', // Invite tokens are single-use
         expiresAt,
         created: new Date(),
     })

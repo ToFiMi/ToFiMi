@@ -55,6 +55,7 @@ export default async function UsersPage() {
             {
                 school_id: new ObjectId(schoolId as string),
                 expiresAt: { $gte: new Date() },
+                type: 'qr' // Only QR tokens for multiple use
             },
             { sort: { created: -1 } }
         )
