@@ -16,6 +16,16 @@ export default function UserCard({ user, active_school_id }: { user: any, active
     const [reminderTime, setReminderTime] = useState<Dayjs | null>(null)
     const [saving, setSaving] = useState(false)
 
+    // Early return if user is not available
+    if (!user) {
+        return (
+            <Card>
+                <Title level={3}>Chyba pri načítaní profilu</Title>
+                <Text>Nepodarilo sa načítať údaje používateľa.</Text>
+            </Card>
+        )
+    }
+
     useEffect(() => {
         navigator.serviceWorker?.ready
             .then(reg => reg.pushManager.getSubscription())
@@ -96,7 +106,7 @@ export default function UserCard({ user, active_school_id }: { user: any, active
         }
     }
 
-    const active_school = user.schools.find((school)=> school.school._id ===  active_school_id )
+    const active_school = user.schools?.find((school)=> school.school._id ===  active_school_id )
     const hasMultipleSchools = user.schools && user.schools.length > 1
     return (
         <Card>
@@ -130,7 +140,7 @@ export default function UserCard({ user, active_school_id }: { user: any, active
                             value={active_school_id}
                             onChange={handleSchoolSwitch}
                         >
-                            {user.schools.map((school: any) => (
+                            {user.schools?.map((school: any) => (
                                 <Select.Option 
                                     key={school.school._id} 
                                     value={school.school._id}

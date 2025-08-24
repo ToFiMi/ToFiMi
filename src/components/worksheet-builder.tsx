@@ -71,7 +71,7 @@ export default function WorksheetBuilder({ eventId, onSave, existingWorksheet, i
                 message.error(`Chyba: ${error}`)
             }
         } catch (error) {
-            console.error('Error saving worksheet:', error)
+            console.error('Chyba pri ukladaní pracovného listu:', error)
             message.error('Nepodarilo sa uložiť pracovný list')
         }
         setLoading(false)

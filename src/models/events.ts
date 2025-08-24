@@ -14,6 +14,8 @@ export interface Event  {
     meals: MealDefinition[]
     homeworkTypes: HomeworkType[]
     worksheet_id?: ObjectId | string // optional worksheet for missed participants
+    feedbackUrl?: string // Google Forms URL for event feedback
+    sheetsUrl?: string // Google Sheets URL for event data/information
 }
 
 export interface HomeworkType {

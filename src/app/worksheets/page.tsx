@@ -79,7 +79,7 @@ export default function WorksheetsPage() {
                 setWorksheets(data)
             }
         } catch (error) {
-            console.error('Error fetching worksheets:', error)
+            console.error('Chyba pri načítavaní pracovných listov:', error)
             message.error('Nepodarilo sa načítať pracovné listy')
         }
         setLoading(false)
@@ -105,7 +105,7 @@ export default function WorksheetsPage() {
                 message.error(`Error: ${error}`)
             }
         } catch (error) {
-            console.error('Error duplicating worksheet:', error)
+            console.error('Chyba pri duplikovaní pracovného listu:', error)
             message.error('Nepodarilo sa duplikovať pracovný list')
         }
     }
@@ -130,7 +130,7 @@ export default function WorksheetsPage() {
                 message.error(`Error: ${error}`)
             }
         } catch (error) {
-            console.error('Error creating template:', error)
+            console.error('Chyba pri vytváraní šablóny:', error)
             message.error('Nepodarilo sa vytvoriť šablónu')
         }
     }
@@ -149,7 +149,7 @@ export default function WorksheetsPage() {
                 message.error('Nepodarilo sa načítať pracovný list na úpravu')
             }
         } catch (error) {
-            console.error('Error loading worksheet:', error)
+            console.error('Chyba pri načítaní pracovného listu:', error)
             message.error('Nepodarilo sa načítať pracovný list')
         }
     }
@@ -169,7 +169,7 @@ export default function WorksheetsPage() {
                 message.error(`Error: ${error}`)
             }
         } catch (error) {
-            console.error('Error deleting worksheet:', error)
+            console.error('Chyba pri odstraňovaní pracovného listu:', error)
             message.error('Nepodarilo sa vymazať pracovný list')
         }
     }

@@ -37,10 +37,10 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
     const [availableWorksheets, setAvailableWorksheets] = useState<any[]>([])
 
     const predefinedHomeworkTypes = [
-        { id: 'text-essay', name: 'Text Essay', description: 'Written essay assignment' },
-        { id: 'project', name: 'Project', description: 'Project work assignment' },
-        { id: 'evangelist-discussion', name: 'Evangelist Discussion', description: 'Discussion about evangelism' },
-        { id: 'testimony', name: 'Testimony', description: 'Personal testimony sharing' }
+        { id: 'text-essay', name: 'Textová esej', description: 'Písomná esejová úloha' },
+        { id: 'project', name: 'Projekt', description: 'Projektová práca' },
+        { id: 'evangelist-discussion', name: 'Evanjelistická diskusia', description: 'Diskusia o evanjelizácii' },
+        { id: 'testimony', name: 'Svedectvo', description: 'Zdieľanie osobného svedectva' }
     ]
 
 
@@ -316,7 +316,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                                                 danger
                                                 onClick={() => remove(name)}
                                             >
-                                                Remove
+                                                Odstrániť
                                             </Button>
                                         }
                                     >
@@ -324,7 +324,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                                             <Form.Item
                                                 {...restField}
                                                 name={[name, 'id']}
-                                                label="Type"
+                                                label="Typ"
                                                 rules={[{ required: true, message: 'Vyber typ domacej úlohy' }]}
                                             >
                                                 <Select
@@ -342,7 +342,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                                                             {type.name}
                                                         </Select.Option>
                                                     ))}
-                                                    <Select.Option value="custom">Custom Type</Select.Option>
+                                                    <Select.Option value="custom">Vlastný typ</Select.Option>
                                                 </Select>
                                             </Form.Item>
 
@@ -367,13 +367,13 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                                                 name={[name, 'required']}
                                                 valuePropName="checked"
                                             >
-                                                <Switch /> Required
+                                                <Switch /> Povinné
                                             </Form.Item>
 
                                             <Form.Item
                                                 {...restField}
                                                 name={[name, 'dueDate']}
-                                                label="Due Date (Optional)"
+                                                label="Termín odovzdania (voliteľné)"
                                             >
                                                 <DatePicker style={{ width: '100%' }} />
                                             </Form.Item>
@@ -395,23 +395,23 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                     </Form.List>
 
                     <Divider />
-                    <h4 className="mb-2 font-semibold">Worksheet for Missed Participants</h4>
+                    <h4 className="mb-2 font-semibold">Pracovný list pre absentujúcich účastníkov</h4>
                     <p className="text-sm text-gray-600 mb-4">
-                        Assign a worksheet that participants who missed the event can fill out instead of writing homework essays.
+                        Priraďte pracovný list, ktorý môžu vyplniť účastníci, ktorí sa nezúčastnili termínu namiesto písania domácich esejí.
                     </p>
 
                     <Form.Item
                         name="worksheet_id"
-                        label="Select Worksheet"
+                        label="Vyberte pracovný list"
                     >
                         <Select
-                            placeholder="Choose an existing worksheet or create new"
+                            placeholder="Vyberte existujúci pracovný list alebo vytvorte nový"
                             allowClear
                             options={[
-                                { value: 'create_new', label: '+ Create New Worksheet' },
+                                { value: 'create_new', label: '+ Vytvoriť nový pracovný list' },
                                 ...availableWorksheets.map(worksheet => ({
                                     value: worksheet._id,
-                                    label: `${worksheet.title} ${worksheet.school_name ? `(${worksheet.school_name})` : ''}${worksheet.is_template ? ' [Template]' : ''}`,
+                                    label: `${worksheet.title} ${worksheet.school_name ? `(${worksheet.school_name})` : ''}${worksheet.is_template ? ' [Šablóna]' : ''}`,
                                     disabled: false
                                 }))
                             ]}
@@ -432,7 +432,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
 
             {/* Worksheet Builder Modal */}
             <Modal
-                title={`Create Worksheet for: ${editingEvent?.title || 'Event'}`}
+                title={`Vytvoriť pracovný list pre: ${editingEvent?.title || 'Termín'}`}
                 open={worksheetModalOpen}
                 onCancel={() => setWorksheetModalOpen(false)}
                 footer={null}
@@ -443,7 +443,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                     <WorksheetBuilder
                         eventId={String(editingEvent._id)}
                         onSave={(worksheetId) => {
-                            message.success('Worksheet created successfully')
+                            message.success('Pracovný list bol úspešne vytvorený')
                             setWorksheetModalOpen(false)
                         }}
                     />

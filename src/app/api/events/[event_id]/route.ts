@@ -4,7 +4,7 @@ import { connectToDatabase } from '@/lib/mongo'
 
 export async function PUT(req: NextRequest, { params }: { params: { event_id: string } }) {
     const { event_id } = params
-    const { instructions, worksheet_id } = await req.json()
+    const { instructions, worksheet_id, feedbackUrl, sheetsUrl } = await req.json()
 
     if (!ObjectId.isValid(event_id)) {
         return NextResponse.json({ error: 'Neplatné event ID' }, { status: 400 })
@@ -17,6 +17,8 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
     if (worksheet_id !== undefined) {
         updateFields.worksheet_id = worksheet_id ? new ObjectId(worksheet_id) : null
     }
+    if (feedbackUrl !== undefined) updateFields.feedbackUrl = feedbackUrl
+    if (sheetsUrl !== undefined) updateFields.sheetsUrl = sheetsUrl
 
     const result = await db.collection('events').updateOne(
         { _id: new ObjectId(event_id) },

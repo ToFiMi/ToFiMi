@@ -61,7 +61,7 @@ export default function ReflectionEditModal({
                 message.error(error || 'Chyba pri aktualizácii zamyslenia')
             }
         } catch (error) {
-            console.error('Error updating reflection:', error)
+            console.error('Chyba pri aktualizácii reflexie:', error)
             message.error('Chyba pri komunikácii so serverom')
         } finally {
             setLoading(false)

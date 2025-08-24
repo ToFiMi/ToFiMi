@@ -40,7 +40,12 @@ export default async function ProfilePage() {
                     as: 'user_school'
                 }
             },
-            { $unwind: '$user_school' },
+            {
+                $unwind: {
+                    path: '$user_school',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
             {
                 $lookup: {
                     from: 'schools',
@@ -49,7 +54,12 @@ export default async function ProfilePage() {
                     as: 'school_info'
                 }
             },
-            { $unwind: '$school_info' },
+            {
+                $unwind: {
+                    path: '$school_info',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
             {
                 $group: {
                     _id: '$_id',
@@ -58,18 +68,42 @@ export default async function ProfilePage() {
                     email: { $first: '$email' },
                     schools: {
                         $push: {
-                            role: '$user_school.role',
-                            school: '$school_info'
+                            $cond: {
+                                if: { $ne: ['$user_school', null] },
+                                then: {
+                                    role: '$user_school.role',
+                                    school: '$school_info'
+                                },
+                                else: '$$REMOVE'
+                            }
                         }
                     }
                 }
             }
         ]).toArray()
 
-
-
         user = me[0]
-        console.log(user.schools)
+        
+        // Ensure schools array exists and handle case where user has no schools
+        if (user) {
+            user.schools = user.schools || []
+            console.log(user.schools)
+        } else {
+            // Fallback: get basic user info if aggregation fails
+            const basicUser = await db.collection('users').findOne(
+                { _id: new ObjectId(userId as string) },
+                { projection: { passwordHash: 0 } }
+            )
+            if (basicUser) {
+                user = {
+                    _id: basicUser._id,
+                    first_name: basicUser.first_name,
+                    last_name: basicUser.last_name,
+                    email: basicUser.email,
+                    schools: []
+                }
+            }
+        }
     }
 
     return (
