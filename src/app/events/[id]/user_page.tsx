@@ -36,6 +36,8 @@ export default function HomeworkUserPage({ homework, event_id, event_name }: { h
 
             if (res.ok) {
                 message.success("Domáca úloha bola uložená")
+                // Refresh the page to show updated homework data
+                window.location.reload()
             } else {
                 const err = await res.text()
                 message.error(`Chyba: ${err}`)

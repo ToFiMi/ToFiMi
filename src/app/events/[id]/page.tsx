@@ -68,7 +68,7 @@ export default async function EventDetailPage({ params }: Params) {
         // Only show homework if user attended or was registered
         if (!shouldShowWorksheet) {
             homework = await db.collection<Homework>("homeworks").findOne({
-                user_id: new ObjectId(token.user_id),
+                user_id: new ObjectId(token.id),
                 event_id: eventId,
             });
         }
