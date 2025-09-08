@@ -38,15 +38,16 @@ export async function POST(req: NextRequest) {
         const body = await req.json()
         const { content, event_id, homework_type_id } = body
 
-        if (!content || !event_id || !homework_type_id) {
+        if (!content || !event_id) {
             return new NextResponse('Missing required fields', { status: 400 })
         }
 
         const homework: Omit<Homework, '_id'> = {
             event_id: new ObjectId(event_id),
             user_id: new ObjectId(token.id),
-            homework_type_id,
+            homework_type_id: homework_type_id || 'default',
             content,
+            type: 'essay',
             status: 'pending',
             comments: [],
             created: new Date(),
