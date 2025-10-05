@@ -1,7 +1,7 @@
 "use client"
 
 import { Event } from "@/models/events"
-import {Card, Typography, Space, Divider, Tag, Statistic, Flex, List, Button} from "antd"
+import {Card, Typography, Space, Divider, Tag, Statistic, Flex, List, Button, Modal, Table} from "antd"
 import dayjs from "dayjs";
 import {useState} from "react";
 import {useMobile} from "@/hooks/useMobile";
@@ -32,11 +32,28 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
     const [registrations, setRegistrations] = useState(next_registrations)
     const [previousEvent, setPreviousEvent] = useState(previous_event)
     const [nextEvent, setNextEvent] = useState(next_event)
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [nonRegisteredUsers, setNonRegisteredUsers] = useState([])
+    const [loadingNonRegistered, setLoadingNonRegistered] = useState(false)
     const mealCounts: Record<string, Record<string, number>> = {}
 
     const dayToDateMap: Record<string, string> = {}
 
     const isMobile = useMobile()
+
+    const fetchNonRegisteredUsers = async () => {
+        setLoadingNonRegistered(true)
+        try {
+            const res = await fetch(`/api/events/${event._id}/non-registered`)
+            const data = await res.json()
+            setNonRegisteredUsers(data.non_registered_users || [])
+            setIsModalVisible(true)
+        } catch (error) {
+            console.error('Error fetching non-registered users:', error)
+        } finally {
+            setLoadingNonRegistered(false)
+        }
+    }
     event.meals.forEach(meal => {
         const date = dayjs(meal.date).format('YYYY-MM-DD')
         const dayName = dayjs(meal.date).format('dddd').toLowerCase() // napr. 'friday'
@@ -122,7 +139,18 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
 
                 <Divider />
 
-                <Title level={5}>Počet porcií na jedlá</Title>
+                <Flex justify="space-between" align="center">
+                    <Title level={5}>Počet porcií na jedlá</Title>
+                    {Object.keys(mealCounts).length > 0 && (
+                        <Button
+                            type="link"
+                            onClick={fetchNonRegisteredUsers}
+                            loading={loadingNonRegistered}
+                        >
+                            Zobraziť neregistrovaných
+                        </Button>
+                    )}
+                </Flex>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
                     {Object.entries(mealCounts).map(([date, times]) => (
                         <div key={date} style={{
@@ -162,6 +190,40 @@ export const AdminEventCard = ({ next_event, next_registrations ,current_event, 
                 <Text strong>Žiadny nasledujúci termín</Text>
             )}
 
+            <Modal
+                title={`Neregistrovaní účastníci - ${event.title}`}
+                open={isModalVisible}
+                onCancel={() => setIsModalVisible(false)}
+                footer={null}
+                width={700}
+            >
+                <Text>
+                    Celkový počet neregistrovaných účastníkov: <strong>{nonRegisteredUsers.length}</strong>
+                </Text>
+                <Table
+                    dataSource={nonRegisteredUsers}
+                    columns={[
+                        {
+                            title: 'Meno',
+                            dataIndex: 'first_name',
+                            key: 'first_name',
+                        },
+                        {
+                            title: 'Priezvisko',
+                            dataIndex: 'last_name',
+                            key: 'last_name',
+                        },
+                        {
+                            title: 'Email',
+                            dataIndex: 'email',
+                            key: 'email',
+                        }
+                    ]}
+                    rowKey={(record) => record._id}
+                    pagination={false}
+                    style={{ marginTop: 16 }}
+                />
+            </Modal>
         </Card>
     )
 }

@@ -2,11 +2,11 @@
 
 import {useEffect, useState} from 'react'
 import { useRouter } from 'next/navigation'
-import {Button, Card, Form, Input, Layout, message, Typography} from 'antd'
+import {Button, Card, Form, Input, Layout, message, Typography, Checkbox} from 'antd'
 import {Content} from "antd/es/layout/layout";
 import { useParams } from 'next/navigation'
 
-const { Title } = Typography
+const { Title, Text } = Typography
 
 type User = {
     email: string
@@ -115,6 +115,27 @@ export default function CreateAccountPage() {
                         rules={[{ required: true, message: 'Zopakujte heslo' }]}
                     >
                         <Input.Password />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="gdpr_consent"
+                        valuePropName="checked"
+                        rules={[
+                            {
+                                validator: (_, value) =>
+                                    value ? Promise.resolve() : Promise.reject(new Error('Musíte súhlasiť so spracovaním osobných údajov'))
+                            }
+                        ]}
+                    >
+                        <Checkbox>
+                            <Text>
+                                Súhlasím so{' '}
+                                <a href="/gdpr" target="_blank" rel="noopener noreferrer">
+                                    spracovaním osobných údajov
+                                </a>{' '}
+                                (GDPR)
+                            </Text>
+                        </Checkbox>
                     </Form.Item>
 
                     <Form.Item>

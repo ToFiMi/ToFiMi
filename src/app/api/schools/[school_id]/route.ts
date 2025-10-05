@@ -44,7 +44,7 @@ export async function GET(req: NextRequest, { params }: { params: { school_id: s
 export async function POST(req: NextRequest, { params }: { params: { school_id: string } }) {
     const db = await connectToDatabase()
     const schoolId = params.school_id
-    const { email, role, first_name = '', last_name = '' } = await req.json()
+    const { email, role, first_name = '', last_name = '', gdpr_consent = false } = await req.json()
 
     if (!email || !role) {
         return new Response('Missing email or role', { status: 400 })
@@ -64,6 +64,8 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
             isAdmin: false,
             created: now,
             updated: now,
+            gdpr_consent,
+            gdpr_consent_date: gdpr_consent ? now : undefined,
         })
 
         user = {

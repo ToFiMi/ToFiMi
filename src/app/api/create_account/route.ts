@@ -6,10 +6,14 @@ import {User} from "@/lib/class/User";
 
 export async function POST(req: NextRequest) {
     const body = await req.json()
-    const { email, password, first_name, last_name, token } = body
+    const { email, password, first_name, last_name, token, gdpr_consent } = body
 
     if (!email || !password || !first_name || !last_name || !token) {
         return new NextResponse('Chýbajúce údaje', { status: 400 })
+    }
+
+    if (!gdpr_consent) {
+        return new NextResponse('Musíte súhlasiť so spracovaním osobných údajov (GDPR)', { status: 400 })
     }
 
     const db = await connectToDatabase()
@@ -30,14 +34,17 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
+    const now = new Date()
     const userResult = await db.collection('users').insertOne({
         email,
         passwordHash,
         first_name,
         last_name,
         isAdmin:  ott.role === "admin",
-        created: new Date(),
-        updated: new Date(),
+        created: now,
+        updated: now,
+        gdpr_consent: true,
+        gdpr_consent_date: now,
     })
     if(ott.role !== "admin") {
         await db.collection('user_school').insertOne({

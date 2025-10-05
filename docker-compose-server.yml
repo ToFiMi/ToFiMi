@@ -44,6 +44,7 @@ services:
       - "traefik.http.routers.dasvazec.entrypoints=websecure"
       - "traefik.http.routers.dasvazec.tls=true"
       - "traefik.http.routers.dasvazec.tls.certresolver=production"
+      - "traefik.docker.network=traefik_default"
       - "traefik.http.services.dasvazec.loadbalancer.server.port=3000"
     networks:
       - default

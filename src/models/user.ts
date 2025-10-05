@@ -9,4 +9,6 @@ export interface User {
     created: Date
     updated: Date
     isAdmin: boolean
+    gdpr_consent?: boolean
+    gdpr_consent_date?: Date
 }
