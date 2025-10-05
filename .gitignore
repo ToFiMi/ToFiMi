@@ -46,3 +46,6 @@ next-env.d.ts
 /prisma/dev.sqlite
 /prisma/dev.db-journal
 /prisma/generated/
+
+# DB
+/db

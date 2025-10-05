@@ -1,44 +1,65 @@
 # ~/das-app/ToFiMi/docker-compose.yml
 services:
   mongodb:
-    image: mongo:6
+    image: mongo:latest
+    container_name: das_app_mongo
     ports:
       - "27017:27017"
     restart: unless-stopped
     volumes:
-      - mongo:/data/db
+      - ./db:/data/db
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PWD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    healthcheck:
+      test:
+        ["CMD-SHELL", 'mongosh --eval "db.adminCommand({ ping: 1 })" || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   app:
-    image: ghcr.io/tofimi/tofimi:latest
-    env_file:
-      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: das_app_web
+    restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
-  loki:
-    image: grafana/loki:2.9.4
-    restart: unless-stopped
-    command: -config.file=/etc/loki/local-config.yaml
-    ports:
-      - "3100:3100"
+  # app:
+  #   image: ghcr.io/tofimi/tofimi:latest
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - mongodb
 
-  promtail:
-    image: grafana/promtail:2.9.4
-    restart: unless-stopped
-    command: -config.file=/etc/promtail/docker-config.yaml
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  # loki:
+  #   image: grafana/loki:2.9.4
+  #   restart: unless-stopped
+  #   command: -config.file=/etc/loki/local-config.yaml
+  #   ports:
+  #     - "3100:3100"
 
-  grafana:
-    image: grafana/grafana:11.0.0
-    restart: unless-stopped
-    ports:
-      - "3001:3000"
+  # promtail:
+  #   image: grafana/promtail:2.9.4
+  #   restart: unless-stopped
+  #   command: -config.file=/etc/promtail/docker-config.yaml
+  #   volumes:
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
 
-volumes:
-  mongo:
+  # grafana:
+  #   image: grafana/grafana:11.0.0
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
