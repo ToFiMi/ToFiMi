@@ -1,0 +1,83 @@
+# ~/das-app/ToFiMi/docker-compose.yml
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: das_app_mongo
+    # ports:
+    #   - "27017:27017"
+    restart: unless-stopped
+    volumes:
+      - ./db:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    healthcheck:
+      test:
+        ["CMD-SHELL", 'mongosh --eval "db.adminCommand({ ping: 1 })" || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - default
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: das_app_web
+    restart: unless-stopped
+    # ports:
+    #   - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+      - NEXTAUTH_URL=https://dasvazec.app
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      # Router (HTTPS)
+      - "traefik.http.routers.dasvazec.rule=Host(`dasvazec.app`)"
+      - "traefik.http.routers.dasvazec.entrypoints=websecure"
+      - "traefik.http.routers.dasvazec.tls=true"
+      - "traefik.http.routers.dasvazec.tls.certresolver=production"
+      - "traefik.http.services.dasvazec.loadbalancer.server.port=3000"
+    networks:
+      - default
+      - traefik_default
+
+  # app:
+  #   image: ghcr.io/tofimi/tofimi:latest
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - mongodb
+
+  # loki:
+  #   image: grafana/loki:2.9.4
+  #   restart: unless-stopped
+  #   command: -config.file=/etc/loki/local-config.yaml
+  #   ports:
+  #     - "3100:3100"
+
+  # promtail:
+  #   image: grafana/promtail:2.9.4
+  #   restart: unless-stopped
+  #   command: -config.file=/etc/promtail/docker-config.yaml
+  #   volumes:
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
+  # grafana:
+  #   image: grafana/grafana:11.0.0
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
+
+networks:
+  traefik_default:
+    external: true
