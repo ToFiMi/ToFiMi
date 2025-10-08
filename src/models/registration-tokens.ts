@@ -2,11 +2,12 @@ import { ObjectId } from 'mongodb'
 
 export interface RegistrationTokens {
     token: string,
-    school_id: ObjectId,
+    type: 'invite' | 'password-reset',
+    school_id?: ObjectId,
     email?: string,
     first_name?: string,
     last_name?: string,
-    role?: 'animator' | 'leader',
+    role?: 'animator' | 'leader' | 'admin',
     expiresAt: Date,
     created: Date
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { getSession, signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button, Card, Form, Input, Layout, Typography, message } from 'antd'
 
 const { Content } = Layout
@@ -10,6 +11,7 @@ const { Title, Text } = Typography
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false)
+    const [hasFailedLogin, setHasFailedLogin] = useState(false)
     const router = useRouter()
 
     const onFinish = async (values: { email: string; password: string }) => {
@@ -31,6 +33,7 @@ export default function LoginPage() {
             }
         } else {
             message.error('Neplatný email alebo heslo')
+            setHasFailedLogin(true)
         }
 
         setLoading(false)
@@ -84,6 +87,14 @@ export default function LoginPage() {
                                 Prihlásiť sa
                             </Button>
                         </Form.Item>
+
+                        {hasFailedLogin && (
+                            <div style={{ textAlign: 'center', marginTop: 16 }}>
+                                <Link href="/forgot-password" style={{ color: '#1890ff' }}>
+                                    Zabudli ste heslo?
+                                </Link>
+                            </div>
+                        )}
                     </Form>
                 </Card>
             </Content>

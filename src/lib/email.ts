@@ -1,27 +1,41 @@
 // lib/email.ts
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
-let resend: Resend | null = null
+let transporter: any = null
 
-function getResend () {
-    if (!resend) {
-        const key = process.env.RESEND_API_KEY
-        if (!key) throw new Error('RESEND_API_KEY missing')
-        resend = new Resend(key)
+function getTransporter() {
+    if (!transporter) {
+        const smtpHost = process.env.SMTP_HOST || 'localhost'
+        const smtpPort = parseInt(process.env.SMTP_PORT || '1025')
+        const smtpUser = process.env.SMTP_USER
+        const smtpPass = process.env.SMTP_PASS
+        const smtpSecure = process.env.SMTP_SECURE === 'true'
+
+        transporter = nodemailer.createTransport({
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpSecure,
+            auth: smtpUser && smtpPass ? {
+                user: smtpUser,
+                pass: smtpPass,
+            } : undefined,
+        })
     }
-    return resend
+    return transporter
 }
 
 export async function sendEmail(opts: {
     to: string
-    schoolName?: string
+    subject: string
     htmlContent: string
 }) {
-    const r = getResend()
-    await r.emails.send({
-        from: 'noreply@das-app.sk',
+    const from = process.env.EMAIL_FROM || 'noreply@das-app.sk'
+    const transport = getTransporter()
+
+    await transport.sendMail({
+        from,
         to: opts.to,
-        subject: `Pozvánka do školy ${opts.schoolName ?? ''}`,
+        subject: opts.subject,
         html: opts.htmlContent,
     })
 }

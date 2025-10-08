@@ -89,7 +89,7 @@ export async function POST(
 
         await sendEmail({
             to: email,
-            schoolName: school?.name,
+            subject: `Pozvánka do školy ${school?.name}`,
             htmlContent:`<p>Ahoj ${first_name},</p>
       <p>bol(a) si pridaný(á) do systému ako člen školy <strong>${school?.name}</strong>.</p>
       <p>Ak ešte nemáš účet, vytvor si ho pomocou tohto e-mailu a nastav si heslo.</p>
