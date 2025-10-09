@@ -227,16 +227,16 @@ export function EventPage({ event, userRole }: { event: Event; userRole?: string
                         </>
                     )}
                     
-                    {/* Display Google Sheets link for all users if it exists */}
-                    {event.sheetsUrl && (
+                    {/* Display Google Sheets link for animators and leaders only */}
+                    {event.sheetsUrl && (userRole === 'leader' || userRole === 'animator' || userRole === 'ADMIN') && (
                         <>
                             <Divider />
                             <div className="mb-4">
                                 <strong>Zdieľané údaje:</strong>
                                 <div className="flex gap-2 mt-2 items-center">
                                     <span>Google Sheets s údajmi pre tento termín</span>
-                                    <Button 
-                                        type="primary" 
+                                    <Button
+                                        type="primary"
                                         onClick={() => window.open(event.sheetsUrl, '_blank')}
                                     >
                                         Otvoriť Google Sheets

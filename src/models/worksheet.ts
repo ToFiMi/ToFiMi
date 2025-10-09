@@ -1,16 +1,16 @@
 import { ObjectId } from 'mongodb'
 
 export interface Worksheet {
-    _id: ObjectId
-    school_id: ObjectId
-    event_id?: ObjectId // optional - worksheet can exist without being assigned to event
+    _id: ObjectId | string
+    school_id: ObjectId | string
+    event_id?: ObjectId | string // optional - worksheet can exist without being assigned to event
     title: string
     description?: string
     questions: WorksheetQuestion[]
-    created_by: ObjectId
+    created_by: ObjectId | string
     is_template: boolean // true for reusable templates
-    created: Date
-    updated: Date
+    created: Date | string
+    updated: Date | string
 }
 
 export interface WorksheetQuestion {
@@ -25,16 +25,16 @@ export interface WorksheetQuestion {
 }
 
 export interface WorksheetSubmission {
-    _id: ObjectId
-    worksheet_id: ObjectId
-    event_id: ObjectId
-    user_id: ObjectId
+    _id: ObjectId | string
+    worksheet_id: ObjectId | string
+    event_id: ObjectId | string
+    user_id: ObjectId | string
     answers: WorksheetAnswer[]
     essay_content?: string // optional essay in addition to worksheet
     status: 'pending' | 'approved' | 'rejected'
     comments: WorksheetComment[]
-    created: Date
-    updated: Date
+    created: Date | string
+    updated: Date | string
 }
 
 export interface WorksheetAnswer {
@@ -43,9 +43,9 @@ export interface WorksheetAnswer {
 }
 
 export interface WorksheetComment {
-    _id: ObjectId
-    user_id: ObjectId
+    _id: ObjectId | string
+    user_id: ObjectId | string
     text: string
-    created: Date
-    updated: Date
+    created: Date | string
+    updated: Date | string
 }

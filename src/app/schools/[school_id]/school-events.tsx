@@ -39,7 +39,7 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
     const predefinedHomeworkTypes = [
         { id: 'text-essay', name: 'Textová esej', description: 'Písomná esejová úloha' },
         { id: 'project', name: 'Projekt', description: 'Projektová práca' },
-        { id: 'evangelist-discussion', name: 'Evanjelistická diskusia', description: 'Diskusia o evanjelizácii' },
+        { id: 'evangelist-discussion', name: 'Evanjelijový rozhovor', description: 'Diskusia o evanjelizácii' },
         { id: 'testimony', name: 'Svedectvo', description: 'Zdieľanie osobného svedectva' }
     ]
 
@@ -56,10 +56,28 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
                 current = current.add(1, 'day');
             }
             setMealDays(days);
+
+            // Set default meals for new events (not editing)
+            if (!editingEvent) {
+                const mealPresets: Record<string, string[]> = {}
+                days.forEach((day, index) => {
+                    if (index === 0) {
+                        // First day: only dinner
+                        mealPresets[day] = ['18:00']
+                    } else if (index === days.length - 1) {
+                        // Last day: breakfast and lunch
+                        mealPresets[day] = ['08:00', '12:30']
+                    } else {
+                        // Middle days: all meals
+                        mealPresets[day] = ['08:00', '12:30', '18:00']
+                    }
+                })
+                form.setFieldsValue({ meals: mealPresets })
+            }
         } else {
             setMealDays([]);
         }
-    }, [dateRange]);
+    }, [dateRange, editingEvent, form]);
 
 
 

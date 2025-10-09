@@ -7,10 +7,10 @@ export interface Event  {
     description?: string // dobrovoľné - krátky popis (napr. téma víkendu)
     instructions?: string
     grade: number
-    startDate: Date
-    endDate: Date
-    created: Date
-    updated: Date
+    startDate: Date | string
+    endDate: Date | string
+    created: Date | string
+    updated: Date | string
     meals: MealDefinition[]
     homeworkTypes: HomeworkType[]
     worksheet_id?: ObjectId | string // optional worksheet for missed participants

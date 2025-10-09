@@ -127,7 +127,8 @@ export const authOptions: AuthOptions = {
         strategy: 'jwt'
     },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger }) {
+            // Initial sign in - populate token from user object
             if (user) {
                 token.id = user.id
                 token.email = user.email
@@ -139,6 +140,24 @@ export const authOptions: AuthOptions = {
                 token.user_id = user.user_id ?? null
                 token.school_id = user.school_id ?? null
                 token.school_choices = user.school_choices ?? []
+            } else if (token.user_id && token.school_id) {
+                // On subsequent requests, refresh role and active status from database
+                try {
+                    const db = await connectToDatabase()
+                    const userSchool = await db.collection('user_school').findOne({
+                        _id: new ObjectId(token.user_id as string)
+                    })
+
+                    if (userSchool) {
+                        token.role = userSchool.role
+                        token.isActive = userSchool.role !== 'inactive'
+                    } else {
+                        // User-school relationship no longer exists
+                        token.isActive = false
+                    }
+                } catch (error) {
+                    console.error('Error refreshing token:', error)
+                }
             }
             return token
         },

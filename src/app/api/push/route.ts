@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongo'
 import webpush, { PushSubscription } from 'web-push'
-import { getToken } from 'next-auth/jwt'
+import { requireAuth } from '@/lib/auth-helpers'
 
 function ensureVapid(email: string) {
     const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
@@ -15,10 +15,11 @@ function ensureVapid(email: string) {
 }
 
 export async function POST(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token || !token.email) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireAuth(req, ['ADMIN', 'leader'])
+    if (authResult instanceof NextResponse) {
+        return authResult
     }
+    const { auth } = authResult
 
     const { content, subject } = await req.json()
 
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Missing subject or content' }, { status: 400 })
     }
 
-    ensureVapid(token.email)
+    ensureVapid(auth.email)
 
     const db = await connectToDatabase()
     const subs = await db

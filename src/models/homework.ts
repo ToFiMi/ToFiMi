@@ -1,23 +1,23 @@
 import { ObjectId } from 'mongodb'
 
 export interface Homework {
-    _id: ObjectId
-    event_id: ObjectId
-    user_id: ObjectId
+    _id: ObjectId | string
+    event_id: ObjectId | string
+    user_id: ObjectId | string
     homework_type_id: string
     content?: string // optional for worksheet submissions
-    worksheet_submission_id?: ObjectId // reference to worksheet submission
+    worksheet_submission_id?: ObjectId | string // reference to worksheet submission
     type: 'essay' | 'worksheet' // type of homework
     status: 'approved' | 'pending' | 'rejected'
     comments: Comment[]
-    created: Date
-    updated: Date
+    created: Date | string
+    updated: Date | string
 }
 
 export interface Comment {
-    _id: ObjectId
-    user_id: ObjectId
+    _id: ObjectId | string
+    user_id: ObjectId | string
     text: string
-    created: Date
-    updated: Date
+    created: Date | string
+    updated: Date | string
 }

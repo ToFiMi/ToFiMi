@@ -16,5 +16,19 @@ export default async function EventsPage() {
         school_id: token.school_id,
     });
 
-    return <Events events={events} />;
+    // Serialize events for client component
+    const serializedEvents = events.map(event => ({
+        ...event,
+        _id: event._id.toString(),
+        school_id: event.school_id?.toString(),
+        worksheet_id: event.worksheet_id?.toString(),
+        created: event.created instanceof Date ? event.created.toISOString() : event.created,
+        updated: event.updated instanceof Date ? event.updated.toISOString() : event.updated,
+    }));
+
+    return <Events
+        events={serializedEvents}
+        userRole={token.role as string}
+        schoolId={token.school_id as string}
+    />;
 }

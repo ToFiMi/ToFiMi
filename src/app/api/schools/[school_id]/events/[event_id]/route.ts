@@ -6,9 +6,9 @@ import {getToken} from "next-auth/jwt";
 import {cookies} from "next/headers";
 import { requireAuth } from '@/lib/auth-helpers';
 
-export async function PUT(req: NextRequest, { params }: { params: { event_id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { event_id: string, school_id: string } }) {
     const db = await connectToDatabase()
-    
+
     // Allow ADMIN, leader, and animator to update events
     const authResult = await requireAuth(req, ['ADMIN', 'leader', 'animator'])
     if (authResult instanceof Response) {
@@ -16,7 +16,16 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
     }
     const { auth } = authResult
 
-    const { event_id: eventId } = await params
+    const { event_id: eventId, school_id: schoolId } = await params
+
+    // For leaders and animators, ensure they can only update events for their own school
+    if (!auth.isAdmin) {
+        const event = await db.collection('events').findOne({ _id: new ObjectId(eventId) })
+        if (!event || event.school_id.toString() !== auth.schoolId) {
+            return new Response('Forbidden - can only update events for your own school', { status: 403 })
+        }
+    }
+
     const { title, description, startDate, endDate, grade, meals, homeworkTypes, worksheet_id } = await req.json()
 
     if (!title || !startDate || !endDate || grade == null) {

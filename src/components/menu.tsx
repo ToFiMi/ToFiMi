@@ -3,7 +3,7 @@
 import {Breadcrumb, Button, ConfigProvider, Grid, Layout, Menu} from 'antd'
 import {LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons'
 import Link from 'next/link'
-import {signOut} from 'next-auth/react'
+import {signOut, useSession} from 'next-auth/react'
 import {useLayoutEffect, useState, useMemo, useEffect} from 'react'
 import {usePathname, useRouter} from "next/navigation";
 import dayjs from 'dayjs'
@@ -19,16 +19,24 @@ dayjs.locale({ ...dayjs.Ls.sk, weekStart: 1 })
 const { Sider, Header } = Layout
 
 type Props = {
-    role: 'ADMIN' | 'user' | 'leader' | 'animator' | null | {}
     children: React.ReactNode
 }
 
-export default function AppMenu({ role, children }: Props) {
+export default function AppMenu({ children }: Props) {
+    const { data: session, update } = useSession()
+    const role = session?.user?.role
     const mq = '(max-width: 768px)'
     const router = useRouter()
     const pathname = usePathname()
     const crumbs = pathname.split('/').filter(Boolean)
 
+    // Auto-refresh session every 5 seconds to pick up role changes
+    useEffect(() => {
+        const interval = setInterval(() => {
+            update()
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [update])
 
     const [collapsed, setCollapsed] = useState(() => {
         if (typeof window === 'undefined') return true

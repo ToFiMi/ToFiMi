@@ -4,18 +4,23 @@ import {Button, Card, Grid, Input, Pagination, Space, Table} from "antd";
 import {useMemo, useState} from "react";
 import {Event} from "@/models/events";
 import dayjs from "dayjs";
-import {SearchOutlined, SortAscendingOutlined, SortDescendingOutlined} from "@ant-design/icons";
+import {SearchOutlined, SortAscendingOutlined, SortDescendingOutlined, PlusOutlined} from "@ant-design/icons";
 import Link from "next/link";
+import EventDialog from "@/components/event-dialog";
 
 const {useBreakpoint} = Grid;
 
-export function Events({events}: { events: Event[] }) {
+export function Events({events, userRole, schoolId}: { events: Event[], userRole?: string, schoolId?: string }) {
     const screens = useBreakpoint();
 
     const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [sortAsc, setSortAsc] = useState(true);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
     const pageSize = 10;
+
+    const canAddEvent = userRole === 'leader' || userRole === 'animator' || userRole === 'ADMIN';
 
     const filteredAndSortedEvents = useMemo(() => {
         const filtered = events.filter((e) =>
@@ -39,8 +44,27 @@ export function Events({events}: { events: Event[] }) {
         setPage(1);
     };
 
+    const handleEventSuccess = () => {
+        setRefreshKey(prev => prev + 1);
+        // Refresh the page to get updated events
+        window.location.reload();
+    };
+
     return (
         <div className="p-4 space-y-4">
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Termíny</h1>
+                {canAddEvent && schoolId && (
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setIsDialogOpen(true)}
+                    >
+                        Pridať termín
+                    </Button>
+                )}
+            </div>
+
             <Space direction="vertical" style={{width: "100%"}}>
                 <Input
                     placeholder="Vyhľadaj podľa názvu..."
@@ -106,6 +130,15 @@ export function Events({events}: { events: Event[] }) {
                     showSizeChanger={false}
                 />
             </div>
+
+            {canAddEvent && schoolId && (
+                <EventDialog
+                    open={isDialogOpen}
+                    onClose={() => setIsDialogOpen(false)}
+                    onSuccess={handleEventSuccess}
+                    schoolId={schoolId}
+                />
+            )}
         </div>
     );
 }

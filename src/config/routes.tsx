@@ -19,6 +19,7 @@ export const ROUTES_BY_ROLE: Record<UserRole, { key: string, label: string }[]> 
         { key: '/events', label: 'Termíny' },
         { key: '/worksheets', label: 'Pracovné listy' },
         { key: '/daily-reflections', label: 'Zamyslenia' },
+        { key: '/notifications', label: 'Notifikácie' },
         { key: '/profile', label: 'Profil' },
     ],
     animator: [

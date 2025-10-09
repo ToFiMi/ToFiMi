@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: { school_id: s
 
 export async function POST(req: NextRequest, { params }: { params: { school_id: string } }) {
     const db = await connectToDatabase()
-    
+
     // Allow ADMIN, leader, and animator to create events
     const authResult = await requireAuth(req, ['ADMIN', 'leader', 'animator'])
     if (authResult instanceof Response) {
@@ -29,6 +29,11 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
     const { auth } = authResult
 
     const { school_id: schoolId } = await params
+
+    // For leaders and animators, ensure they can only create events for their own school
+    if (!auth.isAdmin && auth.schoolId !== schoolId) {
+        return new Response('Forbidden - can only create events for your own school', { status: 403 })
+    }
     const { title, description, startDate, endDate, grade, meals, homeworkTypes, worksheet_id } = await req.json()
 
     if (!title || !startDate || !endDate || grade == null) {

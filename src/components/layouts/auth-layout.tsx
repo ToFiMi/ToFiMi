@@ -1,3 +1,4 @@
+'use client'
 
 import { AdminLayout } from './admin-layout'
 import  UserLayout  from "./user-layout"
@@ -11,7 +12,7 @@ type Props = {
 
 
 
-export default async function AuthLayout({ children, role, userId }: Props) {
+export default function AuthLayout({ children, role, userId }: Props) {
 
 
 
@@ -20,5 +21,5 @@ export default async function AuthLayout({ children, role, userId }: Props) {
     }
 
 
-    return <UserLayout userId={userId} role={role}>{children}</UserLayout>
+    return <UserLayout userId={userId}>{children}</UserLayout>
 }
