@@ -16,6 +16,7 @@ import SetBreadcrumbName from "@/components/set-breadcrumb-name";
 import { Event } from "@/models/events";
 import { Homework } from "@/models/homework";
 import { Registration } from "@/models/registrations";
+import DutyRosterManager from "@/components/duty-roster-manager";
 
 type Params = { params: { id: string } };
 
@@ -200,7 +201,12 @@ export default async function EventDetailPage({ params }: Params) {
             {/* 1. detail víkendu */}
             <EventPage event={serializedEvent} userRole={role} />
 
-            {/* 2. domáca úloha alebo worksheet (podľa roly a účasti) */}
+            {/* 2. duty roster manager (leaders/animators only) */}
+            {(role === "animator" || role === "leader") && (
+                <DutyRosterManager event={serializedEvent} />
+            )}
+
+            {/* 3. domáca úloha alebo worksheet (podľa roly a účasti) */}
             {role === "user" && shouldShowWorksheet && (
                 <WorksheetPage
                     worksheet={serializedWorksheet}

@@ -16,6 +16,7 @@ export interface Event  {
     worksheet_id?: ObjectId | string // optional worksheet for missed participants
     feedbackUrl?: string // Google Forms URL for event feedback
     sheetsUrl?: string // Google Sheets URL for event data/information
+    duty_roster_enabled?: boolean // enable duty rotation feature for this event
 }
 
 export interface HomeworkType {

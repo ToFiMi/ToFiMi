@@ -7,6 +7,7 @@ import SchoolUsers, {User} from "@/app/schools/[school_id]/school-users";
 import SchoolEvents from "@/app/schools/[school_id]/school-events";
 import SchoolGroups from "@/app/schools/[school_id]/school-groups";
 import SetBreadcrumbName from "@/components/set-breadcrumb-name";
+import DutyTypesConfig from "@/components/duty-types-config";
 
 
 interface Props {
@@ -62,8 +63,13 @@ export default async function SchoolDetailPage({params}: Props) {
                 </Suspense>
             </div>
             <div className="mt-8">
-                <Suspense fallback={<p>Načítavam termíny...</p>}>
+                <Suspense fallback={<p>Načítavam skupiny...</p>}>
                     <SchoolGroups schoolId={param.school_id}/>
+                </Suspense>
+            </div>
+            <div className="mt-8">
+                <Suspense fallback={<p>Načítavam typy služieb...</p>}>
+                    <DutyTypesConfig schoolId={param.school_id}/>
                 </Suspense>
             </div>
         </div>

@@ -9,6 +9,7 @@ import {getToken} from "next-auth/jwt";
 import {cookies} from "next/headers";
 import {ObjectId} from "mongodb";
 import dayjs from "dayjs";
+import DutyRosterDisplay from "@/components/duty-roster-display";
 
 export default async function AdminDashboardPage() {
     const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
@@ -25,13 +26,18 @@ export default async function AdminDashboardPage() {
     const db = await connectToDatabase()
     const today = dayjs().startOf('day').toDate()
     const tomorrow = dayjs().add(1, 'day').startOf('day').toDate()
-    
+
+    // Build query based on whether school_id is available
+    const endingEventsQuery: any = {
+        endDate: { $gte: today, $lt: tomorrow },
+        feedbackUrl: { $exists: true, $nin: [null, ''] }
+    }
+    if (school_id) {
+        endingEventsQuery.school_id = new ObjectId(school_id)
+    }
+
     const events_ending_today = await db.collection<Event>('events')
-        .find({
-            endDate: { $gte: today, $lt: tomorrow },
-            school_id: new ObjectId(school_id as string),
-            feedbackUrl: { $exists: true, $nin: [null, ''] }
-        })
+        .find(endingEventsQuery)
         .toArray()
 
     const serializedEndingEvents = events_ending_today.map(event => ({
@@ -44,10 +50,38 @@ export default async function AdminDashboardPage() {
         endDate: event.endDate instanceof Date ? event.endDate.toISOString() : event.endDate,
     }))
 
+    // Check for currently running event (today is between startDate and endDate)
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+
+    const runningEventQuery: any = {
+        startDate: { $lte: now },
+        endDate: { $gte: now }
+    }
+    if (school_id) {
+        runningEventQuery.school_id = new ObjectId(school_id)
+    }
+
+    const running_event = await db.collection<Event>('events')
+        .findOne(runningEventQuery)
+
+    const runningEvent = running_event ? {
+        _id: running_event._id.toString(),
+        school_id: running_event.school_id?.toString?.() ?? '',
+        title: running_event.title,
+        startDate: running_event.startDate instanceof Date ? running_event.startDate.toISOString() : running_event.startDate,
+        endDate: running_event.endDate instanceof Date ? running_event.endDate.toISOString() : running_event.endDate,
+    } : null
+
     if (!report) {
         return (
             <Layout className="min-h-screen p-8">
                 <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+                    {/* Show duty roster for running event */}
+                    {runningEvent && (
+                        <DutyRosterDisplay event={runningEvent} showEmptyState={true} />
+                    )}
+
                     {/* Show feedback forms for events ending today */}
                     {serializedEndingEvents.map(event => (
                         <FeedbackDisplay
@@ -67,6 +101,11 @@ export default async function AdminDashboardPage() {
     return (
         <Layout className="min-h-screen">
             <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+                {/* Show duty roster for running event */}
+                {runningEvent && (
+                    <DutyRosterDisplay event={runningEvent} showEmptyState={true} />
+                )}
+
                 {/* Show feedback forms for events ending today */}
                 {serializedEndingEvents.map(event => (
                     <FeedbackDisplay
@@ -75,7 +114,7 @@ export default async function AdminDashboardPage() {
                         showAlways={true}
                     />
                 ))}
-                
+
                 <AdminEventCard
                     current_event={event}
                     next_event={next_event as Event}

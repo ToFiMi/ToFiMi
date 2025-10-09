@@ -8,6 +8,7 @@ import {getToken} from "next-auth/jwt";
 import {cookies} from "next/headers";
 import {ObjectId} from "mongodb";
 import dayjs from "dayjs";
+import DutyRosterDisplay from "@/components/duty-roster-display";
 
 
 
@@ -62,12 +63,38 @@ export default async function UsersDashboardPage() {
         school_id: event.school_id?.toString?.(),
     } : null
 
+    // Check for currently running event (today is between startDate and endDate)
+    const running_event = await db.collection<Event>('events')
+        .findOne({
+            startDate: { $lte: now },
+            endDate: { $gte: now },
+            school_id: new ObjectId(school_id as string)
+        })
+
+    const runningEvent: Event | null = running_event ? {
+        ...running_event as Event,
+        _id: running_event._id.toString(),
+        school_id: running_event.school_id?.toString?.(),
+    } : null
+
+    // Get user's group_id from user_school collection
+    const userSchool = await db.collection('user_school').findOne({
+        user_id: new ObjectId(token?.user_id as string),
+        school_id: new ObjectId(school_id as string)
+    })
+    const userGroupId = userSchool?.group_id?.toString()
+
 
 
 
     return (
         <Layout className="min-h-screen">
             <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+
+            {/* Show duty roster for running event */}
+            {runningEvent && (
+                <DutyRosterDisplay event={runningEvent} userGroupId={userGroupId} />
+            )}
 
             {/* Show feedback forms for events ending today */}
             {events_ending_today.map(event => (
