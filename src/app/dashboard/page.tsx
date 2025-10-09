@@ -11,15 +11,15 @@ import {ObjectId} from "mongodb";
 import dayjs from "dayjs";
 
 export default async function AdminDashboardPage() {
+    const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
+    const school_id = token?.school_id
+
     let report = null
     try {
-        report = await getReport('next')
+        report = await getReport('next', school_id as string)
     } catch (err) {
         console.error('Chyba pri načítaní reportu:', err)
     }
-
-    const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
-    const school_id = token?.school_id
 
     // Find events ending today that have feedback URLs
     const db = await connectToDatabase()
@@ -27,27 +27,32 @@ export default async function AdminDashboardPage() {
     const tomorrow = dayjs().add(1, 'day').startOf('day').toDate()
     
     const events_ending_today = await db.collection<Event>('events')
-        .find({ 
+        .find({
             endDate: { $gte: today, $lt: tomorrow },
             school_id: new ObjectId(school_id as string),
-            feedbackUrl: { $exists: true, $ne: null, $ne: '' }
+            feedbackUrl: { $exists: true, $nin: [null, ''] }
         })
-        .project({ school_id: 0 })
         .toArray()
+
+    const serializedEndingEvents = events_ending_today.map(event => ({
+        ...event,
+        _id: event._id.toString(),
+        school_id: event.school_id?.toString(),
+        created: event.created instanceof Date ? event.created.toISOString() : event.created,
+        updated: event.updated instanceof Date ? event.updated.toISOString() : event.updated,
+        startDate: event.startDate instanceof Date ? event.startDate.toISOString() : event.startDate,
+        endDate: event.endDate instanceof Date ? event.endDate.toISOString() : event.endDate,
+    }))
 
     if (!report) {
         return (
             <Layout className="min-h-screen p-8">
                 <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
                     {/* Show feedback forms for events ending today */}
-                    {events_ending_today.map(event => (
-                        <FeedbackDisplay 
-                            key={event._id.toString()}
-                            event={{
-                                ...event,
-                                _id: event._id.toString(),
-                                school_id: event.school_id?.toString()
-                            }}
+                    {serializedEndingEvents.map(event => (
+                        <FeedbackDisplay
+                            key={event._id}
+                            event={event}
                             showAlways={true}
                         />
                     ))}
@@ -63,14 +68,10 @@ export default async function AdminDashboardPage() {
         <Layout className="min-h-screen">
             <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
                 {/* Show feedback forms for events ending today */}
-                {events_ending_today.map(event => (
-                    <FeedbackDisplay 
-                        key={event._id.toString()}
-                        event={{
-                            ...event,
-                            _id: event._id.toString(),
-                            school_id: event.school_id?.toString()
-                        }}
+                {serializedEndingEvents.map(event => (
+                    <FeedbackDisplay
+                        key={event._id}
+                        event={event}
                         showAlways={true}
                     />
                 ))}

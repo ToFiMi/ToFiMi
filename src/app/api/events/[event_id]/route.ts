@@ -4,7 +4,8 @@ import { connectToDatabase } from '@/lib/mongo'
 
 export async function PUT(req: NextRequest, { params }: { params: { event_id: string } }) {
     const { event_id } = params
-    const { instructions, worksheet_id, feedbackUrl, sheetsUrl } = await req.json()
+    const body = await req.json()
+    const { instructions, worksheet_id, feedbackUrl, sheetsUrl, title, description, startDate, endDate, grade, meals, homeworkTypes } = body
 
     if (!ObjectId.isValid(event_id)) {
         return NextResponse.json({ error: 'Neplatné event ID' }, { status: 400 })
@@ -19,6 +20,15 @@ export async function PUT(req: NextRequest, { params }: { params: { event_id: st
     }
     if (feedbackUrl !== undefined) updateFields.feedbackUrl = feedbackUrl
     if (sheetsUrl !== undefined) updateFields.sheetsUrl = sheetsUrl
+    if (title !== undefined) updateFields.title = title
+    if (description !== undefined) updateFields.description = description
+    if (startDate !== undefined) updateFields.startDate = new Date(startDate)
+    if (endDate !== undefined) updateFields.endDate = new Date(endDate)
+    if (grade !== undefined) updateFields.grade = grade
+    if (meals !== undefined) updateFields.meals = meals
+    if (homeworkTypes !== undefined) updateFields.homeworkTypes = homeworkTypes
+
+    updateFields.updated = new Date()
 
     const result = await db.collection('events').updateOne(
         { _id: new ObjectId(event_id) },

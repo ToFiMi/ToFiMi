@@ -14,9 +14,13 @@ import dayjs from "dayjs";
 export default async function UsersDashboardPage() {
     const db = await connectToDatabase()
     const now = new Date()
+    now.setHours(0, 0, 0, 0) // Start of today
 
     const token = await getToken({req: {cookies: await cookies()} as any, secret: process.env.NEXTAUTH_SECRET})
     const school_id = token?.school_id
+
+    console.log('UsersDashboard - school_id:', school_id)
+    console.log('UsersDashboard - now (start of day):', now)
 
     const last_event = await db.collection<Event>('events')
         .find({ endDate: { $lt: now }, school_id: new ObjectId(school_id as string) })
@@ -24,11 +28,17 @@ export default async function UsersDashboardPage() {
         .limit(1)
         .project({ school_id: 0 })
         .toArray()
+
     const next_event = await db.collection<Event>("events")
-        .find({ startDate: { $gte: now },school_id: new ObjectId(school_id as string) })
+        .find({ endDate: { $gte: now }, school_id: new ObjectId(school_id as string) })
         .sort({ startDate: 1 })
         .limit(1)
         .toArray()
+
+    console.log('UsersDashboard - found next_event:', next_event.length)
+    if (next_event.length > 0) {
+        console.log('UsersDashboard - event:', next_event[0].title, 'endDate:', next_event[0].endDate)
+    }
 
     // Find events ending today that have feedback URLs
     const today = dayjs().startOf('day').toDate()
@@ -46,11 +56,11 @@ export default async function UsersDashboardPage() {
 
 
     const event = next_event?.[0] || null
-    const next: Event | null = {
+    const next: Event | null = event ? {
         ...event as Event,
-        _id: event?._id.toString(),
-        school_id: event?.school_id?.toString?.(),
-    }
+        _id: event._id.toString(),
+        school_id: event.school_id?.toString?.(),
+    } : null
 
 
 

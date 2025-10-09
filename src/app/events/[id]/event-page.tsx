@@ -4,8 +4,10 @@ import { Card, Typography, Divider, Select, Button, message, Input } from "antd"
 import { Event } from "@/models/events";
 import { FeedbackDisplay } from "@/components/feedback-display";
 import { FeedbackModal } from "@/components/feedback-modal";
+import EventDialog from "@/components/event-dialog";
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
+import { EditOutlined } from "@ant-design/icons";
 
 const { Title, Paragraph } = Typography;
 
@@ -23,6 +25,7 @@ export function EventPage({ event, userRole }: { event: Event; userRole?: string
     const [sheetsUrl, setSheetsUrl] = useState<string>(event.sheetsUrl || '');
     const [loading, setLoading] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     useEffect(() => {
         if (userRole === 'leader' || userRole === 'animator') {
@@ -126,7 +129,17 @@ export function EventPage({ event, userRole }: { event: Event; userRole?: string
         <>
             <div className="p-6 max-w-3xl mx-auto">
                 <Card>
-                    <Title level={2}>{event.title}</Title>
+                    <div className="flex justify-between items-start">
+                        <Title level={2}>{event.title}</Title>
+                        {(userRole === 'leader' || userRole === 'animator' || userRole === 'ADMIN') && (
+                            <Button
+                                icon={<EditOutlined />}
+                                onClick={() => setEditDialogOpen(true)}
+                            >
+                                Upraviť termín
+                            </Button>
+                        )}
+                    </div>
                     <Divider />
                     <Paragraph>
                         <strong>Dátum od:</strong> {dayjs(event.startDate).format("DD.MM.YYYY")}
@@ -248,12 +261,24 @@ export function EventPage({ event, userRole }: { event: Event; userRole?: string
                 </Card>
             </div>
             <FeedbackDisplay event={event} />
-            <FeedbackModal 
+            <FeedbackModal
                 event={event}
                 isOpen={showPreview}
                 onClose={() => setShowPreview(false)}
                 isPreview={true}
             />
+            {(userRole === 'leader' || userRole === 'animator' || userRole === 'ADMIN') && (
+                <EventDialog
+                    open={editDialogOpen}
+                    onClose={() => setEditDialogOpen(false)}
+                    onSuccess={() => {
+                        setEditDialogOpen(false);
+                        window.location.reload();
+                    }}
+                    schoolId={event.school_id?.toString() || ''}
+                    editingEvent={event}
+                />
+            )}
         </>
     );
 }

@@ -111,7 +111,7 @@ export const RegistrationCard = ({next_event, userRole}: { next_event: Event | n
         <>
             <Card title={next_event?.title} variant="borderless">
                 {!next_event ? (
-                    "Neni víkend"
+                    "Žiaden ďalši víkend"
                 ) : isFetching ? (
                     <span>Načítavam...</span>
                 ) : (

@@ -22,18 +22,33 @@ export async function GET(req: NextRequest, { params }: { params: { event_id: st
 
 
 
-export async function getReport(event_id: string) {
+export async function getReport(event_id: string, school_id?: string) {
     const db = await connectToDatabase()
 
     let event
 
     if (!event_id || event_id === 'next') {
         const now = new Date()
+        now.setHours(0, 0, 0, 0) // Start of today
+        const query: any = { endDate: { $gte: now } }
+
+        if (school_id) {
+            query.school_id = new ObjectId(school_id)
+        }
+
+        console.log('Query for next event:', JSON.stringify(query))
+        console.log('Current date (start of day):', now)
+
         const next_event = await db.collection('events')
-            .find({ startDate: { $gte: now } })
+            .find(query)
             .sort({ startDate: 1 })
             .limit(1)
             .toArray()
+
+        console.log('Found events:', next_event.length)
+        if (next_event.length > 0) {
+            console.log('Event found:', next_event[0].title, 'End date:', next_event[0].endDate)
+        }
 
          if (!next_event.length) return null
         event = next_event[0]

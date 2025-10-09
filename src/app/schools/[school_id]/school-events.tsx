@@ -32,7 +32,6 @@ export default function SchoolEvents({ schoolId }: { schoolId: string }) {
     const [editingEvent, setEditingEvent] = useState<Event | null>(null)
     const [form] = Form.useForm()
     const dateRange: Dayjs[] | null = Form.useWatch('dateRange', form);
-    const [homeworkTypes, setHomeworkTypes] = useState<{id: string, name: string, description?: string, required: boolean, dueDate?: Date}[]>([])
     const [worksheetModalOpen, setWorksheetModalOpen] = useState(false)
     const [availableWorksheets, setAvailableWorksheets] = useState<any[]>([])
 
