@@ -65,6 +65,12 @@ export default function DutyRosterDisplay({
     const fetchData = async () => {
         setLoading(true)
         try {
+            if (!event.school_id || !event._id) {
+                console.warn('Missing school_id or event._id, skipping duty roster fetch')
+                setLoading(false)
+                return
+            }
+
             const [dutyTypesRes, groupsRes, assignmentsRes] = await Promise.all([
                 fetch(`/api/schools/${event.school_id}/duty-types`),
                 fetch(`/api/schools/${event.school_id}/groups`),
@@ -73,17 +79,17 @@ export default function DutyRosterDisplay({
 
             if (dutyTypesRes.ok) {
                 const data = await dutyTypesRes.json()
-                setDutyTypes(data)
+                setDutyTypes(Array.isArray(data) ? data : [])
             }
 
             if (groupsRes.ok) {
                 const data = await groupsRes.json()
-                setGroups(data)
+                setGroups(Array.isArray(data) ? data : [])
             }
 
             if (assignmentsRes.ok) {
                 const data = await assignmentsRes.json()
-                setAssignments(data)
+                setAssignments(Array.isArray(data) ? data : [])
             }
         } catch (err) {
             console.error(err)

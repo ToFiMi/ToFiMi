@@ -17,7 +17,7 @@ export default async function AdminDashboardPage() {
 
     let report = null
     try {
-        report = await getReport('next', school_id as string)
+        report = await getReport('next', school_id as string | undefined)
     } catch (err) {
         console.error('Chyba pri načítaní reportu:', err)
     }

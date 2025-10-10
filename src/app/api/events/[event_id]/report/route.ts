@@ -32,7 +32,7 @@ export async function getReport(event_id: string, school_id?: string) {
         now.setHours(0, 0, 0, 0) // Start of today
         const query: any = { endDate: { $gte: now } }
 
-        if (school_id) {
+        if (school_id && school_id !== 'undefined') {
             query.school_id = new ObjectId(school_id)
         }
 
