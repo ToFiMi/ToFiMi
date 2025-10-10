@@ -141,7 +141,7 @@ export default function UsersPageClient({
             if (res.ok) {
                 const data = await res.json()
                 // Open impersonation in new window/tab
-                window.open(data.impersonateUrl, '_blank')
+                window.open(data.impersonateUrl)
                 message.success(`Impersonácia spustená pre ${member.user.first_name} ${member.user.last_name}`)
             } else {
                 const err = await res.text()
