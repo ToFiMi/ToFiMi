@@ -1,7 +1,7 @@
 'use client'
 
-import {Breadcrumb, Button, ConfigProvider, Grid, Layout, Menu} from 'antd'
-import {LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons'
+import {Breadcrumb, Button, ConfigProvider, Grid, Layout, Menu, Alert, Space} from 'antd'
+import {LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, EyeOutlined} from '@ant-design/icons'
 import Link from 'next/link'
 import {signOut, useSession} from 'next-auth/react'
 import {useLayoutEffect, useState, useMemo, useEffect} from 'react'
@@ -57,6 +57,31 @@ export default function AppMenu({ children }: Props) {
             router.push('/')
             router.refresh()
         })
+    }
+
+    const [exitingImpersonation, setExitingImpersonation] = useState(false)
+
+    const handleExitImpersonation = async () => {
+        setExitingImpersonation(true)
+        try {
+            const res = await fetch('/api/admin/stop-impersonate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                window.location.href = data.redirectUrl || '/dashboard'
+            } else {
+                console.error('Failed to stop impersonation')
+                alert('Nepodarilo sa ukončiť režim náhľadu')
+                setExitingImpersonation(false)
+            }
+        } catch (error) {
+            console.error('Error stopping impersonation:', error)
+            alert('Chyba pri ukončovaní režimu náhľadu')
+            setExitingImpersonation(false)
+        }
     }
 
 
@@ -157,6 +182,37 @@ export default function AppMenu({ children }: Props) {
             </Sider>
 
             <Layout style={{ marginLeft: collapsed ? 0 : 220, transition: 'margin-left 0.2s' }}>
+                {session?.user?.isImpersonating && (
+                    <Alert
+                        message={
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                                <Space size="small">
+                                    <EyeOutlined />
+                                    <span>
+                                        <strong>Režim náhľadu:</strong> Prezeráte ako {session.user.email}
+                                    </span>
+                                </Space>
+                                <Button
+                                    type="primary"
+                                    size="small"
+                                    icon={<LogoutOutlined />}
+                                    onClick={handleExitImpersonation}
+                                    loading={exitingImpersonation}
+                                >
+                                    Ukončiť náhľad
+                                </Button>
+                            </div>
+                        }
+                        type="warning"
+                        banner
+                        style={{
+                            borderRadius: 0,
+                            borderLeft: 0,
+                            borderRight: 0,
+                            borderTop: 0
+                        }}
+                    />
+                )}
                 <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', height: 64, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                     {collapsed && (
                         <Button icon={<MenuUnfoldOutlined />} type="text" onClick={() => setCollapsed(false)} />

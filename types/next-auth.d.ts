@@ -10,6 +10,9 @@ declare module "next-auth" {
             school_id?: string | null
             isAdmin?: boolean
             school_choices: any[]
+            isImpersonating?: boolean
+            originalAdminId?: string
+            impersonatedUserId?: string
         } & DefaultSession["user"]
     }
 
@@ -21,6 +24,9 @@ declare module "next-auth" {
         isAdmin?: boolean
         email: string
         school_choices: any[]
+        isImpersonating?: boolean
+        originalAdminId?: string
+        impersonatedUserId?: string
     }
 }
 
@@ -32,5 +38,8 @@ declare module "next-auth/jwt" {
         school_id?: string | null
         isAdmin?: boolean
         email?: string
+        isImpersonating?: boolean
+        originalAdminId?: string
+        impersonatedUserId?: string
     }
 }

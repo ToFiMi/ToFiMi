@@ -17,9 +17,68 @@ export const authOptions: AuthOptions = {
             },
             // @ts-ignore
             async authorize(credentials) {
+                const db = await connectToDatabase()
+
+                // @ts-ignore - Handle impersonation
+                if (credentials?.impersonation_token) {
+                    // Verify impersonation token
+                    try {
+                        const jose = await import('jose')
+                        const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET)
+                        const { payload } = await jose.jwtVerify(credentials.impersonation_token, secret)
+
+                        if (!payload.isImpersonating || !payload.originalAdminId) {
+                            return null
+                        }
+
+                        // Return impersonation user data
+                        return {
+                            id: payload.id as string,
+                            user_id: payload.user_id as string,
+                            school_id: payload.school_id as string,
+                            email: payload.email as string,
+                            role: payload.role as 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR',
+                            isActive: payload.isActive as boolean,
+                            isAdmin: false,
+                            isImpersonating: true,
+                            originalAdminId: payload.originalAdminId as string,
+                            impersonatedUserId: payload.impersonatedUserId as string,
+                            school_choices: []
+                        }
+                    } catch (error) {
+                        console.error('Invalid impersonation token:', error)
+                        return null
+                    }
+                }
+
+                // @ts-ignore - Handle restoration (exit impersonation)
+                if (credentials?.restoration_token) {
+                    // Verify restoration token
+                    try {
+                        const jose = await import('jose')
+                        const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET)
+                        const { payload } = await jose.jwtVerify(credentials.restoration_token, secret)
+
+                        // Return admin user data
+                        return {
+                            id: payload.id as string,
+                            user_id: payload.user_id as string || null,
+                            school_id: payload.school_id as string || null,
+                            email: payload.email as string,
+                            role: payload.role as 'ADMIN' | 'USER' | 'LEADER' | 'ANIMATOR' || null,
+                            isActive: payload.isActive as boolean,
+                            isAdmin: payload.isAdmin as boolean,
+                            school_choices: payload.school_choices as any[] || []
+                        }
+                    } catch (error) {
+                        console.error('Invalid restoration token:', error)
+                        return null
+                    }
+                }
+
+                // Regular login - require email and password
                 if (!credentials?.email || !credentials.password) return null
 
-                const db = await connectToDatabase()
                 const user = await db.collection('users').findOne({ email: credentials.email })
                 if (!user) return null
 
@@ -140,8 +199,15 @@ export const authOptions: AuthOptions = {
                 token.user_id = user.user_id ?? null
                 token.school_id = user.school_id ?? null
                 token.school_choices = user.school_choices ?? []
-            } else if (token.user_id && token.school_id) {
+                // @ts-ignore
+                token.isImpersonating = user.isImpersonating ?? false
+                // @ts-ignore
+                token.originalAdminId = user.originalAdminId ?? null
+                // @ts-ignore
+                token.impersonatedUserId = user.impersonatedUserId ?? null
+            } else if (token.user_id && token.school_id && !token.isImpersonating) {
                 // On subsequent requests, refresh role and active status from database
+                // Skip refresh for impersonating sessions to preserve original state
                 try {
                     const db = await connectToDatabase()
                     const userSchool = await db.collection('user_school').findOne({
@@ -175,7 +241,13 @@ export const authOptions: AuthOptions = {
                 // @ts-ignore
                 role: token.role,
                 // @ts-ignore
-                school_choices: token.school_choices ?? []
+                school_choices: token.school_choices ?? [],
+                // @ts-ignore
+                isImpersonating: token.isImpersonating ?? false,
+                // @ts-ignore
+                originalAdminId: token.originalAdminId,
+                // @ts-ignore
+                impersonatedUserId: token.impersonatedUserId
             }
             return session
         }

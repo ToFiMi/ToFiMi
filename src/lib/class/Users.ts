@@ -42,7 +42,7 @@ export class Users {
                 },
                 {
                     $project: {
-                        _id: 0,
+                        _id: 1,
                         school_id: 1,
                         user_id: 1,
                         group_id: 1,
@@ -140,8 +140,9 @@ export class Users {
         const results = await this.db.collection('users').aggregate(pipeline).toArray()
 
         return results.map((record: any) => ({
-            _id: record._id.toString(),
-            role: record.role || (record.isAdmin ? 'admin' : 'user'),
+            _id: record.user_school?._id?.toString() || record._id.toString(),
+            user_id: record._id.toString(),
+            role: record.user_school?.role || (record.isAdmin ? 'admin' : 'user'),
             user: {
                 first_name: record.first_name,
                 last_name: record.last_name,

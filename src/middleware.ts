@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { ROUTES_BY_ROLE } from '@/config/routes'
 
-const PUBLIC_PATHS = ['/', '/api/public', '/favicon.ico']
+const PUBLIC_PATHS = ['/', '/api/public', '/favicon.ico', '/impersonate', '/restore-session']
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
@@ -42,6 +42,13 @@ export async function middleware(req: NextRequest) {
     if (token.school_id) {
         res.headers.set('x-school-id', token.school_id as string)
         res.headers.set('x-user-school-id', token.user_id as string)
+    }
+
+    // Add impersonation headers
+    if (token.isImpersonating) {
+        res.headers.set('x-is-impersonating', 'true')
+        res.headers.set('x-original-admin-id', token.originalAdminId as string)
+        res.headers.set('x-impersonated-user-id', token.impersonatedUserId as string)
     }
 
     return res

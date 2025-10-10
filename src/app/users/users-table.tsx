@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from 'react'
 import {Button, Card, Form, Input, message, Modal, Select, Table, Tag, Typography, Space, Grid} from 'antd'
-import {EyeOutlined, UserOutlined, MailOutlined} from '@ant-design/icons'
+import {EyeOutlined, UserOutlined, MailOutlined, UserSwitchOutlined} from '@ant-design/icons'
 import {School} from "@/models/school";
 import UserOverviewCard from "@/components/user-overview-card";
 
@@ -121,6 +121,38 @@ export default function UsersPageClient({
         }
     }
 
+    const handleImpersonate = async (member: Member) => {
+        if (!member._id || !member.user_id) {
+            message.error('Neplatný používateľ')
+            return
+        }
+
+        try {
+            const res = await fetch('/api/admin/impersonate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    targetUserId: member.user_id,
+                    targetUserSchoolId: member._id.toString()
+                })
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                // Open impersonation in new window/tab
+                window.open(data.impersonateUrl, '_blank')
+                message.success(`Impersonácia spustená pre ${member.user.first_name} ${member.user.last_name}`)
+            } else {
+                const err = await res.text()
+                message.error(`Chyba: ${err}`)
+            }
+        } catch (e) {
+            console.error(e)
+            message.error('Nepodarilo sa spustiť impersonáciu')
+        }
+    }
+
     const renderMobileCards = () => {
         if (loading) {
             return (
@@ -232,6 +264,21 @@ export default function UsersPageClient({
                                                 Prehľad
                                             </Button>
                                         )}
+                                        {(isAdmin || userRole === "leader") && member.role !== 'inactive' && (
+                                            <Button
+                                                type="default"
+                                                size="small"
+                                                icon={<UserSwitchOutlined />}
+                                                onClick={() => handleImpersonate(member)}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '32px',
+                                                    fontSize: '11px'
+                                                }}
+                                            >
+                                                Náhľad ako
+                                            </Button>
+                                        )}
                                         {(isAdmin || userRole === "leader") && (
                                             <Button
                                                 danger
@@ -302,6 +349,16 @@ export default function UsersPageClient({
                             onClick={() => setUserOverviewModal({ visible: true, userId: record.user_id || '' })}
                             >
                                 Prehľad
+                            </Button>
+                        )}
+                        {(isAdmin || userRole === "leader") && record.role !== 'inactive' && (
+                            <Button
+                                type="default"
+                                size="small"
+                                icon={<UserSwitchOutlined />}
+                                onClick={() => handleImpersonate(record)}
+                            >
+                                Náhľad ako
                             </Button>
                         )}
                         {(isAdmin || userRole === "leader") && (
