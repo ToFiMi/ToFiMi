@@ -140,9 +140,8 @@ export default function UsersPageClient({
 
             if (res.ok) {
                 const data = await res.json()
-                // Open impersonation in new window/tab
-                window.open(data.impersonateUrl)
-                message.success(`Impersonácia spustená pre ${member.user.first_name} ${member.user.last_name}`)
+                // Navigate to impersonation in current window (works better for PWA and mobile)
+                window.location.href = data.impersonateUrl
             } else {
                 const err = await res.text()
                 message.error(`Chyba: ${err}`)
