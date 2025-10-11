@@ -40,7 +40,8 @@ export default function EventDialog({ open, onClose, onSuccess, schoolId, editin
         { id: 'text-essay', name: 'Textová esej', description: 'Písomná esejová úloha' },
         { id: 'project', name: 'Projekt', description: 'Projektová práca' },
         { id: 'evangelist-discussion', name: 'Evanjelijový rozhovor', description: 'Diskusia o evanjelizácii' },
-        { id: 'testimony', name: 'Svedectvo', description: 'Zdieľanie osobného svedectva' }
+        { id: 'testimony', name: 'Svedectvo', description: 'Zdieľanie osobného svedectva' },
+        { id: 'worksheet', name: 'Pracovný list', description: 'Vyplnenie pracovného listu' }
     ]
 
     useEffect(() => {
@@ -101,12 +102,17 @@ export default function EventDialog({ open, onClose, onSuccess, schoolId, editin
 
     const fetchAvailableWorksheets = async () => {
         try {
+            // For admins, we can fetch all worksheets regardless of school
+            // For leaders/animators, they'll see worksheets from their school
             const response = await fetch('/api/worksheets/library', {
                 credentials: 'include'
             })
             if (response.ok) {
                 const data = await response.json()
+                console.log('Available worksheets:', data) // Debug log
                 setAvailableWorksheets(data)
+            } else {
+                console.error('Failed to fetch worksheets:', response.status, response.statusText)
             }
         } catch (error) {
             console.error('Error fetching worksheets:', error)
@@ -125,7 +131,8 @@ export default function EventDialog({ open, onClose, onSuccess, schoolId, editin
             name: hw.name,
             description: hw.description,
             required: hw.required || false,
-            dueDate: hw.dueDate ? hw.dueDate.toISOString() : undefined
+            dueDate: hw.dueDate ? hw.dueDate.toISOString() : undefined,
+            worksheet_id: hw.worksheet_id || undefined
         }))
 
         const url = editingEvent
@@ -289,6 +296,35 @@ export default function EventDialog({ open, onClose, onSuccess, schoolId, editin
                                             label="Termín odovzdania (voliteľné)"
                                         >
                                             <DatePicker style={{ width: '100%' }} />
+                                        </Form.Item>
+
+                                        {/* Show worksheet selector if type is 'worksheet' */}
+                                        <Form.Item noStyle shouldUpdate={(prevValues, currentValues) =>
+                                            prevValues.homeworkTypes?.[name]?.id !== currentValues.homeworkTypes?.[name]?.id
+                                        }>
+                                            {({ getFieldValue }) => {
+                                                const currentType = getFieldValue(['homeworkTypes', name, 'id'])
+                                                return currentType === 'worksheet' ? (
+                                                    <Form.Item
+                                                        {...restField}
+                                                        name={[name, 'worksheet_id']}
+                                                        label="Vyberte pracovný list"
+                                                        rules={[{ required: true, message: 'Vyberte pracovný list' }]}
+                                                    >
+                                                        <Select
+                                                            placeholder="Vyberte existujúci pracovný list"
+                                                            options={availableWorksheets.map(worksheet => ({
+                                                                value: worksheet._id,
+                                                                label: `${worksheet.title} ${worksheet.school_name ? `(${worksheet.school_name})` : ''}${worksheet.is_template ? ' [Šablóna]' : ''}`,
+                                                            }))}
+                                                            showSearch
+                                                            filterOption={(input, option) =>
+                                                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                            }
+                                                        />
+                                                    </Form.Item>
+                                                ) : null
+                                            }}
                                         </Form.Item>
                                     </Space>
                                 </Card>

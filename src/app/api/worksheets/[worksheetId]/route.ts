@@ -6,12 +6,12 @@ import { Worksheet } from '@/models/worksheet'
 
 // Get single worksheet
 export async function GET(req: NextRequest, { params }: { params: { worksheetId: string } }) {
-    const authResult = await requireAuth(req, ['ADMIN', 'leader', 'animator'])
+    const authResult = await requireAuth(req, ['ADMIN', 'leader', 'animator', 'user'])
     if (authResult instanceof NextResponse) return authResult
-    
+
     const { auth } = authResult
     const db = await connectToDatabase()
-    
+
     try {
         const worksheetId = params.worksheetId
 
@@ -21,6 +21,14 @@ export async function GET(req: NextRequest, { params }: { params: { worksheetId:
 
         if (!worksheet) {
             return new NextResponse('Worksheet not found', { status: 404 })
+        }
+
+        // Users can only view worksheets from their own school
+        // Admins, leaders, and animators can view all worksheets
+        if (auth.role === 'user') {
+            if (!auth.schoolId || worksheet.school_id.toString() !== auth.schoolId) {
+                return new NextResponse('Forbidden - insufficient permissions', { status: 403 })
+            }
         }
 
         return NextResponse.json(worksheet)

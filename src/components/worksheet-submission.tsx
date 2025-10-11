@@ -22,10 +22,11 @@ const { Title, Text } = Typography
 
 interface WorksheetSubmissionProps {
     eventId: string
+    worksheetId?: string // Optional - for homework worksheets
     onSubmit?: () => void
 }
 
-export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubmissionProps) {
+export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: WorksheetSubmissionProps) {
     const [form] = Form.useForm()
     const [worksheet, setWorksheet] = useState<Worksheet | null>(null)
     const [loading, setLoading] = useState(false)
@@ -35,15 +36,20 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
     useEffect(() => {
         fetchWorksheet()
         checkExistingSubmission()
-    }, [eventId])
+    }, [eventId, worksheetId])
 
     const fetchWorksheet = async () => {
         setLoading(true)
         try {
-            const response = await fetch(`/api/worksheets?event_id=${eventId}`, {
+            // If worksheetId is provided, fetch by worksheet_id, otherwise by event_id
+            const url = worksheetId
+                ? `/api/worksheets/${worksheetId}`
+                : `/api/worksheets?event_id=${eventId}`
+
+            const response = await fetch(url, {
                 credentials: 'include'
             })
-            
+
             if (response.ok) {
                 const data = await response.json()
                 setWorksheet(data)
@@ -56,7 +62,13 @@ export default function WorksheetSubmission({ eventId, onSubmit }: WorksheetSubm
 
     const checkExistingSubmission = async () => {
         try {
-            const response = await fetch(`/api/worksheets/submissions?event_id=${eventId}`, {
+            // Check submission by event_id and worksheet_id if provided
+            const params = new URLSearchParams({ event_id: eventId })
+            if (worksheetId) {
+                params.append('worksheet_id', worksheetId)
+            }
+
+            const response = await fetch(`/api/worksheets/submissions?${params.toString()}`, {
                 credentials: 'include'
             })
             

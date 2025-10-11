@@ -178,6 +178,28 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
         }
     }
 
+    const handleManualAttendance = async (eventId: string, attended: boolean) => {
+        try {
+            const response = await fetch('/api/attendance/manual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, eventId, attended }),
+                credentials: 'include'
+            })
+
+            if (response.ok) {
+                message.success(`Účasť ${attended ? 'označená' : 'odobraná'}`)
+                fetchUserData() // Refresh data
+            } else {
+                const error = await response.text()
+                message.error(error || 'Chyba pri manuálnej registrácii')
+            }
+        } catch (error) {
+            console.error('Error with manual attendance:', error)
+            message.error('Chyba pri komunikácii so serverom')
+        }
+    }
+
     const getAttendanceIcon = (attendance: EventData['attendance']) => {
         if (!attendance.registered) {
             return <Tooltip title="Nezaregistrovaný"><CloseCircleOutlined style={{ color: '#ff4d4f' }} /></Tooltip>
@@ -360,7 +382,7 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
         {
             title: 'Účasť',
             key: 'attendance',
-            width: 120,
+            width: 150,
             align: 'center' as const,
             render: (_: any, record: EventData) => (
                 <Space direction="vertical" size={2} style={{ textAlign: 'center' }}>
@@ -374,6 +396,20 @@ export default function UserOverviewCard({ userId, visible, onClose, currentUser
                             checkedChildren="✓"
                             unCheckedChildren="✗"
                         />
+                    )}
+                    {/* Show manual attendance button for unregistered users */}
+                    {!record.attendance.registered && (
+                        <Popconfirm
+                            title="Označiť účasť?"
+                            description="Vytvoríte manuálnu registráciu a označíte účastníka ako prítomného."
+                            onConfirm={() => handleManualAttendance(record._id, true)}
+                            okText="Áno"
+                            cancelText="Nie"
+                        >
+                            <Button type="primary" size="small">
+                                Označiť účasť
+                            </Button>
+                        </Popconfirm>
                     )}
                 </Space>
             )

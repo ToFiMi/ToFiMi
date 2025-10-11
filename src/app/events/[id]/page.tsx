@@ -219,6 +219,7 @@ export default async function EventDetailPage({ params }: Params) {
             {role === "user" && !shouldShowWorksheet && (
                 <HomeworkUserPage
                     homework={serializedHomework}
+                    event={serializedEvent}
                     event_id={eventId.toString()}
                     event_name={event.title}
                 />

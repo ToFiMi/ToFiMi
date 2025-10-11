@@ -9,6 +9,7 @@ import {cookies} from "next/headers";
 import {ObjectId} from "mongodb";
 import dayjs from "dayjs";
 import DutyRosterDisplay from "@/components/duty-roster-display";
+import HomeworkDashboard from "@/components/homework-dashboard";
 
 
 export default async function UsersDashboardPage() {
@@ -104,6 +105,9 @@ export default async function UsersDashboardPage() {
             showAlways={true}
           />
         ))}
+
+        {/* Show pending homework assignments */}
+        <HomeworkDashboard />
 
         <DailyReflection
           last_event={last_event[0] ? {...last_event[0] as Event, _id: last_event[0]._id.toString()} : null}

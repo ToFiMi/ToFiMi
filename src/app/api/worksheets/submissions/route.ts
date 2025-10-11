@@ -88,14 +88,20 @@ export async function GET(req: NextRequest) {
     try {
         const url = new URL(req.url)
         const eventId = url.searchParams.get('event_id')
+        const worksheetId = url.searchParams.get('worksheet_id')
         const userId = url.searchParams.get('user_id')
-        
+
         if (!eventId) {
             return new NextResponse('Missing event_id parameter', { status: 400 })
         }
 
         const query: any = { event_id: new ObjectId(eventId) }
-        
+
+        // If worksheet_id is provided, filter by it (for homework worksheets)
+        if (worksheetId) {
+            query.worksheet_id = new ObjectId(worksheetId)
+        }
+
         // If user_id is provided and user is admin/leader/animator, get that user's submission
         // Otherwise, get current user's submission
         if (userId && ['ADMIN', 'leader', 'animator'].includes(auth.role)) {

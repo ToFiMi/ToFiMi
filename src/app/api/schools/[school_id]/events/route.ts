@@ -50,7 +50,14 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
         endDate: new Date(endDate),
         grade,
         meals: meals || [],
-        homeworkTypes: homeworkTypes || [],
+        homeworkTypes: (homeworkTypes || []).map((hw: any) => ({
+            id: hw.id,
+            name: hw.name,
+            description: hw.description,
+            required: hw.required || false,
+            dueDate: hw.dueDate ? new Date(hw.dueDate) : undefined,
+            worksheet_id: hw.worksheet_id ? new ObjectId(hw.worksheet_id) : undefined
+        })),
         created: now,
         updated: now,
     }

@@ -10,18 +10,19 @@ export async function GET(req: NextRequest) {
 
     const db = await connectToDatabase()
     const eventId = req.nextUrl.searchParams.get('event_id')
-    
+
     if (!eventId) {
         return new NextResponse('Missing event_id parameter', { status: 400 })
     }
 
     try {
-        const homework = await db.collection<Homework>('homeworks').findOne({
+        // Return all homeworks for this event and user
+        const homeworks = await db.collection<Homework>('homeworks').find({
             event_id: new ObjectId(eventId),
             user_id: new ObjectId(token.id)
-        })
+        }).toArray()
 
-        return NextResponse.json(homework)
+        return NextResponse.json(homeworks)
     } catch (error) {
         console.error('Error fetching homework:', error)
         return new NextResponse('Internal server error', { status: 500 })
@@ -71,30 +72,27 @@ export async function PUT(req: NextRequest) {
     if (!token) return new NextResponse('Unauthorized', { status: 401 })
 
     const db = await connectToDatabase()
-    
+
     try {
         const body = await req.json()
         const { content, event_id, homework_type_id } = body
 
-        if (!content || !event_id) {
+        if (!content || !event_id || !homework_type_id) {
             return new NextResponse('Missing required fields', { status: 400 })
         }
 
-        const updateData: any = { 
+        const updateData: any = {
             content,
             updated: new Date()
         }
-        
-        if (homework_type_id) {
-            updateData.homework_type_id = homework_type_id
-        }
 
         const result = await db.collection<Homework>('homeworks').updateOne(
-            { 
+            {
                 event_id: new ObjectId(event_id),
-                user_id: new ObjectId(token.id)
+                user_id: new ObjectId(token.id),
+                homework_type_id: homework_type_id
             },
-            { 
+            {
                 $set: updateData
             }
         )
