@@ -25,11 +25,11 @@ export default async function AdminDashboardPage() {
     // Find events ending today that have feedback URLs
     const db = await connectToDatabase()
     const today = dayjs().startOf('day').toDate()
-    const tomorrow = dayjs().add(1, 'day').startOf('day').toDate()
+    const endOfToday = dayjs().endOf('day').toDate()
 
     // Build query based on whether school_id is available
     const endingEventsQuery: any = {
-        endDate: { $gte: today, $lt: tomorrow },
+        endDate: { $gte: today, $lte: endOfToday },
         feedbackUrl: { $exists: true, $nin: [null, ''] }
     }
     if (school_id) {
@@ -48,6 +48,8 @@ export default async function AdminDashboardPage() {
         updated: event.updated instanceof Date ? event.updated.toISOString() : event.updated,
         startDate: event.startDate instanceof Date ? event.startDate.toISOString() : event.startDate,
         endDate: event.endDate instanceof Date ? event.endDate.toISOString() : event.endDate,
+        meals: event.meals || [],
+        homeworkTypes: event.homeworkTypes || [],
     }))
 
     // Check for currently running event (today is between startDate and endDate)
