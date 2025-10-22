@@ -40,6 +40,7 @@ ENV PORT=3000
 ENV NEXT_TELEMETRY_DISABLED=1
 # Ensure the server binds to all interfaces inside the container
 ENV HOSTNAME=0.0.0.0
+ENV TZ=Europe/Bratislava
 
 # Create a non-root user for security
 RUN addgroup -g 1001 -S nodejs \
