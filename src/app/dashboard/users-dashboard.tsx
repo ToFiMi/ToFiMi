@@ -107,7 +107,10 @@ export default async function UsersDashboardPage() {
         ))}
 
         {/* Show pending homework assignments */}
-        <HomeworkDashboard />
+        {token.role === "user" &&
+           <HomeworkDashboard />
+        }
+
 
         <DailyReflection
           last_event={last_event[0] ? {...last_event[0] as Event, _id: last_event[0]._id.toString()} : null}

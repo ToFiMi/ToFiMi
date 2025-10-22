@@ -1,17 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Select, Spin, message } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
 
 interface TagOption {
-    label: string
+    label: string | React.ReactNode
     value: string
 }
+
+const CREATE_NEW_PREFIX = '__create_new__'
 
 export default function TagsInput({ tag_type = "allergy" }: { tag_type: string }) {
     const [options, setOptions] = useState<TagOption[]>([])
     const [selectedTags, setSelectedTags] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
+    const [searchValue, setSearchValue] = useState('')
 
     const fetchTags = async () => {
         try {
@@ -73,6 +77,63 @@ export default function TagsInput({ tag_type = "allergy" }: { tag_type: string }
         }
     }
 
+    // Filter options based on search and add "Create new" option if needed
+    const filteredOptions = useMemo(() => {
+        const trimmedSearch = searchValue.trim()
+
+        // Filter existing options
+        const filtered = options.filter(opt => {
+            const labelText = typeof opt.label === 'string' ? opt.label : ''
+            return labelText.toLowerCase().includes(trimmedSearch.toLowerCase())
+        })
+
+        // If there's search text and no exact match exists, add "Create new" option
+        if (trimmedSearch && !options.some(opt => {
+            const labelText = typeof opt.label === 'string' ? opt.label : ''
+            return labelText.toLowerCase() === trimmedSearch.toLowerCase()
+        })) {
+            return [
+                {
+                    label: (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1890ff' }}>
+                            <PlusOutlined />
+                            <span>Vytvoriť "{trimmedSearch}"</span>
+                        </div>
+                    ),
+                    value: `${CREATE_NEW_PREFIX}${trimmedSearch}`,
+                },
+                ...filtered
+            ]
+        }
+
+        return filtered
+    }, [searchValue, options])
+
+    const handleSelect = async (value: string) => {
+        // Check if this is a "Create new" selection
+        if (value.startsWith(CREATE_NEW_PREFIX)) {
+            const tagName = value.replace(CREATE_NEW_PREFIX, '')
+            const tagId = await handleCreateTag(tagName)
+
+            if (tagId) {
+                const newTags = [...selectedTags, tagId]
+                setSelectedTags(newTags)
+                await handleChange(newTags)
+            }
+
+            setSearchValue('') // Clear the search input
+        } else {
+            // Regular tag selection - just clear the search
+            setSearchValue('')
+        }
+    }
+
+    const handleChangeWrapper = async (values: string[]) => {
+        // Filter out any "create new" temporary values to prevent them from showing in tags
+        const filteredValues = values.filter(v => !v.startsWith(CREATE_NEW_PREFIX))
+        await handleChange(filteredValues)
+    }
+
     return (
         <div>
             <label className="block font-medium mb-2">Alergie a intolerancie</label>
@@ -82,22 +143,14 @@ export default function TagsInput({ tag_type = "allergy" }: { tag_type: string }
                 placeholder="Vyber alebo napíš alergiu"
                 value={selectedTags}
                 loading={loading}
-                onChange={handleChange}
-                onSearch={fetchTags}
-                onSelect={fetchTags}
-                options={options}
+                searchValue={searchValue}
+                onSearch={setSearchValue}
+                onChange={handleChangeWrapper}
+                onSelect={handleSelect}
+                options={filteredOptions}
+                filterOption={false} // We handle filtering manually
                 notFoundContent={loading ? <Spin size="small" /> : null}
-                onBlur={fetchTags}
-                onInputKeyDown={async (e: any) => {
-                    if (e.key === 'Enter' && e.target.value) {
-                        const tagId = await handleCreateTag(e.target.value)
-                        if (tagId) {
-                            const newTags = [...selectedTags, tagId]
-                            setSelectedTags(newTags)
-                            await handleChange(newTags)
-                        }
-                    }
-                }}
+                tokenSeparators={[',']} // Allow comma to separate tags
             />
         </div>
     )
