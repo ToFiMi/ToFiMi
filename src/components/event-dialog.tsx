@@ -260,7 +260,7 @@ export default function EventDialog({ open, onClose, onSuccess, schoolId, editin
                                                     const allHomeworkTypes = form.getFieldValue('homeworkTypes') || []
                                                     const sameTypeCount = allHomeworkTypes
                                                         .slice(0, name)
-                                                        .filter((hw: any) => hw?.id === value).length
+                                                        .filter((hw: any) => hw?.id === value || hw?.id?.startsWith(`${value}-`)).length
 
                                                     if (sameTypeCount > 0) {
                                                         const uniqueId = `${value}-${sameTypeCount + 1}`
