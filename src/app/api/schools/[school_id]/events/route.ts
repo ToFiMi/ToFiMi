@@ -40,6 +40,18 @@ export async function POST(req: NextRequest, { params }: { params: { school_id: 
         return new Response('Missing required fields', { status: 400 })
     }
 
+    // Validate unique homework_type_ids
+    if (homeworkTypes && homeworkTypes.length > 0) {
+        const ids = homeworkTypes.map((hw: any) => hw.id)
+        const duplicates = ids.filter((id: string, index: number) => ids.indexOf(id) !== index)
+        if (duplicates.length > 0) {
+            return new Response(
+                `Duplicitné homework_type_id: ${[...new Set(duplicates)].join(', ')}. Každá domáca úloha musí mať unikátne ID.`,
+                { status: 400 }
+            )
+        }
+    }
+
     const now = new Date()
 
     const eventData: any = {

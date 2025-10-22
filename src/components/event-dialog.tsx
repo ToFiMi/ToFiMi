@@ -2,19 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import {
-    DatePicker,
-    Form,
-    Input,
-    InputNumber,
-    message,
-    Modal,
-    Checkbox,
-    Divider,
-    Switch,
-    Card,
-    Space,
-    Select,
-    Button
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Checkbox,
+  Divider,
+  Switch,
+  Card,
+  Space,
+  Select,
+  Button, Typography
 } from 'antd'
 import dayjs, { Dayjs } from 'dayjs'
 import { Event } from '@/models/events'
@@ -255,6 +255,17 @@ export default function EventDialog({ open, onClose, onSuccess, schoolId, editin
                                                         form.setFieldValue(['homeworkTypes', name, 'name'], selectedType.name)
                                                         form.setFieldValue(['homeworkTypes', name, 'description'], selectedType.description)
                                                     }
+
+                                                    // Auto-generate unique ID if this type already exists
+                                                    const allHomeworkTypes = form.getFieldValue('homeworkTypes') || []
+                                                    const sameTypeCount = allHomeworkTypes
+                                                        .slice(0, name)
+                                                        .filter((hw: any) => hw?.id === value).length
+
+                                                    if (sameTypeCount > 0) {
+                                                        const uniqueId = `${value}-${sameTypeCount + 1}`
+                                                        form.setFieldValue(['homeworkTypes', name, 'id'], uniqueId)
+                                                    }
                                                 }}
                                             >
                                                 {predefinedHomeworkTypes.map(type => (
@@ -272,6 +283,27 @@ export default function EventDialog({ open, onClose, onSuccess, schoolId, editin
                                             label="Názov"
                                         >
                                             <Input placeholder="napr. Textová esáž" />
+                                        </Form.Item>
+
+                                        {/* Show the actual unique ID if it differs from base type */}
+                                        <Form.Item noStyle shouldUpdate={(prevValues, currentValues) =>
+                                            prevValues.homeworkTypes?.[name]?.id !== currentValues.homeworkTypes?.[name]?.id
+                                        }>
+                                            {({ getFieldValue }) => {
+                                                const currentId = getFieldValue(['homeworkTypes', name, 'id'])
+                                                const baseTypes = predefinedHomeworkTypes.map(t => t.id).concat(['custom'])
+
+                                                if (currentId && !baseTypes.includes(currentId)) {
+                                                    return (
+                                                        <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+                                                            <Typography>
+                                                                Unikátne ID: <code className="bg-gray-100 px-1 rounded">{currentId}</code> (automaticky vytvorené pre odlíšenie od iných úloh rovnakého typu)
+                                                            </Typography>
+                                                        </div>
+                                                    )
+                                                }
+                                                return null
+                                            }}
                                         </Form.Item>
 
                                         <Form.Item
