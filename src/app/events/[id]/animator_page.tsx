@@ -16,8 +16,8 @@ export interface HomeworkWithUser {
     user_id: ObjectId
     content: string
     status: "approved" | "pending" | "rejected"
-    type?: "worksheet" | "homework"
-    worksheet_submission_id?: ObjectId
+    type?: 'essay' | 'worksheet' | "project" | "custom" | "evangelist-discussion" | "testimony"
+  worksheet_submission_id?: ObjectId
     worksheet_submission?: any
     created: Date
     updated: Date
@@ -109,7 +109,15 @@ export default function HomeworkAnimatorPage({homeworks: initialHomeworks, event
             message.error('Chyba pri aktualizácii stavu')
         }
     }
-
+  const typeMeta: Record<string, { label: string; color: string }> = {
+    'worksheet': { label: 'Worksheet', color: 'blue' },
+    'essay': { label: 'Esej', color: 'green' },
+    'testimony': { label: 'Svedectvo', color: 'purple' },
+    'evangelist-discussion': { label: 'Evanjelizačný rozhovor', color: 'magenta' },
+    'custom': { label: 'Iné', color: 'orange' },
+    'project': { label: 'Projekt', color: 'cyan' },
+  }
+  console.log(homeworks)
     return (
         <div className="grid grid-cols-1 gap-4 mt-6">
             <Title level={4}>Domáce úlohy účastníkov</Title>
@@ -121,12 +129,14 @@ export default function HomeworkAnimatorPage({homeworks: initialHomeworks, event
                         <Card
                             key={homework?._id.toString()}
                             title={
-                                <Space>
-                                    {`${homework.user?.first_name} ${homework.user?.last_name}`}
-                                    {homework.type === 'worksheet' && (
-                                        <Tag color="blue">Worksheet</Tag>
-                                    )}
-                                </Space>
+                              <Space>
+                                {`${homework.user?.first_name} ${homework.user?.last_name}`}
+                                {homework.type && (
+                                  <Tag color={typeMeta[homework.type]?.color}>
+                                    {typeMeta[homework.type]?.label}
+                                  </Tag>
+                                )}
+                              </Space>
                             }
                             style={isHighlighted ? {
                                 border: '2px solid #1677ff',

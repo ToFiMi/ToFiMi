@@ -7,7 +7,7 @@ export interface Homework {
     homework_type_id: string
     content?: string // optional for worksheet submissions
     worksheet_submission_id?: ObjectId | string // reference to worksheet submission
-    type: 'essay' | 'worksheet' // type of homework
+    type: 'essay' | 'worksheet' | "project" | "custom" | "evangelist-discussion" | "testimony" // type of homework
     status: 'approved' | 'pending' | 'rejected'
     comments: Comment[]
     created: Date | string
