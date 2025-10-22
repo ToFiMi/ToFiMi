@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     const extension = file.name.split('.').pop()?.toLowerCase()
     const buffer = Buffer.from(await file.arrayBuffer())
-    let reflections: { verse_reference: { reference: string; verse: string }[]; content: string }[] = []
+    let reflections: { verse_reference: { reference: string; verse: string }[]; content: string; date?: string }[] = []
 
     if (extension === 'csv') {
         const records = parse(buffer.toString(), {
@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
                     },
                 ],
                 content: row['content']?.trim(),
+                date: row['date']?.trim(),
             }))
     } else if (extension === 'xlsx') {
         const workbook = XLSX.read(buffer, { type: 'buffer' })
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
                     },
                 ],
                 content: row['content']?.toString()?.trim(),
+                date: row['date']?.toString()?.trim(),
             }))
     } else if (extension === 'md') {
         const content = buffer.toString()
@@ -77,11 +79,16 @@ export async function POST(req: NextRequest) {
     const event = await db.collection<Event>('events').findOne({ _id: new ObjectId(event_id) })
     if (!event) return new NextResponse('Event not found', { status: 404 })
 
-    const baseDate = dayjs(event.endDate).add(1, 'day').toDate()
-
     const documents = reflections.map((r, index) => {
-        const date = new Date(baseDate)
-        date.setDate(date.getDate() + index)
+        // Use date from CSV if provided, otherwise fallback to calculating from event end date
+        let date: Date
+        if (r.date) {
+            // Parse date string as local date at midnight to avoid timezone issues
+            date = dayjs(r.date).startOf('day').toDate()
+        } else {
+            const baseDate = dayjs(event.endDate).add(1, 'day')
+            date = baseDate.add(index, 'day').startOf('day').toDate()
+        }
 
         return {
             event_id: new ObjectId(event_id),

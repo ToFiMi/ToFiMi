@@ -33,7 +33,8 @@ export default function ReflectionEditModal({
                     reference: v.reference,
                     verse: v.verse
                 })),
-                content: reflection.content
+                content: reflection.content,
+                date: dayjs(reflection.date).format('YYYY-MM-DD')
             })
         }
     }, [open, reflection, form])
@@ -46,7 +47,8 @@ export default function ReflectionEditModal({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     verse_reference: values.verse_reference,
-                    content: values.content
+                    content: values.content,
+                    date: values.date
                 }),
                 credentials: 'include'
             })
@@ -153,12 +155,20 @@ export default function ReflectionEditModal({
                     </Form.List>
 
                     <Form.Item
+                        name="date"
+                        label="Dátum"
+                        rules={[{ required: true, message: 'Zadaj dátum' }]}
+                    >
+                        <Input type="date" />
+                    </Form.Item>
+
+                    <Form.Item
                         name="content"
                         label="Zamyslenie"
                         rules={[{ required: true, message: 'Zadaj obsah zamyslenia' }]}
                     >
-                        <TextArea 
-                            rows={6} 
+                        <TextArea
+                            rows={6}
                             placeholder="Napíš zamyslenie ku veršom"
                         />
                     </Form.Item>

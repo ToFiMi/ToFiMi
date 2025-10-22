@@ -8,6 +8,7 @@ import ReflectionsList from "@/app/daily-reflections/reflections-list";
 import { DailyReflection } from "@/models/daliy-reflections";
 import { ObjectId } from 'mongodb';
 import ImportModal from "@/app/daily-reflections/import/modal";
+import {now} from "moment";
 
 export default async function DailyReflectionsPage() {
     const db = await connectToDatabase()
@@ -26,9 +27,14 @@ export default async function DailyReflectionsPage() {
             </main>
         )
     }
-
+  let filter: any = {
+    school_id: new ObjectId(school_id),
+  };
+  if (role === 'user') {
+    filter.date = { $lte: now() };
+  }
     const reflections = await db.collection<DailyReflection>('daily_reflections')
-        .find({ school_id: new ObjectId(school_id) })
+        .find(filter)
         .sort({ date: -1 })
         .toArray()
 

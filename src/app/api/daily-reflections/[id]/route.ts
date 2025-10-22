@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/mongo'
 import { getToken } from 'next-auth/jwt'
 import { ObjectId } from 'mongodb'
 import { DailyReflection } from '@/models/daliy-reflections'
+import dayjs from 'dayjs'
 
 export async function PUT(
     req: NextRequest,
@@ -30,7 +31,7 @@ export async function PUT(
     
     try {
         const body = await req.json()
-        const { verse_reference, content } = body
+        const { verse_reference, content, date } = body
 
         if (!verse_reference || !content) {
             return new NextResponse('Missing required fields', { status: 400 })
@@ -59,7 +60,7 @@ export async function PUT(
         }
 
         // Update the reflection
-        const updateData = {
+        const updateData: any = {
             verse_reference: verse_reference.map((v: any) => ({
                 reference: v.reference.trim(),
                 verse: v.verse.trim()
@@ -67,6 +68,11 @@ export async function PUT(
             content: content.trim(),
             updated_by: new ObjectId(token.id),
             updated: new Date()
+        }
+
+        // Add date if provided - parse as local date at midnight to avoid timezone issues
+        if (date) {
+            updateData.date = dayjs(date).startOf('day').toDate()
         }
 
         const result = await db.collection<DailyReflection>('daily_reflections')
