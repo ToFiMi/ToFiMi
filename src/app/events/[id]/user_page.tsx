@@ -13,20 +13,14 @@ import dayjs from "dayjs";
 const { Title, Paragraph, Text } = Typography
 
 export default function HomeworkUserPage({ homework, event, event_id, event_name }: { homework: Homework | null, event: Event, event_id: string, event_name?: string }) {
-    const [form] = Form.useForm()
     const [selectedHomeworkType, setSelectedHomeworkType] = useState<any>(null)
     const [showWorksheetModal, setShowWorksheetModal] = useState(false)
     const [existingHomeworks, setExistingHomeworks] = useState<{[key: string]: Homework}>({})
 
     useEffect(() => {
-        // Load existing homework for backward compatibility (old single homework model)
-        if (homework?.content) {
-            form.setFieldsValue({ content: homework.content })
-        }
-
         // Load all homeworks for this event
         fetchHomeworks()
-    }, [homework, form, event_id])
+    }, [event_id])
 
     const fetchHomeworks = async () => {
         try {
@@ -131,7 +125,7 @@ export default function HomeworkUserPage({ homework, event, event_id, event_name
                 dataSource={event.homeworkTypes}
                 renderItem={(homeworkType: any) => {
                     const existing = existingHomeworks[homeworkType.id]
-                    const isWorksheet = homeworkType.id === 'worksheet'
+                    const isWorksheet = !!homeworkType.worksheet_id
 
                     return (
                         <Card key={homeworkType.id} className="mb-4">
@@ -171,6 +165,7 @@ export default function HomeworkUserPage({ homework, event, event_id, event_name
                                 <>
                                     <Divider />
                                     <Form
+                                        key={homeworkType.id}
                                         layout="vertical"
                                         onFinish={(values) => handleTextHomeworkSubmit(values, homeworkType)}
                                         initialValues={{ content: existing?.content }}
@@ -226,6 +221,7 @@ export default function HomeworkUserPage({ homework, event, event_id, event_name
                     <WorksheetSubmission
                         eventId={event_id}
                         worksheetId={selectedHomeworkType.worksheet_id}
+                        homeworkTypeId={selectedHomeworkType.id}
                         onSubmit={handleWorksheetSubmit}
                     />
                 )}

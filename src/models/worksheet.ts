@@ -29,6 +29,7 @@ export interface WorksheetSubmission {
     worksheet_id: ObjectId | string
     event_id: ObjectId | string
     user_id: ObjectId | string
+    homework_type_id?: string // optional - for homework-based worksheets (allows multiple per event)
     answers: WorksheetAnswer[]
     essay_content?: string // optional essay in addition to worksheet
     status: 'pending' | 'approved' | 'rejected'

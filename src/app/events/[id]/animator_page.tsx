@@ -1,7 +1,7 @@
 "use client"
 
 import {Button, Card, Form, List, message, Modal, Typography, Space, Tag} from "antd"
-import {useState, useEffect} from "react"
+import React, {useState, useEffect} from "react"
 import {ObjectId} from "mongodb";
 import CommentsThread from "@/components/comments/thread";
 import {useSearchParams} from "next/navigation";
@@ -29,28 +29,35 @@ export interface HomeworkWithUser {
     }
 }
 
-export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: {
+export default function HomeworkAnimatorPage({homeworks: initialHomeworks, event_id, event_name}: {
     homeworks: HomeworkWithUser[] | unknown,
     event_id?: string,
     event_name?: string
 }) {
+    const [homeworks, setHomeworks] = useState<HomeworkWithUser[]>(initialHomeworks as HomeworkWithUser[])
     const [selectedHomework, setSelectedHomework] = useState<HomeworkWithUser | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [form] = Form.useForm()
     const searchParams = useSearchParams()
     const userIdParam = searchParams.get('userId')
+    const hasAutoOpenedRef = React.useRef(false)
 
-    // Auto-open homework modal if userId parameter is provided
+    // Auto-open homework modal if userId parameter is provided (only once)
     useEffect(() => {
-        if (userIdParam && homeworks && Array.isArray(homeworks)) {
-            const targetHomework = (homeworks as HomeworkWithUser[]).find(
+        if (userIdParam && !hasAutoOpenedRef.current) {
+            const initialHomeworksList = initialHomeworks as HomeworkWithUser[]
+            const targetHomework = initialHomeworksList.find(
                 hw => hw.user_id.toString() === userIdParam
             )
             if (targetHomework) {
-                handleOpen(targetHomework)
+                hasAutoOpenedRef.current = true
+                setSelectedHomework(targetHomework)
+                setModalOpen(true)
+                form.resetFields()
             }
         }
-    }, [userIdParam, homeworks])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userIdParam])
 
     const handleOpen = (homework: HomeworkWithUser) => {
         setSelectedHomework(homework)
@@ -80,8 +87,15 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
             if (response.ok) {
                 message.success(`Domáca úloha bola ${status === 'approved' ? 'schválená' : 'zamietnutá'}`)
 
-                // Update the local state to reflect the change
+                // Update the selected homework in the modal
                 setSelectedHomework(prev => prev ? { ...prev, status } : null)
+
+                // Update the homework in the list
+                setHomeworks(prev => prev.map(hw =>
+                    hw._id.toString() === selectedHomework._id.toString()
+                        ? { ...hw, status }
+                        : hw
+                ))
 
                 // Optionally close the modal after a short delay
                 setTimeout(() => {
@@ -100,7 +114,7 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
         <div className="grid grid-cols-1 gap-4 mt-6">
             <Title level={4}>Domáce úlohy účastníkov</Title>
             <List
-                dataSource={homeworks as unknown as HomeworkWithUser[]}
+                dataSource={homeworks}
                 renderItem={(homework) => {
                     const isHighlighted = userIdParam && homework.user_id.toString() === userIdParam
                     return (
@@ -110,7 +124,7 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                                 <Space>
                                     {`${homework.user?.first_name} ${homework.user?.last_name}`}
                                     {homework.type === 'worksheet' && (
-                                        <Tag color="blue" size="small">Worksheet</Tag>
+                                        <Tag color="blue">Worksheet</Tag>
                                     )}
                                 </Space>
                             }
@@ -187,7 +201,7 @@ export default function HomeworkAnimatorPage({homeworks, event_id, event_name}: 
                          selectedHomework?.status === 'rejected' ? 'Zamietnuté' : 'Čaká na posúdenie'}
                     </Tag>
                 </div>
-                
+
                 {selectedHomework?.type === 'worksheet' && selectedHomework?.worksheet_submission ? (
                     <div>
                         <Paragraph>

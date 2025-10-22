@@ -23,10 +23,11 @@ const { Title, Text } = Typography
 interface WorksheetSubmissionProps {
     eventId: string
     worksheetId?: string // Optional - for homework worksheets
+    homeworkTypeId?: string // ID of the homework type in event.homeworkTypes
     onSubmit?: () => void
 }
 
-export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: WorksheetSubmissionProps) {
+export default function WorksheetSubmission({ eventId, worksheetId, homeworkTypeId, onSubmit }: WorksheetSubmissionProps) {
     const [form] = Form.useForm()
     const [worksheet, setWorksheet] = useState<Worksheet | null>(null)
     const [loading, setLoading] = useState(false)
@@ -62,16 +63,19 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
 
     const checkExistingSubmission = async () => {
         try {
-            // Check submission by event_id and worksheet_id if provided
+            // Check submission by event_id, worksheet_id, and homework_type_id
             const params = new URLSearchParams({ event_id: eventId })
             if (worksheetId) {
                 params.append('worksheet_id', worksheetId)
+            }
+            if (homeworkTypeId) {
+                params.append('homework_type_id', homeworkTypeId)
             }
 
             const response = await fetch(`/api/worksheets/submissions?${params.toString()}`, {
                 credentials: 'include'
             })
-            
+
             if (response.ok) {
                 const data = await response.json()
                 if (data) {
@@ -100,20 +104,26 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
                 answer: values[`answer_${question.id}`]
             })).filter(answer => answer.answer !== undefined && answer.answer !== '')
 
+            const method = existingSubmission ? 'PUT' : 'POST'
             const response = await fetch('/api/worksheets/submissions', {
-                method: 'POST',
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
                     worksheet_id: worksheet._id,
                     event_id: eventId,
+                    homework_type_id: homeworkTypeId || 'worksheet',
                     answers,
                     essay_content: values.essay_content
                 })
             })
 
             if (response.ok) {
-                message.success('Pracovný list bol úspešne odovzdaný')
+                const successMessage = existingSubmission
+                    ? 'Pracovný list bol úspešne aktualizovaný'
+                    : 'Pracovný list bol úspešne odovzdaný'
+                message.success(successMessage)
+                checkExistingSubmission() // Reload submission
                 onSubmit?.()
             } else {
                 const error = await response.text()
@@ -128,7 +138,7 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
 
     const renderQuestion = (question: WorksheetQuestion) => {
         const fieldName = `answer_${question.id}`
-        
+
         const rules = question.required ? [{ required: true, message: 'Toto pole je povinné' }] : []
 
         switch (question.type) {
@@ -231,11 +241,11 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
                                 <span className="text-sm text-gray-500">
                                     {question.scale_labels?.min || min}
                                 </span>
-                                <Rate 
-                                    count={max - min + 1} 
+                                <Rate
+                                    count={max - min + 1}
                                     character={(index) => (
                                         <span className="text-sm font-medium px-2 py-1 border rounded">
-                                            {min + index}
+                                            {min + Number(index)}
                                         </span>
                                     )}
                                 />
@@ -250,8 +260,8 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
                                     {Array.from({ length: max - min + 1 }, (_, i) => {
                                         const value = min + i
                                         return (
-                                            <Button 
-                                                key={value} 
+                                            <Button
+                                                key={value}
                                                 size="small"
                                                 type={form.getFieldValue(fieldName) === value ? 'primary' : 'default'}
                                                 onClick={() => form.setFieldValue(fieldName, value)}
@@ -309,7 +319,7 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
                         {worksheet.description}
                     </Text>
                 )}
-                
+
                 {existingSubmission && (
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded mb-4">
                         <Text strong>Tento pracovný list ste už odovzdali. </Text>
@@ -322,7 +332,6 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
                 form={form}
                 layout="vertical"
                 onFinish={handleSubmit}
-                disabled={!!existingSubmission}
             >
                 {worksheet.questions.map((question) => (
                     <div key={question.id} className="mb-6">
@@ -337,24 +346,22 @@ export default function WorksheetSubmission({ eventId, worksheetId, onSubmit }: 
                     label="Dodatočná esáž (Voľiteľné)"
                     help="Môžete napísať dodatočnú esáž, ak sa chcete podeliť o ďalšie myšlienky o tejto udalosti."
                 >
-                    <Input.TextArea 
-                        rows={6} 
-                        placeholder="Tu napíšte svoje dodatočné myšlienky..." 
+                    <Input.TextArea
+                        rows={6}
+                        placeholder="Tu napíšte svoje dodatočné myšlienky..."
                     />
                 </Form.Item>
 
-                {!existingSubmission && (
-                    <Form.Item className="text-center">
-                        <Button 
-                            type="primary" 
-                            htmlType="submit" 
-                            loading={submitting}
-                            size="large"
-                        >
-                            Odovzdať pracovný list
-                        </Button>
-                    </Form.Item>
-                )}
+                <Form.Item className="text-center">
+                    <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={submitting}
+                        size="large"
+                    >
+                        {existingSubmission ? 'Aktualizovať pracovný list' : 'Odovzdať pracovný list'}
+                    </Button>
+                </Form.Item>
             </Form>
         </Card>
     )
